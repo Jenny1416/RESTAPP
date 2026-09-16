@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "REST — Arquitectura local, híbrida y VPS",
+    "quality_profile": "showcase",
+    "viewBox": [1180, 690]
+  },
+  "components": [
+    {
+      "id": "usuarios",
+      "type": "external",
+      "label": "Usuarios y desarrollo",
+      "sublabel": "Navegador, móvil o emulador",
+      "pos": [40, 285],
+      "size": [165, 72]
+    },
+    {
+      "id": "restapp",
+      "type": "frontend",
+      "label": "RESTAPP",
+      "sublabel": "Flutter · API_BASE_URL",
+      "pos": [270, 165],
+      "size": [180, 72]
+    },
+    {
+      "id": "panel",
+      "type": "frontend",
+      "label": "Panel REST",
+      "sublabel": "React/Vite · VITE_API_URL",
+      "pos": [270, 405],
+      "size": [180, 72]
+    },
+    {
+      "id": "entrada",
+      "type": "security",
+      "label": "Entrada de API",
+      "sublabel": "localhost:3000 o HTTPS público",
+      "pos": [520, 285],
+      "size": [190, 72]
+    },
+    {
+      "id": "backend",
+      "type": "backend",
+      "label": "Backend REST",
+      "sublabel": "Express + Socket.IO · :3000",
+      "pos": [780, 285],
+      "size": [190, 72]
+    },
+    {
+      "id": "postgres",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "Volumen persistente",
+      "pos": [990, 90],
+      "size": [150, 66]
+    },
+    {
+      "id": "ollama",
+      "type": "backend",
+      "label": "Ollama",
+      "sublabel": "Red Docker interna",
+      "pos": [1010, 288],
+      "size": [150, 66]
+    },
+    {
+      "id": "sentiment",
+      "type": "backend",
+      "label": "Sentiment",
+      "sublabel": "FastAPI · red interna",
+      "pos": [990, 480],
+      "size": [150, 66]
+    }
+  ],
+  "connections": [
+    {
+      "id": "usuarios-restapp",
+      "from": "usuarios",
+      "to": "restapp",
+      "label": "usa app",
+      "variant": "emphasis"
+    },
+    {
+      "id": "usuarios-panel",
+      "from": "usuarios",
+      "to": "panel",
+      "label": "usa panel",
+      "variant": "emphasis"
+    },
+    {
+      "id": "restapp-entrada",
+      "from": "restapp",
+      "to": "entrada",
+      "label": "HTTP local / HTTPS público",
+      "variant": "security"
+    },
+    {
+      "id": "panel-entrada",
+      "from": "panel",
+      "to": "entrada",
+      "label": "REST + WebSocket",
+      "variant": "security"
+    },
+    {
+      "id": "entrada-backend",
+      "from": "entrada",
+      "to": "backend",
+      "label": "proxy / puerto publicado",
+      "labelAt": [745, 270],
+      "variant": "emphasis"
+    },
+    {
+      "id": "backend-postgres",
+      "from": "backend",
+      "to": "postgres",
+      "label": "DATABASE_URL"
+    },
+    {
+      "id": "backend-ollama",
+      "from": "backend",
+      "to": "ollama",
+      "label": "OLLAMA_API_URL",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "straight",
+      "labelAt": [1050, 250]
+    },
+    {
+      "id": "backend-sentiment",
+      "from": "backend",
+      "to": "sentiment",
+      "label": "SENTIMENT_API_URL"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Control de código",
+      "items": [
+        "RESTAPP actúa como superproyecto",
+        "Backend y panel quedan fijados por commit como submódulos",
+        "Los repositorios externos no necesitan cambios para ser enlazados"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Tres modos",
+      "items": [
+        "Local completo: frontends → localhost/LAN → backend local",
+        "Híbrido: frontend local → API pública HTTPS",
+        "VPS: dominios públicos → proxy TLS → contenedores internos"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Condiciones mínimas",
+      "items": [
+        "CORS por lista permitida y soporte para clientes sin Origin",
+        "PostgreSQL, Ollama y Sentiment no se publican en producción",
+        "Las URLs se inyectan al compilar o ejecutar cada frontend"
+      ]
+    }
+  ]
+}

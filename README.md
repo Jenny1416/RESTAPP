@@ -98,6 +98,40 @@ docker compose up -d --build
 
 Para conectarlo a otra API, define `API_BASE_URL` antes de construir. `localhost` es una sobrescritura de desarrollo, no un tercer entorno.
 
+### Desarrollo de ramas test con volumen
+
+Para `develop` y `feature/*`, usa el servidor Flutter de desarrollo. El codigo del repositorio se monta como volumen y siempre consume `https://api-test.restapp.site`:
+
+```powershell
+docker compose -p restapp-dev -f docker-compose.dev.yml up -d
+```
+
+Abre `http://localhost:8081`. Los cambios de rama no requieren `docker build`. Tras un `git switch`, reinicia solamente el proceso Flutter para compilar el codigo de la rama nueva:
+
+```powershell
+docker compose -p restapp-dev -f docker-compose.dev.yml restart app
+```
+
+Para hot reload durante cambios visuales, adjunta la terminal, pulsa `r` y separala con `Ctrl+P`, `Ctrl+Q`:
+
+```powershell
+docker attach restapp-dev-app-1
+```
+
+Para validar `main` contra produccion, usa la imagen release:
+
+```powershell
+$env:API_BASE_URL = "https://api.restapp.site"
+docker compose -p restapp-release up -d --build
+Remove-Item Env:API_BASE_URL
+```
+
+Detener desarrollo:
+
+```powershell
+docker compose -p restapp-dev -f docker-compose.dev.yml down
+```
+
 ## 8) Configuracion de backend y entorno
 
 La app no usa archivo `.env`; la URL del backend se selecciona en compilacion mediante `--dart-define` y se resuelve en:

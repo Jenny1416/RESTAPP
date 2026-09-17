@@ -1,0 +1,21 @@
+services:
+  app:
+    image: ghcr.io/cirruslabs/flutter:stable
+    working_dir: /app
+    command:
+      - sh
+      - -c
+      - >-
+        flutter pub get &&
+        flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8081
+        --dart-define=API_BASE_URL=https://api-test.restapp.site
+    ports:
+      - "${APP_DEV_HOST_PORT:-8081}:8081"
+    volumes:
+      - ./:/app
+      - flutter_pub_cache:/root/.pub-cache
+    stdin_open: true
+    tty: true
+
+volumes:
+  flutter_pub_cache:

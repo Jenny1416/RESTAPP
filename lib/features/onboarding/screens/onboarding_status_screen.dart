@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../models/onboarding_models.dart';
 import '../services/onboarding_service.dart';
@@ -33,10 +32,12 @@ class _OnboardingStatusScreenState extends State<OnboardingStatusScreen> {
       _loading = true;
       _error = null;
     });
+
     try {
       final status = await _service.getEstado();
       int? questionCount;
       int? dimensionCount;
+
       if (!status.completado) {
         try {
           final survey = await _service.getPreguntas();
@@ -47,10 +48,11 @@ class _OnboardingStatusScreenState extends State<OnboardingStatusScreen> {
               .toSet()
               .length;
         } catch (_) {
-          // La pantalla de estado sigue disponible aunque aún no se puedan
-          // consultar las preguntas; la encuesta hará su propia carga.
+          // La pantalla conserva el acceso a la encuesta, que hará su propia
+          // carga, aunque no se pueda mostrar el conteo todavía.
         }
       }
+
       if (!mounted) return;
       setState(() {
         _status = status;
@@ -86,17 +88,17 @@ class _OnboardingStatusScreenState extends State<OnboardingStatusScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final completed = _status?.completado ?? false;
+
     return Scaffold(
-      backgroundColor: colors.brightness == Brightness.dark
-          ? colors.surface
-          : const Color(0xFFF5F7FF),
+      backgroundColor: const Color(0xFFF5F7FF),
       appBar: AppBar(
-        automaticallyImplyLeading: widget.destinationBuilder == null,
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: widget.destinationBuilder == null,
         title: const Text(
-          'Tu bienestar',
+          'Estado del onboarding',
           style: TextStyle(fontFamily: 'Fredoka', fontWeight: FontWeight.w600),
         ),
       ),
@@ -104,31 +106,25 @@ class _OnboardingStatusScreenState extends State<OnboardingStatusScreen> {
         child: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error != null
-            ? _ErrorState(
+            ? _OnboardingError(
                 message: _error!,
                 onRetry: _load,
                 onContinue: () => _continueToApp(false),
               )
-            : _StatusContent(
-                completed: _status?.completado ?? false,
+            : _OnboardingContent(
+                completed: completed,
                 questionCount: _questionCount,
                 dimensionCount: _dimensionCount,
                 onStart: _startSurvey,
-                onContinue: () => _continueToApp(_status?.completado ?? false),
+                onContinue: () => _continueToApp(completed),
               ),
       ),
     );
   }
 }
 
-class _StatusContent extends StatelessWidget {
-  final bool completed;
-  final int? questionCount;
-  final int? dimensionCount;
-  final VoidCallback onStart;
-  final VoidCallback onContinue;
-
-  const _StatusContent({
+class _OnboardingContent extends StatelessWidget {
+  const _OnboardingContent({
     required this.completed,
     required this.questionCount,
     required this.dimensionCount,
@@ -136,187 +132,99 @@ class _StatusContent extends StatelessWidget {
     required this.onContinue,
   });
 
+  final bool completed;
+  final int? questionCount;
+  final int? dimensionCount;
+  final VoidCallback onStart;
+  final VoidCallback onContinue;
+
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final primary = completed
-        ? const Color(0xFF20A779)
-        : const Color(0xFF326FB6);
+    final countDescription = questionCount == null
+        ? 'Es una encuesta breve para conocer mejor tu bienestar.'
+        : 'Son $questionCount preguntas breves${dimensionCount == null ? '' : ' sobre $dimensionCount dimensiones'} de bienestar.';
+
     return Center(
       child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
+        padding: const EdgeInsets.fromLTRB(26, 24, 26, 32),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
+          constraints: const BoxConstraints(maxWidth: 440),
           child: Column(
             children: [
+              const SizedBox(height: 48),
               Container(
-                width: double.infinity,
-                padding: EdgeInsets.fromLTRB(22.w, 28.h, 22.w, 26.h),
+                width: 118,
+                height: 118,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: completed
-                        ? const [Color(0xFF25B49C), Color(0xFF278BC4)]
-                        : const [Color(0xFF5D67E8), Color(0xFF2D9BC1)],
-                  ),
-                  borderRadius: BorderRadius.circular(30.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: primary.withValues(alpha: 0.2),
-                      blurRadius: 24,
-                      offset: const Offset(0, 12),
-                    ),
-                  ],
+                  color: completed
+                      ? const Color(0xFFE0F6EB)
+                      : const Color(0xFFE2ECFF),
+                  shape: BoxShape.circle,
                 ),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 88.w,
-                      height: 88.w,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.18),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.42),
-                        ),
-                      ),
-                      child: Icon(
-                        completed
-                            ? Icons.check_rounded
-                            : Icons.psychology_alt_rounded,
-                        size: 48.sp,
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: 18.h),
-                    Text(
-                      completed
-                          ? '¡Tu línea base está lista!'
-                          : 'Conozcámonos un poco mejor',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'Fredoka',
-                        fontSize: 27.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        height: 1.15,
-                      ),
-                    ),
-                    SizedBox(height: 9.h),
-                    Text(
-                      completed
-                          ? 'Completaste tu encuesta inicial de bienestar.'
-                          : 'Una encuesta breve para personalizar tu experiencia con NOA.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        height: 1.4,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                  ],
+                child: Icon(
+                  completed
+                      ? Icons.task_alt_rounded
+                      : Icons.assignment_outlined,
+                  size: 58,
+                  color: completed
+                      ? const Color(0xFF248458)
+                      : const Color(0xFF3475D1),
                 ),
               ),
-              SizedBox(height: 20.h),
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(18.w),
-                decoration: BoxDecoration(
-                  color: colors.surface,
-                  borderRadius: BorderRadius.circular(22.r),
-                  border: Border.all(color: colors.outlineVariant),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _MetricPill(
-                            icon: Icons.help_outline_rounded,
-                            value: questionCount?.toString() ?? '—',
-                            label: 'preguntas',
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: _MetricPill(
-                            icon: Icons.hub_outlined,
-                            value: dimensionCount?.toString() ?? '—',
-                            label: 'dimensiones',
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: _MetricPill(
-                            icon: Icons.schedule_rounded,
-                            value: '3–4',
-                            label: 'minutos',
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16.h),
-                    Text(
-                      completed
-                          ? 'Tus respuestas ayudarán a NOA a ofrecerte un acompañamiento más cercano y personalizado.'
-                          : 'Exploraremos cómo te sientes en áreas como ansiedad, descanso, relaciones, autoestima y motivación.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        height: 1.45,
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+              const SizedBox(height: 34),
+              Text(
+                completed
+                    ? 'Tu onboarding está completo'
+                    : 'Tu onboarding está pendiente',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'Fredoka',
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF20242D),
+                  height: 1.28,
                 ),
               ),
-              SizedBox(height: 16.h),
-              if (!completed)
-                Container(
-                  padding: EdgeInsets.all(15.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF4DD),
-                    borderRadius: BorderRadius.circular(18.r),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.shield_outlined, color: Color(0xFFB56700)),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'No es un diagnóstico. Puedes pausarla y completarla después desde Inicio.',
-                          style: TextStyle(color: Color(0xFF704300)),
-                        ),
-                      ),
-                    ],
-                  ),
+              const SizedBox(height: 16),
+              Text(
+                completed
+                    ? 'Tu información inicial ya está lista para personalizar la experiencia con NOA.'
+                    : '$countDescription Tus respuestas mejoran el contexto de NOA y no constituyen un diagnóstico.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  height: 1.55,
+                  color: Color(0xFF4C5260),
                 ),
-              SizedBox(height: 22.h),
+              ),
+              if (!completed) ...[
+                const SizedBox(height: 28),
+                const _ReminderNote(),
+              ],
+              const SizedBox(height: 34),
               SizedBox(
                 width: double.infinity,
-                height: 56.h,
+                height: 60,
                 child: FilledButton.icon(
                   onPressed: completed ? onContinue : onStart,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18.r),
+                  icon: const Icon(Icons.arrow_forward_rounded),
+                  label: Text(
+                    completed ? 'Continuar a la app' : 'Comenzar encuesta',
+                    style: const TextStyle(
+                      fontFamily: 'Fredoka',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  icon: Icon(
-                    completed
-                        ? Icons.arrow_forward_rounded
-                        : Icons.arrow_forward_rounded,
-                  ),
-                  label: Text(
-                    completed ? 'Continuar' : 'Comenzar mi encuesta',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF326FA3),
+                    foregroundColor: Colors.white,
+                    shape: const StadiumBorder(),
                   ),
                 ),
               ),
               if (!completed) ...[
-                SizedBox(height: 10.h),
+                const SizedBox(height: 10),
                 TextButton(
                   onPressed: onContinue,
                   child: const Text('Ahora no, continuar a la app'),
@@ -330,43 +238,28 @@ class _StatusContent extends StatelessWidget {
   }
 }
 
-class _MetricPill extends StatelessWidget {
-  final IconData icon;
-  final String value;
-  final String label;
-
-  const _MetricPill({
-    required this.icon,
-    required this.value,
-    required this.label,
-  });
+class _ReminderNote extends StatelessWidget {
+  const _ReminderNote();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFEEF3FF),
-        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xFFFFF2D7),
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: Column(
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: const Color(0xFF326FB6)),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontFamily: 'Fredoka',
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF22314D),
+          Icon(Icons.notifications_none_rounded, color: Color(0xFFB56700)),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Puedes hacerlo ahora o continuarlo después desde el recordatorio de Inicio.',
+              style: TextStyle(color: Color(0xFF764900), height: 1.4),
             ),
-          ),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.fade,
-            softWrap: false,
-            style: const TextStyle(fontSize: 10, color: Color(0xFF58647A)),
           ),
         ],
       ),
@@ -374,16 +267,16 @@ class _MetricPill extends StatelessWidget {
   }
 }
 
-class _ErrorState extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-  final VoidCallback onContinue;
-
-  const _ErrorState({
+class _OnboardingError extends StatelessWidget {
+  const _OnboardingError({
     required this.message,
     required this.onRetry,
     required this.onContinue,
   });
+
+  final String message;
+  final VoidCallback onRetry;
+  final VoidCallback onContinue;
 
   @override
   Widget build(BuildContext context) {

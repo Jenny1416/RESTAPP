@@ -90,22 +90,34 @@ flutter devices
 
 ## 8) Configuracion de backend y entorno
 
-Actualmente la app no usa archivo `.env`; la URL del backend se controla por codigo en:
+La app no usa archivo `.env`; la URL del backend se selecciona en compilacion mediante `--dart-define` y se resuelve en:
 
 - `lib/core/config/api_config.dart`
 
-Configuracion actual:
+Entornos desplegados:
 
-- `useLocalDocker = false`
-- `localBaseUrl = http://localhost:3000`
-- `universityBaseUrl = http://190.143.117.179:8080`
+- `testBaseUrl = https://api-test.restapp.site`
+- `productionBaseUrl = https://api.restapp.site`
 
 ### Cambiar backend
 
-Edita `useLocalDocker` segun el entorno:
+No es necesario editar el codigo. Usa uno de estos comandos:
 
-- `true`: usa `localBaseUrl`
-- `false`: usa `universityBaseUrl`
+```bash
+# Frontend local conectado al backend de pruebas del VPS
+flutter run --dart-define=API_ENV=test
+
+# Frontend local conectado al backend de produccion del VPS
+flutter run --dart-define=API_ENV=production
+
+# URL explicita: tiene prioridad sobre API_ENV
+flutter run --dart-define=API_BASE_URL=http://localhost:3000
+
+# Emulador Android conectado a un backend local
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000
+```
+
+Si no se especifica ninguna variable, debug usa `test` y release usa `production`. `localhost` es solamente una sobrescritura de desarrollo, no un tercer entorno.
 
 ### Importante para pruebas en Android emulator/device
 
@@ -135,14 +147,12 @@ Edita `useLocalDocker` segun el entorno:
 
 ## 10) Variables de entorno
 
-Actualmente: **pendiente/por definir**.
+Variables de compilacion admitidas:
 
-- No existe contrato formal de variables de entorno en el repo.
-- La configuracion de API esta hardcoded en `ApiConfig`.
+- `API_ENV=test|production`
+- `API_BASE_URL=<url>` para sobrescribir cualquier entorno
 
-Recomendacion futura:
-
-- migrar a esquema de `--dart-define` o gestion externa de entornos (`dev/staging/prod`).
+Los builds Docker de pruebas y produccion deben inyectar `API_BASE_URL` con el dominio correspondiente.
 
 ## 11) Convenciones del proyecto
 

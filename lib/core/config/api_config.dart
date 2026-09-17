@@ -1,41 +1,32 @@
-import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 
 class ApiConfig {
-  // Local host mapping by platform
-  // Android emulator: 10.0.2.2 -> host machine
-  // iOS simulator/desktop: localhost
-  static const String localBaseUrl = 'http://localhost:3000';
-  static const String androidEmulatorBaseUrl = 'http://10.0.2.2:3000';
+  static const String testBaseUrl = 'https://api-test.restapp.site';
+  static const String productionBaseUrl = 'https://api.restapp.site';
 
-  static const String universityBaseUrl = 'http://179.197.239.216:3000';
-
-  // Override manual: flutter run --dart-define=API_BASE_URL=http://179.197.239.216:3000
   static const String _envBaseUrl = String.fromEnvironment('API_BASE_URL');
+  static const String _apiEnvironment = String.fromEnvironment('API_ENV');
 
   static String get baseUrl {
     if (_envBaseUrl.isNotEmpty) {
-      return _envBaseUrl;
+      return _withoutTrailingSlash(_envBaseUrl);
     }
 
-    // debug/profile (flutter run) -> servidor local; release (flutter build) -> servidor universidad
-    if (kReleaseMode) {
-      return universityBaseUrl;
+    switch (_apiEnvironment) {
+      case 'production':
+        return productionBaseUrl;
+      case 'test':
+        return testBaseUrl;
+      case '':
+        return kReleaseMode
+            ? productionBaseUrl
+            : testBaseUrl;
+      default:
+        throw StateError('API_ENV must be test or production');
     }
+  }
 
-    if (kIsWeb) {
-      final host = Uri.base.host;
-      final scheme = Uri.base.scheme.isEmpty ? 'http' : Uri.base.scheme;
-      if (host.isEmpty) {
-        return localBaseUrl;
-      }
-      return '$scheme://$host:3000';
-    }
-
-    if (Platform.isAndroid) {
-      return androidEmulatorBaseUrl;
-    }
-
-    return localBaseUrl;
+  static String _withoutTrailingSlash(String value) {
+    return value.endsWith('/') ? value.substring(0, value.length - 1) : value;
   }
 }

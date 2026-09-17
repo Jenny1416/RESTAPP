@@ -1,0 +1,8 @@
+.git
+.dart_tool
+.idea
+.vscode
+build
+coverage
+android/.gradle
+**/*.log

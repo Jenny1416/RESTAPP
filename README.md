@@ -88,6 +88,16 @@ flutter devices
 
 > Nota: no hay scripts custom en `pubspec.yaml`; se usan comandos estandar de Flutter/Dart.
 
+### Contenedor local de Flutter Web
+
+Por defecto el contenedor consume el entorno `test` y publica la aplicacion en `http://localhost:8081`:
+
+```bash
+docker compose up -d --build
+```
+
+Para conectarlo a otra API, define `API_BASE_URL` antes de construir. `localhost` es una sobrescritura de desarrollo, no un tercer entorno.
+
 ## 8) Configuracion de backend y entorno
 
 La app no usa archivo `.env`; la URL del backend se selecciona en compilacion mediante `--dart-define` y se resuelve en:

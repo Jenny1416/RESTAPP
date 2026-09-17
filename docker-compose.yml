@@ -1,0 +1,9 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        API_BASE_URL: ${API_BASE_URL:-https://api-test.restapp.site}
+    restart: unless-stopped
+    ports:
+      - "${APP_HOST_PORT:-8081}:80"

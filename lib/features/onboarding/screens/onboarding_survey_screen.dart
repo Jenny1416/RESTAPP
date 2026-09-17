@@ -30,6 +30,14 @@ class _OnboardingSurveyScreenState extends State<OnboardingSurveyScreen> {
     4: 'Excelente',
   };
 
+  static const _scoreIcons = <int, IconData>{
+    0: Icons.sentiment_very_dissatisfied_rounded,
+    1: Icons.sentiment_dissatisfied_rounded,
+    2: Icons.sentiment_neutral_rounded,
+    3: Icons.sentiment_satisfied_rounded,
+    4: Icons.sentiment_very_satisfied_rounded,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -122,151 +130,297 @@ class _OnboardingSurveyScreenState extends State<OnboardingSurveyScreen> {
     final survey = _survey!;
     final question = survey.preguntas[_index];
     final progress = (_index + 1) / survey.preguntas.length;
+    final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: Text(survey.titulo)),
+      backgroundColor: colors.brightness == Brightness.dark
+          ? colors.surface
+          : const Color(0xFFF5F7FF),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Tu línea base',
+          style: TextStyle(fontFamily: 'Fredoka', fontWeight: FontWeight.w600),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Pregunta ${_index + 1} de ${survey.preguntas.length}'),
-                  SizedBox(height: 8.h),
-                  LinearProgressIndicator(value: progress, minHeight: 7.h),
-                ],
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(24.w),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 620),
+              padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 0),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 620),
+                child: Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: colors.outlineVariant),
+                  ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _CategoryChip(category: question.categoria),
-                      SizedBox(height: 20.h),
-                      Text(
-                        question.texto,
-                        style: TextStyle(
-                          fontFamily: 'Fredoka',
-                          fontSize: 24.sp,
-                          fontWeight: FontWeight.bold,
-                          height: 1.25,
-                        ),
-                      ),
-                      SizedBox(height: 24.h),
-                      ..._scoreLabels.entries.map((entry) {
-                        final selected = _answers[question.id] == entry.key;
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: 10.h),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16.r),
-                            onTap: () => setState(
-                              () => _answers[question.id] = entry.key,
-                            ),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              padding: EdgeInsets.all(16.w),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16.r),
-                                color: selected
-                                    ? const Color(0xFF3973D1)
-                                    : Theme.of(
-                                        context,
-                                      ).colorScheme.surfaceContainerLow,
-                                border: Border.all(
-                                  color: selected
-                                      ? const Color(0xFF3973D1)
-                                      : Theme.of(
-                                          context,
-                                        ).colorScheme.outlineVariant,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 15.r,
-                                    backgroundColor: selected
-                                        ? Colors.white
-                                        : const Color(
-                                            0xFF3973D1,
-                                          ).withValues(alpha: 0.12),
-                                    child: Text(
-                                      '${entry.key}',
-                                      style: TextStyle(
-                                        color: selected
-                                            ? const Color(0xFF3973D1)
-                                            : Theme.of(
-                                                context,
-                                              ).colorScheme.onSurface,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 14.w),
-                                  Text(
-                                    entry.value,
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: selected
-                                          ? Colors.white
-                                          : Theme.of(
-                                              context,
-                                            ).colorScheme.onSurface,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                      Row(
+                        children: [
+                          _CategoryChip(category: question.categoria),
+                          const Spacer(),
+                          Text(
+                            '${_index + 1}/${survey.preguntas.length}',
+                            style: const TextStyle(
+                              fontFamily: 'Fredoka',
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF326FB6),
                             ),
                           ),
-                        );
-                      }),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(999),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 8.h,
+                          color: const Color(0xFF326FB6),
+                          backgroundColor: const Color(0xFFDCE7F7),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 16.h),
-              child: Row(
-                children: [
-                  if (_index > 0)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _submitting
-                            ? null
-                            : () => setState(() => _index--),
-                        child: const Text('Anterior'),
-                      ),
-                    ),
-                  if (_index > 0) SizedBox(width: 12.w),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: _submitting ? null : _next,
-                      child: _submitting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(
-                              _index == survey.preguntas.length - 1
-                                  ? 'Finalizar'
-                                  : 'Siguiente',
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 18.h),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 620),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'RESPONDE CON SINCERIDAD',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            letterSpacing: 1.1,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF71819B),
+                          ),
+                        ),
+                        SizedBox(height: 9.h),
+                        Text(
+                          question.texto,
+                          style: TextStyle(
+                            fontFamily: 'Fredoka',
+                            fontSize: 25.sp,
+                            fontWeight: FontWeight.bold,
+                            height: 1.18,
+                            color: colors.onSurface,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          'Elige la opción que mejor refleje cómo te has sentido.',
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
+                        ..._scoreLabels.entries.map((entry) {
+                          final selected = _answers[question.id] == entry.key;
+                          final scoreColor = _scoreColor(entry.key);
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: 10.h),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16.r),
+                              onTap: () => setState(
+                                () => _answers[question.id] = entry.key,
+                              ),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16.w,
+                                  vertical: 14.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16.r),
+                                  color: selected
+                                      ? scoreColor.withValues(alpha: 0.14)
+                                      : colors.surface,
+                                  border: Border.all(
+                                    color: selected
+                                        ? scoreColor
+                                        : colors.outlineVariant,
+                                    width: selected ? 2 : 1,
+                                  ),
+                                  boxShadow: selected
+                                      ? [
+                                          BoxShadow(
+                                            color: scoreColor.withValues(
+                                              alpha: 0.12,
+                                            ),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 5),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 42.w,
+                                      height: 42.w,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: scoreColor.withValues(
+                                          alpha: 0.14,
+                                        ),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Icon(
+                                        _scoreIcons[entry.key],
+                                        color: scoreColor,
+                                        size: 25.sp,
+                                      ),
+                                    ),
+                                    SizedBox(width: 14.w),
+                                    Expanded(
+                                      child: Text(
+                                        entry.value,
+                                        style: TextStyle(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: colors.onSurface,
+                                        ),
+                                      ),
+                                    ),
+                                    AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 180,
+                                      ),
+                                      width: 24.w,
+                                      height: 24.w,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: selected
+                                            ? scoreColor
+                                            : Colors.transparent,
+                                        border: Border.all(
+                                          color: selected
+                                              ? scoreColor
+                                              : colors.outline,
+                                        ),
+                                      ),
+                                      child: selected
+                                          ? const Icon(
+                                              Icons.check_rounded,
+                                              size: 16,
+                                              color: Colors.white,
+                                            )
+                                          : null,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
+                          );
+                        }),
+                      ],
                     ),
                   ),
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 16.h),
+              decoration: BoxDecoration(
+                color: colors.surface,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 18,
+                    offset: const Offset(0, -4),
+                  ),
                 ],
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 620),
+                  child: Row(
+                    children: [
+                      if (_index > 0)
+                        SizedBox(
+                          height: 52.h,
+                          child: OutlinedButton(
+                            onPressed: _submitting
+                                ? null
+                                : () => setState(() => _index--),
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                              ),
+                            ),
+                            child: const Icon(Icons.arrow_back_rounded),
+                          ),
+                        ),
+                      if (_index > 0) SizedBox(width: 12.w),
+                      Expanded(
+                        child: SizedBox(
+                          height: 52.h,
+                          child: FilledButton(
+                            onPressed: _submitting ? null : _next,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF326FB6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                              ),
+                            ),
+                            child: _submitting
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        _index == survey.preguntas.length - 1
+                                            ? 'Guardar y finalizar'
+                                            : 'Continuar',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Icon(Icons.arrow_forward_rounded),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Color _scoreColor(int score) {
+    return switch (score) {
+      0 => const Color(0xFFE45B68),
+      1 => const Color(0xFFE88749),
+      2 => const Color(0xFFD5A521),
+      3 => const Color(0xFF3BAF91),
+      _ => const Color(0xFF278BC4),
+    };
   }
 }
 
@@ -277,10 +431,31 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      avatar: const Icon(Icons.psychology_alt_outlined, size: 18),
-      label: Text(_dimensionLabel(category)),
-      backgroundColor: const Color(0xFF5CCFC0).withValues(alpha: 0.15),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE7F7F5),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.psychology_alt_outlined,
+            size: 17,
+            color: Color(0xFF167E76),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            _dimensionLabel(category),
+            style: const TextStyle(
+              color: Color(0xFF167E76),
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -292,37 +467,154 @@ class _CompletedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Scaffold(
+      backgroundColor: colors.brightness == Brightness.dark
+          ? colors.surface
+          : const Color(0xFFF5F7FF),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.check_circle_rounded,
-                  size: 110,
-                  color: Color(0xFF20A779),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  '¡Encuesta completada!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Tu línea base de bienestar quedó guardada. Esto ayudará a personalizar el acompañamiento de NOA.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 28),
-                FilledButton.icon(
-                  onPressed: onContinue,
-                  icon: const Icon(Icons.arrow_forward_rounded),
-                  label: const Text('Continuar a la app'),
-                ),
-              ],
+            padding: const EdgeInsets.all(22),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(24, 34, 24, 30),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF27B39A), Color(0xFF278BC4)],
+                      ),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(
+                            0xFF278BC4,
+                          ).withValues(alpha: 0.22),
+                          blurRadius: 26,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 104,
+                          height: 104,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.2),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.favorite_rounded,
+                            size: 54,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        const Text(
+                          '¡Excelente trabajo!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Fredoka',
+                            fontSize: 29,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Tu línea base de bienestar quedó guardada correctamente.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            height: 1.4,
+                            color: Colors.white.withValues(alpha: 0.92),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: colors.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: colors.outlineVariant),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF2D6),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.traffic_rounded,
+                            color: Color(0xFFE28A18),
+                          ),
+                        ),
+                        const SizedBox(width: 13),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Siguiente paso: semáforo emocional',
+                                style: TextStyle(
+                                  fontFamily: 'Fredoka',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                'Si aún no hiciste tu registro de hoy, responderás una evaluación breve para generar tu semáforo.',
+                                style: TextStyle(
+                                  height: 1.35,
+                                  color: colors.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: FilledButton.icon(
+                      onPressed: onContinue,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF326FB6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
+                      icon: const Icon(Icons.arrow_forward_rounded),
+                      label: const Text(
+                        'Continuar al siguiente paso',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

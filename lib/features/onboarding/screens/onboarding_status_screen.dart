@@ -66,10 +66,17 @@ class _OnboardingStatusScreenState extends State<OnboardingStatusScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: colors.surface,
+      backgroundColor: colors.brightness == Brightness.dark
+          ? colors.surface
+          : const Color(0xFFF5F7FF),
       appBar: AppBar(
         automaticallyImplyLeading: widget.destinationBuilder == null,
-        title: const Text('Estado del onboarding'),
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Tu bienestar',
+          style: TextStyle(fontFamily: 'Fredoka', fontWeight: FontWeight.w600),
+        ),
       ),
       body: SafeArea(
         child: _loading
@@ -106,91 +113,176 @@ class _StatusContent extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final primary = completed
         ? const Color(0xFF20A779)
-        : const Color(0xFF3973D1);
+        : const Color(0xFF326FB6);
     return Center(
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(24.w),
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
           child: Column(
             children: [
               Container(
-                width: 104.w,
-                height: 104.w,
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(22.w, 28.h, 22.w, 26.h),
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: primary.withValues(alpha: 0.12),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: completed
+                        ? const [Color(0xFF25B49C), Color(0xFF278BC4)]
+                        : const [Color(0xFF5D67E8), Color(0xFF2D9BC1)],
+                  ),
+                  borderRadius: BorderRadius.circular(30.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primary.withValues(alpha: 0.2),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
                 ),
-                child: Icon(
-                  completed
-                      ? Icons.check_circle_rounded
-                      : Icons.assignment_outlined,
-                  size: 60.sp,
-                  color: primary,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 88.w,
+                      height: 88.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.18),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.42),
+                        ),
+                      ),
+                      child: Icon(
+                        completed
+                            ? Icons.check_rounded
+                            : Icons.psychology_alt_rounded,
+                        size: 48.sp,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 18.h),
+                    Text(
+                      completed
+                          ? '¡Tu línea base está lista!'
+                          : 'Conozcámonos un poco mejor',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Fredoka',
+                        fontSize: 27.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        height: 1.15,
+                      ),
+                    ),
+                    SizedBox(height: 9.h),
+                    Text(
+                      completed
+                          ? 'Completaste tu encuesta inicial de bienestar.'
+                          : 'Una encuesta breve para personalizar tu experiencia con NOA.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        height: 1.4,
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 24.h),
-              Text(
-                completed
-                    ? 'Onboarding completado'
-                    : 'Tu onboarding está pendiente',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Fredoka',
-                  fontSize: 27.sp,
-                  fontWeight: FontWeight.bold,
-                  color: colors.onSurface,
+              SizedBox(height: 20.h),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(18.w),
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(22.r),
+                  border: Border.all(color: colors.outlineVariant),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: const [
+                        Expanded(
+                          child: _MetricPill(
+                            icon: Icons.help_outline_rounded,
+                            value: '18',
+                            label: 'preguntas',
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: _MetricPill(
+                            icon: Icons.hub_outlined,
+                            value: '7',
+                            label: 'dimensiones',
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: _MetricPill(
+                            icon: Icons.schedule_rounded,
+                            value: '3–4',
+                            label: 'minutos',
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16.h),
+                    Text(
+                      completed
+                          ? 'Tus respuestas ayudarán a NOA a ofrecerte un acompañamiento más cercano y personalizado.'
+                          : 'Exploraremos cómo te sientes en áreas como ansiedad, descanso, relaciones, autoestima y motivación.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        height: 1.45,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 12.h),
-              Text(
-                completed
-                    ? 'Tu línea base de bienestar ya está lista. NOA podrá ofrecerte acompañamiento más personalizado.'
-                    : 'Son 18 preguntas breves sobre siete dimensiones de bienestar. Tus respuestas mejoran el contexto de NOA y no constituyen un diagnóstico.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  height: 1.45,
-                  color: colors.onSurfaceVariant,
-                ),
-              ),
-              SizedBox(height: 24.h),
+              SizedBox(height: 16.h),
               if (!completed)
                 Container(
-                  padding: EdgeInsets.all(16.w),
+                  padding: EdgeInsets.all(15.w),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF4DD),
-                    borderRadius: BorderRadius.circular(16.r),
+                    borderRadius: BorderRadius.circular(18.r),
                   ),
                   child: const Row(
                     children: [
-                      Icon(
-                        Icons.notifications_active_outlined,
-                        color: Color(0xFFB56700),
-                      ),
+                      Icon(Icons.shield_outlined, color: Color(0xFFB56700)),
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Puedes hacerlo ahora o continuar y completarlo después desde el recordatorio de inicio.',
+                          'No es un diagnóstico. Puedes pausarla y completarla después desde Inicio.',
                           style: TextStyle(color: Color(0xFF704300)),
                         ),
                       ),
                     ],
                   ),
                 ),
-              SizedBox(height: 30.h),
+              SizedBox(height: 22.h),
               SizedBox(
                 width: double.infinity,
-                height: 54.h,
+                height: 56.h,
                 child: FilledButton.icon(
                   onPressed: completed ? onContinue : onStart,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.r),
+                    ),
+                  ),
                   icon: Icon(
                     completed
-                        ? Icons.home_outlined
+                        ? Icons.arrow_forward_rounded
                         : Icons.arrow_forward_rounded,
                   ),
                   label: Text(
-                    completed ? 'Continuar a la app' : 'Comenzar encuesta',
+                    completed ? 'Continuar' : 'Comenzar mi encuesta',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -205,6 +297,50 @@ class _StatusContent extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MetricPill extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+
+  const _MetricPill({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEEF3FF),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 20, color: const Color(0xFF326FB6)),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontFamily: 'Fredoka',
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF22314D),
+            ),
+          ),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.fade,
+            softWrap: false,
+            style: const TextStyle(fontSize: 10, color: Color(0xFF58647A)),
+          ),
+        ],
       ),
     );
   }

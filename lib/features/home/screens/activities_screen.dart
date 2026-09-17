@@ -1,8 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:rest/core/services/progress_service.dart';
-import 'package:rest/features/progress/screens/activity_practice_screen.dart';
+import 'package:rest/features/progress/widgets/activity_completion_sheet.dart';
 
 class ActivitiesScreen extends StatefulWidget {
   const ActivitiesScreen({super.key});
@@ -48,18 +48,11 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
 
   Future<void> _complete(DailyActivity activity) async {
     if (_sending) return;
-    final result = await Navigator.of(context).push<ActivityPracticeResult>(
-      MaterialPageRoute(
-        builder: (_) => ActivityPracticeScreen(activity: activity),
-      ),
-    );
-    if (!mounted || result == null) return;
+    final completed = await showActivityCompletionSheet(context, activity);
+    if (!mounted || completed != true) return;
     setState(() => _sending = true);
     try {
-      await _progressService.completarActividadDiaria(
-        opcionId: activity.id,
-        observaciones: result.observations,
-      );
+      await _progressService.completarActividadDiaria(opcionId: activity.id);
       await _loadActivities();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -329,7 +322,10 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
         // Fecha de vencimiento fuera de la tarjeta
         Text(
           'Vence el:',
-          style: TextStyle(fontSize: 11.sp, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          style: TextStyle(
+            fontSize: 11.sp,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         Text(
           date,

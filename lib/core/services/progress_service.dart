@@ -183,16 +183,9 @@ class ProgressService {
     );
   }
 
-  Future<void> completarActividadDiaria({
-    required int opcionId,
-    String? observaciones,
-  }) async {
+  Future<void> completarActividadDiaria({required int opcionId}) async {
     final uri = Uri.parse('$_baseUrl/api/registro-actividades/diarias/asignar');
-    final body = jsonEncode({
-      'opcion_id': opcionId,
-      if (observaciones != null && observaciones.trim().isNotEmpty)
-        'observaciones': observaciones.trim(),
-    });
+    final body = jsonEncode({'opcion_id': opcionId});
 
     final response = await http.post(
       uri,

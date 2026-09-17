@@ -17,6 +17,8 @@ class OnboardingStatusScreen extends StatefulWidget {
 class _OnboardingStatusScreenState extends State<OnboardingStatusScreen> {
   final OnboardingService _service = OnboardingService();
   OnboardingStatus? _status;
+  int? _questionCount;
+  int? _dimensionCount;
   String? _error;
   bool _loading = true;
 
@@ -33,8 +35,28 @@ class _OnboardingStatusScreenState extends State<OnboardingStatusScreen> {
     });
     try {
       final status = await _service.getEstado();
+      int? questionCount;
+      int? dimensionCount;
+      if (!status.completado) {
+        try {
+          final survey = await _service.getPreguntas();
+          questionCount = survey.preguntas.length;
+          dimensionCount = survey.preguntas
+              .map((question) => question.categoria)
+              .where((category) => category.isNotEmpty)
+              .toSet()
+              .length;
+        } catch (_) {
+          // La pantalla de estado sigue disponible aunque aún no se puedan
+          // consultar las preguntas; la encuesta hará su propia carga.
+        }
+      }
       if (!mounted) return;
-      setState(() => _status = status);
+      setState(() {
+        _status = status;
+        _questionCount = questionCount;
+        _dimensionCount = dimensionCount;
+      });
     } catch (error) {
       if (!mounted) return;
       setState(() => _error = error.toString());
@@ -89,6 +111,8 @@ class _OnboardingStatusScreenState extends State<OnboardingStatusScreen> {
               )
             : _StatusContent(
                 completed: _status?.completado ?? false,
+                questionCount: _questionCount,
+                dimensionCount: _dimensionCount,
                 onStart: _startSurvey,
                 onContinue: () => _continueToApp(_status?.completado ?? false),
               ),
@@ -99,11 +123,15 @@ class _OnboardingStatusScreenState extends State<OnboardingStatusScreen> {
 
 class _StatusContent extends StatelessWidget {
   final bool completed;
+  final int? questionCount;
+  final int? dimensionCount;
   final VoidCallback onStart;
   final VoidCallback onContinue;
 
   const _StatusContent({
     required this.completed,
+    required this.questionCount,
+    required this.dimensionCount,
     required this.onStart,
     required this.onContinue,
   });
@@ -202,11 +230,11 @@ class _StatusContent extends StatelessWidget {
                 child: Column(
                   children: [
                     Row(
-                      children: const [
+                      children: [
                         Expanded(
                           child: _MetricPill(
                             icon: Icons.help_outline_rounded,
-                            value: '18',
+                            value: questionCount?.toString() ?? '—',
                             label: 'preguntas',
                           ),
                         ),
@@ -214,7 +242,7 @@ class _StatusContent extends StatelessWidget {
                         Expanded(
                           child: _MetricPill(
                             icon: Icons.hub_outlined,
-                            value: '7',
+                            value: dimensionCount?.toString() ?? '—',
                             label: 'dimensiones',
                           ),
                         ),

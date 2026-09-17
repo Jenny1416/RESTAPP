@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,9 +7,10 @@ import 'package:rest/core/services/user_session.dart';
 import 'package:rest/features/help/screens/help_screen.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, this.initialChatId});
+  const ChatScreen({super.key, this.initialChatId, this.readOnly = false});
 
   final int? initialChatId;
+  final bool readOnly;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -35,7 +36,6 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
-    UserSession.registerDailyCompletion();
     super.dispose();
   }
 
@@ -120,7 +120,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _sendMessage() async {
-    if (_sending) {
+    if (_sending || widget.readOnly) {
       return;
     }
 
@@ -350,7 +350,9 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             _buildHeader(colorScheme),
             _buildChatArea(colorScheme),
-            _buildInputArea(colorScheme),
+            widget.readOnly
+                ? _buildReadOnlyNotice(colorScheme)
+                : _buildInputArea(colorScheme),
           ],
         ),
       ),
@@ -434,9 +436,16 @@ class _ChatScreenState extends State<ChatScreen> {
               ],
             ),
           ),
-          // Balancea el ancho del avatar para que el titulo quede centrado
-          // en el espacio disponible, igual que en el diseno original.
-          SizedBox(width: avatarSize),
+          SizedBox(
+            width: avatarSize,
+            child: widget.readOnly
+                ? IconButton(
+                    tooltip: 'Volver',
+                    onPressed: () => Navigator.maybePop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  )
+                : null,
+          ),
         ],
       ),
     );
@@ -454,45 +463,78 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 60, left: 20, right: 20, bottom: 20),
+              padding: const EdgeInsets.only(
+                top: 60,
+                left: 20,
+                right: 20,
+                bottom: 20,
+              ),
               child: _loadingHistory
                   ? const Center(child: CircularProgressIndicator())
                   : ListView.builder(
                       controller: _scrollController,
                       itemCount: _messages.length,
-                      itemBuilder: (context, index) => ChatBubble(message: _messages[index]),
+                      itemBuilder: (context, index) =>
+                          ChatBubble(message: _messages[index]),
                     ),
             ),
-            Positioned(
-              top: 16,
-              right: 16,
-              child: GestureDetector(
-                onTap: _onStopChatPressed,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.pause, color: Colors.black, size: 18),
-                      SizedBox(width: 6.w),
-                      Text(
-                        'Detener',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Fredoka',
+            if (!widget.readOnly)
+              Positioned(
+                top: 16,
+                right: 16,
+                child: GestureDetector(
+                  onTap: _onStopChatPressed,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4CAF50),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.pause, color: Colors.black, size: 18),
+                        SizedBox(width: 6.w),
+                        Text(
+                          'Detener',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Fredoka',
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
+            if (widget.readOnly)
+              Positioned(
+                top: 16,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 9,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Text(
+                    'Historial',
+                    style: TextStyle(
+                      color: colorScheme.onSurfaceVariant,
+                      fontFamily: 'Fredoka',
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -517,7 +559,10 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(3),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(27),
@@ -562,13 +607,39 @@ class _ChatScreenState extends State<ChatScreen> {
                     border: Border.all(color: Colors.white, width: 3),
                   ),
                   child: const Center(
-                    child: Icon(Icons.arrow_forward, color: Colors.white, size: 22),
+                    child: Icon(
+                      Icons.arrow_forward,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyNotice(ColorScheme colorScheme) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Text(
+        'Esta sesión con NOA está finalizada y se muestra solo como historial.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: colorScheme.onSurfaceVariant,
+          fontFamily: 'Fredoka',
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

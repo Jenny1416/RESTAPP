@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:rest/core/services/chat_service.dart';
@@ -110,8 +110,10 @@ class _ConversacionesScreenState extends State<ConversacionesScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                ChatScreen(initialChatId: h.chatId),
+                            builder: (context) => ChatScreen(
+                              initialChatId: h.chatId,
+                              readOnly: !h.isActive,
+                            ),
                           ),
                         );
                       }),
@@ -193,7 +195,11 @@ class _ConversacionesScreenState extends State<ConversacionesScreen> {
                     color: Colors.black,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(Icons.forum_rounded, color: Colors.white, size: 24),
+                  child: Icon(
+                    Icons.forum_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
                 SizedBox(width: 16.w),
                 Expanded(

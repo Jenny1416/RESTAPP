@@ -141,7 +141,32 @@ class ChatService {
         : <String, dynamic>{};
 
     final historialRaw = data['historial'] as List? ?? const [];
-    return historialRaw.whereType<Map>().map((item) {
+    Set<int>? pureAiChatIds;
+    try {
+      final chatsResponse = await http.get(
+        Uri.parse('$_baseUrl/api/chats'),
+        headers: _headers(),
+      );
+      if (chatsResponse.statusCode >= 200 && chatsResponse.statusCode < 300) {
+        final chatsDecoded = jsonDecode(chatsResponse.body);
+        if (chatsDecoded is List) {
+          pureAiChatIds = chatsDecoded
+              .whereType<Map>()
+              .where((chat) {
+                final isAi =
+                    chat['isSendByAi'] == true || chat['is_send_by_ai'] == true;
+                return isAi && chat['psicologo_id'] == null;
+              })
+              .map((chat) => (chat['id'] as num?)?.toInt() ?? 0)
+              .where((id) => id > 0)
+              .toSet();
+        }
+      }
+    } catch (_) {
+      // El historial principal sigue siendo util si el filtro auxiliar falla.
+    }
+
+    final sessions = historialRaw.whereType<Map>().map((item) {
       final iniciadoRaw = (item['iniciado_en'] ?? '').toString();
       final ultimaRaw = (item['ultima_actividad'] ?? '').toString();
       return ChatSessionSummary(
@@ -152,7 +177,14 @@ class ChatService {
         totalMensajes: (item['total_mensajes'] as num?)?.toInt() ?? 0,
         preview: (item['preview'] ?? 'Conversacion con NOA').toString(),
       );
-    }).toList();
+    });
+
+    return sessions
+        .where(
+          (session) =>
+              pureAiChatIds == null || pureAiChatIds.contains(session.chatId),
+        )
+        .toList();
   }
 
   Future<List<ChatHistoryMessage>> fetchMensajesChat(int chatId) async {

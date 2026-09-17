@@ -213,10 +213,9 @@ class TrafficLightScreen extends StatelessWidget {
                         ),
                       ),
                       onPressed: () {
-                        // TODAS las rutas van a CheckScreen (Registro Guardado)
-                        if (estado == 'alerta-amarillo' ||
-                            estado == 'critico') {
-                          // Primero mostrar consejos, luego ir a registro guardado
+                        if (estado == 'critico') {
+                          Navigator.of(context).pushNamed(AppRoutes.help);
+                        } else if (estado == 'alerta-amarillo') {
                           Navigator.of(context).pushNamed(
                             AppRoutes.advice,
                             arguments: {
@@ -225,7 +224,6 @@ class TrafficLightScreen extends StatelessWidget {
                             },
                           );
                         } else {
-                          // Estados buenos van directo a registro guardado
                           Navigator.of(context).pushReplacementNamed(
                             AppRoutes.check,
                             arguments: {'promedioHoy': promedioHoy},

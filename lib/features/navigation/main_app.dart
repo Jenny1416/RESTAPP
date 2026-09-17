@@ -4,7 +4,7 @@ import '../home/screens/home_screen.dart';
 import '../progress/screens/progress_screen.dart';
 import '../progress/screens/myprogress_screen.dart';
 import '../progress/screens/streak_screen.dart';
-import '../help/screens/help_screen.dart';
+import '../professional_care/screens/professional_care_screen.dart';
 import 'package:rest/core/services/user_session.dart';
 
 class MainApp extends StatefulWidget {
@@ -20,6 +20,7 @@ class _MainAppState extends State<MainApp> {
   final List<Widget> _screens = [
     HomeScreen(),
     ProgressScreen(),
+    ProfessionalCareScreen(),
     MyProgressScreen(),
   ];
 
@@ -34,7 +35,8 @@ class _MainAppState extends State<MainApp> {
   Future<void> _checkStreak() async {
     await UserSession.load();
 
-    final shouldShow = UserSession.showStreakToday || !UserSession.streakGoalSet;
+    final shouldShow =
+        UserSession.showStreakToday || !UserSession.streakGoalSet;
     if (!shouldShow) return;
 
     // Limpiar flag antes de mostrar para que no vuelva a aparecer
@@ -61,19 +63,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      body: _screens[_currentIndex],
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'help_fab',
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => HelpScreen()),
-        ),
-        backgroundColor: const Color(0xFFD32F2F),
-        tooltip: 'Pedir ayuda profesional',
-        shape: const CircleBorder(),
-        child: Icon(Icons.phone, color: Colors.white, size: 28.sp),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
@@ -111,7 +101,8 @@ class CustomBottomNavBar extends StatelessWidget {
         children: [
           _buildItem(Icons.home, 0, context),
           _buildItem(Icons.pie_chart, 1, context),
-          _buildItem(Icons.person, 2, context),
+          _buildItem(Icons.volunteer_activism_rounded, 2, context),
+          _buildItem(Icons.person, 3, context),
         ],
       ),
     );
@@ -127,7 +118,9 @@ class CustomBottomNavBar extends StatelessWidget {
         width: 60.w,
         height: 50.h,
         decoration: BoxDecoration(
-          color: isActive ? Colors.white.withValues(alpha: 0.9) : Colors.transparent,
+          color: isActive
+              ? Colors.white.withValues(alpha: 0.9)
+              : Colors.transparent,
           shape: BoxShape.circle,
         ),
         child: Icon(

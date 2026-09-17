@@ -1,4 +1,4 @@
-﻿// emotionregister_screen.dart (Preguntas de evaluación emocional)
+// emotionregister_screen.dart (Preguntas de evaluación emocional)
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/routes/app_routes.dart';
@@ -112,23 +112,25 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      
+
       if (e.toString().contains('CONFLICT_ERROR')) {
         // El test de hoy ya fue completado
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ya has completado el test emocional de hoy.')),
+          const SnackBar(
+            content: Text('Ya has completado el test emocional de hoy.'),
+          ),
         );
         UserSession.lastTestDate = DateTime.now();
         await UserSession.persist();
-        
+
         // Redirigir a MainApp
         if (mounted) {
           Navigator.pushReplacementNamed(context, AppRoutes.mainApp);
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) {
@@ -331,6 +333,7 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                 if (id == null) return const SizedBox.shrink();
                 final String textoPregunta = (q['texto'] ?? q['pregunta'] ?? '')
                     .toString();
+                final String categoria = (q['categoria'] ?? '').toString();
                 final List<dynamic> opciones = (q['opciones'] is List)
                     ? q['opciones'] as List
                     : const [];
@@ -340,6 +343,28 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (categoria.isNotEmpty) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF5CCFC0,
+                            ).withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            _dimensionLabel(categoria),
+                            style: const TextStyle(
+                              color: Color(0xFF167E76),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                      ],
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
@@ -476,5 +501,18 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
         ),
       ],
     );
+  }
+
+  String _dimensionLabel(String value) {
+    const labels = {
+      'ansiedad': 'Ansiedad',
+      'estres_academico': 'Estrés académico',
+      'humor_depresivo': 'Estado de ánimo',
+      'sueno': 'Sueño',
+      'relaciones_sociales': 'Relaciones sociales',
+      'autoestima_autocuidado': 'Autoestima y autocuidado',
+      'energia_motivacion': 'Energía y motivación',
+    };
+    return labels[value] ?? value.replaceAll('_', ' ');
   }
 }

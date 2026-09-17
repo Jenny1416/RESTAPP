@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../settings/screens/settings_screen.dart';
 import 'activities_screen.dart';
@@ -6,8 +6,11 @@ import 'package:rest/features/emotion/screens/chat_screen.dart';
 import 'conversations_screen.dart';
 import 'package:rest/core/services/user_session.dart';
 import 'package:rest/core/widgets/app_header_bar.dart';
+import 'package:rest/features/onboarding/widgets/onboarding_reminder_card.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MainScreen();
@@ -15,6 +18,8 @@ class HomeScreen extends StatelessWidget {
 }
 
 class MainScreen extends StatelessWidget {
+  const MainScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -42,12 +47,19 @@ class MainScreen extends StatelessWidget {
             ),
             SizedBox(height: 20.h),
 
-            _ChatCard(onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ChatScreen()),
-              );
-            }),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              child: const OnboardingReminderCard(),
+            ),
+
+            _ChatCard(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ChatScreen()),
+                );
+              },
+            ),
 
             SizedBox(height: 20.h),
 
@@ -84,7 +96,11 @@ class MainScreen extends StatelessWidget {
                     },
                     child: Text(
                       'Ver todas',
-                      style: TextStyle(fontSize: 16.sp, color: Color(0xFF2E86AB), fontFamily: 'Fredoka'),
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        color: Color(0xFF2E86AB),
+                        fontFamily: 'Fredoka',
+                      ),
                     ),
                   ),
                 ],
@@ -113,7 +129,10 @@ class MainScreen extends StatelessWidget {
                         padding: EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: colorScheme.surfaceContainerLow,
-                          border: Border.all(color: colorScheme.outlineVariant, width: 0.5),
+                          border: Border.all(
+                            color: colorScheme.outlineVariant,
+                            width: 0.5,
+                          ),
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Column(
@@ -166,7 +185,10 @@ class MainScreen extends StatelessWidget {
                         padding: EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: colorScheme.surfaceContainerLow,
-                          border: Border.all(color: colorScheme.outlineVariant, width: 0.5),
+                          border: Border.all(
+                            color: colorScheme.outlineVariant,
+                            width: 0.5,
+                          ),
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Column(
@@ -222,9 +244,13 @@ class _ChatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? const Color(0xFF1E3A4A) : const Color(0xFF87CEEB);
+    final cardColor = isDark
+        ? const Color(0xFF1E3A4A)
+        : const Color(0xFF87CEEB);
     final iconBg = isDark ? const Color(0xFF2E5568) : Colors.white;
-    final iconColor = isDark ? const Color(0xFF90CAF9) : const Color(0xFF4A9DC5);
+    final iconColor = isDark
+        ? const Color(0xFF90CAF9)
+        : const Color(0xFF4A9DC5);
     final titleColor = isDark ? const Color(0xFF90CAF9) : Colors.white;
     final subtitleColor = isDark ? const Color(0xFF64B5F6) : Colors.white70;
     final shadowColor = isDark
@@ -241,7 +267,11 @@ class _ChatCard extends StatelessWidget {
           color: cardColor,
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
-            BoxShadow(color: shadowColor, blurRadius: 12, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: shadowColor,
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Row(
@@ -282,7 +312,11 @@ class _ChatCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
-              child: Icon(Icons.arrow_forward_rounded, color: iconColor, size: 22),
+              child: Icon(
+                Icons.arrow_forward_rounded,
+                color: iconColor,
+                size: 22,
+              ),
             ),
           ],
         ),

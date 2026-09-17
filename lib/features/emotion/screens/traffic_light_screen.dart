@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/routes/app_routes.dart';
 import '../../../core/services/user_session.dart';
+import '../../evaluations/widgets/latest_dimensions_card.dart';
 import '../utils/emotion_state_config.dart';
 
 class TrafficLightScreen extends StatelessWidget {
@@ -179,6 +180,9 @@ class TrafficLightScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 24.h),
                   ],
+
+                  const LatestDimensionsCard(),
+                  SizedBox(height: 24.h),
 
                   // Botón de acción
                   Container(

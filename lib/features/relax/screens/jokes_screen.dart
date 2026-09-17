@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'dart:math';
+
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class JokesScreen extends StatefulWidget {
@@ -9,6 +11,7 @@ class JokesScreen extends StatefulWidget {
 }
 
 class _JokesScreenState extends State<JokesScreen> {
+  final Random _random = Random();
   int _currentJoke = 0;
   bool _showPunchline = false;
 
@@ -31,22 +34,46 @@ class _JokesScreenState extends State<JokesScreen> {
     },
     {
       'setup': '¿Por qué las ovejas no se pierden en la nieve?',
-      'punchline': '¡Porque tienen GPS (Gps Pastadas)',
+      'punchline': '¡Porque tienen GPS: guía para ovejas pastadas!',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _currentJoke = _random.nextInt(jokes.length);
+  }
+
+  void _showAnotherJoke() {
+    if (jokes.length < 2) return;
+
+    var next = _currentJoke;
+    while (next == _currentJoke) {
+      next = _random.nextInt(jokes.length);
+    }
+
+    setState(() {
+      _currentJoke = next;
+      _showPunchline = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     // Colores basados en HomeScreen
-    final cardColor = isDark ? const Color(0xFF1E3A4A) : const Color(0xFF87CEEB);
-    final shadowColor = isDark 
-        ? Colors.black.withValues(alpha: 0.3) 
+    final cardColor = isDark
+        ? const Color(0xFF1E3A4A)
+        : const Color(0xFF87CEEB);
+    final shadowColor = isDark
+        ? Colors.black.withValues(alpha: 0.3)
         : const Color(0xFF87CEEB).withValues(alpha: 0.4);
     final onCardColor = isDark ? const Color(0xFF90CAF9) : Colors.white;
-    final secondaryTextColor = isDark ? const Color(0xFF64B5F6) : Colors.white70;
+    final secondaryTextColor = isDark
+        ? const Color(0xFF64B5F6)
+        : Colors.white70;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -117,7 +144,10 @@ class _JokesScreenState extends State<JokesScreen> {
                       SizedBox(height: 30.h),
                       if (_showPunchline)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(15),
@@ -148,122 +178,23 @@ class _JokesScreenState extends State<JokesScreen> {
                 ),
               ),
               SizedBox(height: 40.h),
-              // Botones de navegación
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _NavigationButton(
-                    onPressed: _currentJoke > 0
-                        ? () => setState(() {
-                            _currentJoke--;
-                            _showPunchline = false;
-                          })
-                        : null,
-                    icon: Icons.arrow_back_rounded,
-                    label: 'Anterior',
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: colorScheme.outlineVariant),
-                    ),
-                    child: Text(
-                      '${_currentJoke + 1} / ${jokes.length}',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.primary,
-                        fontFamily: 'Fredoka',
-                      ),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _showAnotherJoke,
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('Otro chiste'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    textStyle: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Fredoka',
                     ),
                   ),
-                  _NavigationButton(
-                    onPressed: _currentJoke < jokes.length - 1
-                        ? () => setState(() {
-                            _currentJoke++;
-                            _showPunchline = false;
-                          })
-                        : null,
-                    icon: Icons.arrow_forward_rounded,
-                    label: 'Siguiente',
-                    isRight: true,
-                  ),
-                ],
+                ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavigationButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final IconData icon;
-  final String label;
-  final bool isRight;
-
-  const _NavigationButton({
-    required this.onPressed,
-    required this.icon,
-    required this.label,
-    this.isRight = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isEnabled = onPressed != null;
-
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(20),
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 200),
-        opacity: isEnabled ? 1.0 : 0.3,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: isEnabled ? colorScheme.primary : colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: isEnabled ? [
-              BoxShadow(
-                color: colorScheme.primary.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              )
-            ] : null,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: isRight
-                ? [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Fredoka',
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    Icon(icon, color: Colors.white, size: 20),
-                  ]
-                : [
-                    Icon(icon, color: Colors.white, size: 20),
-                    SizedBox(width: 8.w),
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Fredoka',
-                      ),
-                    ),
-                  ],
           ),
         ),
       ),

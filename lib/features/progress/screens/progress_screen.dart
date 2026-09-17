@@ -7,6 +7,7 @@ import 'package:rest/core/services/progress_service.dart';
 import 'package:rest/core/services/user_session.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rest/features/progress/screens/emotional_calendar_screen.dart';
+import 'package:rest/features/progress/screens/activity_practice_screen.dart';
 import 'package:rest/features/progress/screens/streak_screen.dart';
 import 'package:rest/features/relax/screens/jokes_screen.dart';
 import 'package:rest/features/relax/screens/music_screen.dart';
@@ -330,10 +331,19 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   Future<void> _completeActivity(DailyActivity activity) async {
     if (_sendingActivityId != null) return;
+    final result = await Navigator.of(context).push<ActivityPracticeResult>(
+      MaterialPageRoute(
+        builder: (_) => ActivityPracticeScreen(activity: activity),
+      ),
+    );
+    if (!mounted || result == null) return;
     setState(() => _sendingActivityId = activity.id);
 
     try {
-      await _progressService.completarActividadDiaria(opcionId: activity.id);
+      await _progressService.completarActividadDiaria(
+        opcionId: activity.id,
+        observaciones: result.observations,
+      );
       await Future.wait([_loadDailyActivities(), _loadRewardsCatalog()]);
       if (!mounted) return;
       AppToast.success(context, 'Actividad completada: ${activity.nombre}');
@@ -919,7 +929,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      '$estrellasHoy de $metaDiaria completadas hoy. Objetivo: 5 actividades por dia.',
+                      '$estrellasHoy de $metaDiaria completadas hoy. Objetivo: $metaDiaria actividades por día.',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: colorScheme.onSurfaceVariant,
@@ -1414,7 +1424,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       ),
                     )
                   : const Icon(Icons.star_rounded, size: 18),
-              label: Text(isSendingThisItem ? 'Completando...' : 'Completar'),
+              label: Text(isSendingThisItem ? 'Guardando...' : 'Realizar'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF26A69A),
                 foregroundColor: Colors.white,

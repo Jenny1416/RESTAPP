@@ -2,6 +2,7 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:rest/core/services/progress_service.dart';
+import 'package:rest/features/progress/screens/activity_practice_screen.dart';
 
 class ActivitiesScreen extends StatefulWidget {
   const ActivitiesScreen({super.key});
@@ -47,9 +48,18 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
 
   Future<void> _complete(DailyActivity activity) async {
     if (_sending) return;
+    final result = await Navigator.of(context).push<ActivityPracticeResult>(
+      MaterialPageRoute(
+        builder: (_) => ActivityPracticeScreen(activity: activity),
+      ),
+    );
+    if (!mounted || result == null) return;
     setState(() => _sending = true);
     try {
-      await _progressService.completarActividadDiaria(opcionId: activity.id);
+      await _progressService.completarActividadDiaria(
+        opcionId: activity.id,
+        observaciones: result.observations,
+      );
       await _loadActivities();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -309,7 +319,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                     foregroundColor: Colors.white,
                     textStyle: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  child: Text(completed ? 'Completada' : 'Completar'),
+                  child: Text(completed ? 'Completada' : 'Realizar'),
                 ),
               ),
             ],

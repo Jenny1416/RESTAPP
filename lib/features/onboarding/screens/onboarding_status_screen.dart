@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../models/onboarding_models.dart';
 import '../services/onboarding_service.dart';
+import '../widgets/onboarding_visuals.dart';
 import 'onboarding_survey_screen.dart';
 
 class OnboardingStatusScreen extends StatefulWidget {
@@ -48,8 +51,7 @@ class _OnboardingStatusScreenState extends State<OnboardingStatusScreen> {
               .toSet()
               .length;
         } catch (_) {
-          // La pantalla conserva el acceso a la encuesta, que hará su propia
-          // carga, aunque no se pueda mostrar el conteo todavía.
+          // La encuesta hará su propia carga si el resumen no está disponible.
         }
       }
 
@@ -89,35 +91,30 @@ class _OnboardingStatusScreenState extends State<OnboardingStatusScreen> {
   @override
   Widget build(BuildContext context) {
     final completed = _status?.completado ?? false;
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FF),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: widget.destinationBuilder == null,
-        title: const Text(
-          'Estado del onboarding',
-          style: TextStyle(fontFamily: 'Fredoka', fontWeight: FontWeight.w600),
+      backgroundColor: colors.surface,
+      body: OnboardingBackdrop(
+        child: SafeArea(
+          child: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
+              ? _OnboardingError(
+                  message: _error!,
+                  onRetry: _load,
+                  onContinue: () => _continueToApp(false),
+                )
+              : _OnboardingContent(
+                  completed: completed,
+                  questionCount: _questionCount,
+                  dimensionCount: _dimensionCount,
+                  canGoBack: widget.destinationBuilder == null,
+                  onBack: () => Navigator.of(context).maybePop(),
+                  onStart: _startSurvey,
+                  onContinue: () => _continueToApp(completed),
+                ),
         ),
-      ),
-      body: SafeArea(
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : _error != null
-            ? _OnboardingError(
-                message: _error!,
-                onRetry: _load,
-                onContinue: () => _continueToApp(false),
-              )
-            : _OnboardingContent(
-                completed: completed,
-                questionCount: _questionCount,
-                dimensionCount: _dimensionCount,
-                onStart: _startSurvey,
-                onContinue: () => _continueToApp(completed),
-              ),
       ),
     );
   }
@@ -128,6 +125,8 @@ class _OnboardingContent extends StatelessWidget {
     required this.completed,
     required this.questionCount,
     required this.dimensionCount,
+    required this.canGoBack,
+    required this.onBack,
     required this.onStart,
     required this.onContinue,
   });
@@ -135,99 +134,159 @@ class _OnboardingContent extends StatelessWidget {
   final bool completed;
   final int? questionCount;
   final int? dimensionCount;
+  final bool canGoBack;
+  final VoidCallback onBack;
   final VoidCallback onStart;
   final VoidCallback onContinue;
 
   @override
   Widget build(BuildContext context) {
-    final countDescription = questionCount == null
-        ? 'Es una encuesta breve para conocer mejor tu bienestar.'
-        : 'Son $questionCount preguntas breves${dimensionCount == null ? '' : ' sobre $dimensionCount dimensiones'} de bienestar.';
+    final colors = Theme.of(context).colorScheme;
+    final title = completed
+        ? '¡Tu perfil de bienestar está listo!'
+        : 'Conozcámonos un poco mejor';
+    final description = completed
+        ? 'NOA ya puede acompañarte con un contexto más cercano a cómo te sientes.'
+        : 'Esta encuesta inicial ayudará a NOA a personalizar tu experiencia desde el primer día.';
 
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(26, 24, 26, 32),
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 440),
+          constraints: const BoxConstraints(maxWidth: 520),
           child: Column(
             children: [
-              const SizedBox(height: 48),
-              Container(
-                width: 118,
-                height: 118,
-                decoration: BoxDecoration(
-                  color: completed
-                      ? const Color(0xFFE0F6EB)
-                      : const Color(0xFFE2ECFF),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  completed
-                      ? Icons.task_alt_rounded
-                      : Icons.assignment_outlined,
-                  size: 58,
-                  color: completed
-                      ? const Color(0xFF248458)
-                      : const Color(0xFF3475D1),
-                ),
-              ),
-              const SizedBox(height: 34),
-              Text(
-                completed
-                    ? 'Tu onboarding está completo'
-                    : 'Tu onboarding está pendiente',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontFamily: 'Fredoka',
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF20242D),
-                  height: 1.28,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                completed
-                    ? 'Tu información inicial ya está lista para personalizar la experiencia con NOA.'
-                    : '$countDescription Tus respuestas mejoran el contexto de NOA y no constituyen un diagnóstico.',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  height: 1.55,
-                  color: Color(0xFF4C5260),
-                ),
-              ),
-              if (!completed) ...[
-                const SizedBox(height: 28),
-                const _ReminderNote(),
-              ],
-              const SizedBox(height: 34),
-              SizedBox(
-                width: double.infinity,
-                height: 60,
-                child: FilledButton.icon(
-                  onPressed: completed ? onContinue : onStart,
-                  icon: const Icon(Icons.arrow_forward_rounded),
-                  label: Text(
-                    completed ? 'Continuar a la app' : 'Comenzar encuesta',
-                    style: const TextStyle(
-                      fontFamily: 'Fredoka',
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+              Row(
+                children: [
+                  if (canGoBack)
+                    _HeaderButton(
+                      icon: Icons.arrow_back_ios_new_rounded,
+                      onTap: onBack,
+                    )
+                  else
+                    SizedBox(width: 42.w),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          'TU BIENESTAR',
+                          style: GoogleFonts.fredoka(
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.6,
+                            color: onboardingPurple,
+                          ),
+                        ),
+                        Text(
+                          completed ? 'Todo preparado' : 'Encuesta inicial',
+                          style: GoogleFonts.fredoka(
+                            fontSize: 21.sp,
+                            fontWeight: FontWeight.bold,
+                            color: colors.onSurface,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF326FA3),
-                    foregroundColor: Colors.white,
-                    shape: const StadiumBorder(),
+                  SizedBox(width: 42.w),
+                ],
+              ),
+              SizedBox(height: 22.h),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(22.w, 24.h, 22.w, 22.h),
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(28.r),
+                  border: Border.all(
+                    color: onboardingPurple.withValues(alpha: 0.12),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: onboardingPurple.withValues(alpha: 0.1),
+                      blurRadius: 28,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    OnboardingNoaBadge(completed: completed),
+                    SizedBox(height: 22.h),
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.fredoka(
+                        fontSize: 27.sp,
+                        fontWeight: FontWeight.bold,
+                        height: 1.15,
+                        color: colors.onSurface,
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+                    Text(
+                      description,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.fredoka(
+                        fontSize: 14.sp,
+                        height: 1.45,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                    if (!completed) ...[
+                      SizedBox(height: 20.h),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _Metric(
+                              icon: Icons.quiz_outlined,
+                              value: questionCount?.toString() ?? '—',
+                              label: 'preguntas',
+                              color: onboardingPurple,
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: _Metric(
+                              icon: Icons.bubble_chart_outlined,
+                              value: dimensionCount?.toString() ?? '—',
+                              label: 'dimensiones',
+                              color: onboardingBlue,
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                          const Expanded(
+                            child: _Metric(
+                              icon: Icons.schedule_rounded,
+                              value: 'A tu',
+                              label: 'ritmo',
+                              color: Color(0xFF8C4EFF),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 18.h),
+                      const _PrivacyNote(),
+                    ],
+                  ],
                 ),
               ),
+              SizedBox(height: 22.h),
+              OnboardingPrimaryButton(
+                label: completed ? 'Continuar a la app' : 'Comenzar encuesta',
+                onPressed: completed ? onContinue : onStart,
+              ),
               if (!completed) ...[
-                const SizedBox(height: 10),
+                SizedBox(height: 8.h),
                 TextButton(
                   onPressed: onContinue,
-                  child: const Text('Ahora no, continuar a la app'),
+                  child: Text(
+                    'Ahora no, continuar a la app',
+                    style: GoogleFonts.fredoka(
+                      color: onboardingBlue,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
             ],
@@ -238,27 +297,122 @@ class _OnboardingContent extends StatelessWidget {
   }
 }
 
-class _ReminderNote extends StatelessWidget {
-  const _ReminderNote();
+class _HeaderButton extends StatelessWidget {
+  const _HeaderButton({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(13.r),
+      child: Ink(
+        width: 42.w,
+        height: 42.w,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(13.r),
+          border: Border.all(color: onboardingPurple.withValues(alpha: 0.14)),
+        ),
+        child: Icon(icon, color: onboardingPurple, size: 18),
+      ),
+    );
+  }
+}
+
+class _Metric extends StatelessWidget {
+  const _Metric({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 11.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 21.sp),
+          SizedBox(height: 5.h),
+          Text(
+            value,
+            maxLines: 1,
+            style: GoogleFonts.fredoka(
+              color: colorsForText(context),
+              fontWeight: FontWeight.bold,
+              fontSize: 14.sp,
+            ),
+          ),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.fade,
+            softWrap: false,
+            style: GoogleFonts.fredoka(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 10.sp,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color colorsForText(BuildContext context) {
+    return Theme.of(context).colorScheme.onSurface;
+  }
+}
+
+class _PrivacyNote extends StatelessWidget {
+  const _PrivacyNote();
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF2D7),
-        borderRadius: BorderRadius.circular(18),
+        color: const Color(0xFFFFF4DC),
+        borderRadius: BorderRadius.circular(17.r),
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.notifications_none_rounded, color: Color(0xFFB56700)),
-          SizedBox(width: 12),
+          Container(
+            width: 34.w,
+            height: 34.w,
+            decoration: const BoxDecoration(
+              color: Color(0xFFFFE7B5),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.shield_outlined,
+              size: 19,
+              color: Color(0xFFB76A00),
+            ),
+          ),
+          SizedBox(width: 11.w),
           Expanded(
             child: Text(
-              'Puedes hacerlo ahora o continuarlo después desde el recordatorio de Inicio.',
-              style: TextStyle(color: Color(0xFF764900), height: 1.4),
+              'No es un diagnóstico. Puedes pausarla y retomarla después desde Inicio.',
+              style: GoogleFonts.fredoka(
+                fontSize: 12.sp,
+                height: 1.35,
+                color: const Color(0xFF704300),
+              ),
             ),
           ),
         ],
@@ -280,27 +434,40 @@ class _OnboardingError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.cloud_off_rounded, size: 54),
-            const SizedBox(height: 16),
-            const Text(
-              'No pudimos consultar el onboarding',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 20),
-            FilledButton(onPressed: onRetry, child: const Text('Reintentar')),
-            TextButton(
-              onPressed: onContinue,
-              child: const Text('Continuar sin bloquear la app'),
-            ),
-          ],
+        padding: EdgeInsets.all(24.w),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 430),
+          padding: EdgeInsets.all(24.w),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(24.r),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const OnboardingNoaBadge(size: 100),
+              SizedBox(height: 16.h),
+              Text(
+                'No pudimos consultar el onboarding',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.fredoka(
+                  fontSize: 21.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(message, textAlign: TextAlign.center),
+              SizedBox(height: 20.h),
+              OnboardingPrimaryButton(label: 'Reintentar', onPressed: onRetry),
+              TextButton(
+                onPressed: onContinue,
+                child: const Text('Continuar sin bloquear la app'),
+              ),
+            ],
+          ),
         ),
       ),
     );

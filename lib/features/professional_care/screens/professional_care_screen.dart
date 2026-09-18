@@ -208,34 +208,48 @@ class _ProfessionalCareScreenState extends State<ProfessionalCareScreen> {
             ),
           ],
           SizedBox(height: 20.h),
-          Container(
-            padding: EdgeInsets.all(15.w),
-            decoration: BoxDecoration(
-              color: colors.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(18.r),
-              border: Border.all(color: colors.outlineVariant),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.lock_outline_rounded,
-                  color: colors.onSurfaceVariant,
+          if (approved != null && assignedPsychologist != null)
+            _ActionCard(
+              icon: Icons.chat_bubble_rounded,
+              color: careTeal,
+              title: 'Chatear con tu psicólogo',
+              subtitle: 'Conversación habilitada, escribe cuando quieras',
+              onTap: () => _open(
+                ProfessionalChatScreen(
+                  psychologist: assignedPsychologist,
+                  assignmentApproved: true,
                 ),
-                SizedBox(width: 10.w),
-                Expanded(
-                  child: Text(
-                    'Tu chat profesional es privado y solo se habilita después de que un psicólogo apruebe tu solicitud.',
-                    style: TextStyle(
-                      fontFamily: 'Fredoka',
-                      height: 1.35,
-                      color: colors.onSurfaceVariant,
+              ),
+            )
+          else
+            Container(
+              padding: EdgeInsets.all(15.w),
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(18.r),
+                border: Border.all(color: colors.outlineVariant),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.lock_outline_rounded,
+                    color: colors.onSurfaceVariant,
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      'Tu chat profesional es privado y solo se habilita después de que un psicólogo apruebe tu solicitud.',
+                      style: TextStyle(
+                        fontFamily: 'Fredoka',
+                        height: 1.35,
+                        color: colors.onSurfaceVariant,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

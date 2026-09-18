@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:rest/core/services/user_session.dart';
 import 'package:rest/core/utils/app_toast.dart';
 import 'package:rest/features/professional_care/models/professional_care_models.dart';
+import 'package:rest/features/professional_care/services/chat_socket_service.dart';
 import 'package:rest/features/professional_care/services/professional_care_service.dart';
 import 'package:rest/features/professional_care/widgets/professional_widgets.dart';
 
@@ -29,6 +30,7 @@ class ProfessionalChatScreen extends StatefulWidget {
 
 class _ProfessionalChatScreenState extends State<ProfessionalChatScreen> {
   final _service = ProfessionalCareService();
+  final _socketService = ChatSocketService();
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
 
@@ -53,6 +55,7 @@ class _ProfessionalChatScreenState extends State<ProfessionalChatScreen> {
   @override
   void dispose() {
     _poller?.cancel();
+    _socketService.disconnect();
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -81,8 +84,9 @@ class _ProfessionalChatScreenState extends State<ProfessionalChatScreen> {
       });
       _scrollToBottom();
       if (_canWrite) {
+        _connectSocket(chat.id);
         _poller = Timer.periodic(
-          const Duration(seconds: 5),
+          const Duration(seconds: 20),
           (_) => _refreshMessages(silent: true),
         );
       }
@@ -117,6 +121,31 @@ class _ProfessionalChatScreenState extends State<ProfessionalChatScreen> {
     }
   }
 
+  void _connectSocket(int chatId) {
+    _socketService.connect(
+      chatId: chatId,
+      onNewMessage: _onSocketMessage,
+      onJoined: () => _refreshMessages(silent: true),
+      onError: (message) {
+        if (!mounted) return;
+        AppToast.error(context, message);
+      },
+    );
+  }
+
+  void _onSocketMessage(Map<String, dynamic> payload) {
+    if (!mounted) return;
+    final message = ProfessionalMessage.fromJson({
+      'id': payload['id'],
+      'usuario_id': payload['userId'],
+      'mensaje': payload['mensaje'],
+      'enviado_en': payload['enviado_en'],
+    });
+    if (message.id <= 0 || _messages.any((m) => m.id == message.id)) return;
+    setState(() => _messages = [..._messages, message]);
+    _scrollToBottom();
+  }
+
   Future<void> _send() async {
     final chat = _chat;
     final text = _controller.text.trim();
@@ -124,18 +153,22 @@ class _ProfessionalChatScreenState extends State<ProfessionalChatScreen> {
 
     setState(() => _sending = true);
     _controller.clear();
-    try {
-      final message = await _service.sendMessage(chat.id, text);
-      if (!mounted) return;
-      setState(() => _messages = [..._messages, message]);
-      _scrollToBottom();
-    } on ProfessionalCareException catch (error) {
-      if (!mounted) return;
-      _controller.text = text;
-      AppToast.error(context, error.message);
-    } finally {
-      if (mounted) setState(() => _sending = false);
+
+    final sentViaSocket =
+        _socketService.sendMessage(chatId: chat.id, mensaje: text);
+    if (!sentViaSocket) {
+      try {
+        final message = await _service.sendMessage(chat.id, text);
+        if (!mounted) return;
+        setState(() => _messages = [..._messages, message]);
+        _scrollToBottom();
+      } on ProfessionalCareException catch (error) {
+        if (!mounted) return;
+        _controller.text = text;
+        AppToast.error(context, error.message);
+      }
     }
+    if (mounted) setState(() => _sending = false);
   }
 
   void _scrollToBottom() {

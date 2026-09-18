@@ -110,10 +110,16 @@ class ProfessionalCareService {
   }
 
   Future<List<ProfessionalChat>> getChats() async {
-    final response = await _client.get(
-      Uri.parse('$_baseUrl/api/chats'),
-      headers: _headers(),
-    );
+    final results = await Future.wait([
+      _client.get(Uri.parse('$_baseUrl/api/chats'), headers: _headers()),
+      getMyAssignments(),
+    ]);
+    final response = results[0] as http.Response;
+    final approvedPsychologists = (results[1] as List<CareAssignment>)
+        .where((assignment) => assignment.isApproved)
+        .map((assignment) => assignment.psychologistId)
+        .whereType<int>()
+        .toSet();
     final decoded = _decode(response);
     final list = decoded is List ? decoded : const [];
     return list
@@ -121,11 +127,28 @@ class ProfessionalCareService {
         .map(
           (item) => ProfessionalChat.fromJson(Map<String, dynamic>.from(item)),
         )
-        .where((chat) => chat.id > 0 && chat.psychologistId != null)
+        .where(
+          (chat) =>
+              chat.id > 0 &&
+              chat.psychologistId != null &&
+              approvedPsychologists.contains(chat.psychologistId),
+        )
         .toList();
   }
 
   Future<ProfessionalChat> getOrCreateActiveChat(int psychologistId) async {
+    final assignments = await getMyAssignments();
+    final approved = assignments.any(
+      (assignment) =>
+          assignment.psychologistId == psychologistId && assignment.isApproved,
+    );
+    if (!approved) {
+      throw const ProfessionalCareException(
+        'El chat se habilita cuando el psicologo acepta tu solicitud.',
+        statusCode: 403,
+      );
+    }
+
     final chats = await getChats();
     for (final chat in chats) {
       if (chat.psychologistId == psychologistId &&

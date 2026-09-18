@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:rest/core/routes/app_routes.dart';
 import 'package:rest/core/services/diary_service.dart';
+import 'mi_diario_screen.dart';
 
 class MisCapitulosScreen extends StatefulWidget {
   const MisCapitulosScreen({super.key});
@@ -58,6 +59,18 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: colorScheme.surface,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final changed = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(builder: (_) => const MiDiarioScreen()),
+          );
+          if (changed == true) _loadEntries();
+        },
+        backgroundColor: const Color(0xFF4CAF50),
+        icon: const Icon(Icons.add),
+        label: const Text('Crear diario nuevo'),
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -198,9 +211,7 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
                           final capitulo = _entries[index];
                           return _buildCapituloCard(
                             context,
-                            capitulo.titulo,
-                            capitulo.contenido,
-                            DateFormat('dd/MM/yyyy').format(capitulo.fecha),
+                            capitulo,
                             gradient,
                           );
                         },
@@ -215,22 +226,15 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
 
   Widget _buildCapituloCard(
     BuildContext context,
-    String titulo,
-    String descripcion,
-    String fecha,
+    DiaryEntry entry,
     RadialGradient gradient,
   ) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(
+        Navigator.push(
           context,
-          AppRoutes.capituloDetalle,
-          arguments: {
-            'titulo': titulo,
-            'descripcion': descripcion,
-            'fecha': fecha,
-          },
-        );
+          MaterialPageRoute(builder: (_) => MiDiarioScreen(entry: entry)),
+        ).then((changed) { if (changed == true) _loadEntries(); });
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -257,7 +261,7 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
             children: [
               // title
               Text(
-                titulo,
+              entry.titulo,
                 style: GoogleFonts.fredoka(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
@@ -268,7 +272,7 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
 
               // descrip
               Text(
-                descripcion,
+              entry.contenido,
                 style: GoogleFonts.fredoka(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
@@ -283,7 +287,7 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
 
               // date
               Text(
-                fecha,
+              DateFormat('dd/MM/yyyy').format(entry.fecha),
                 style: GoogleFonts.fredoka(
                   fontSize: 12.sp,
                   color: Theme.of(context).colorScheme.onSurface,

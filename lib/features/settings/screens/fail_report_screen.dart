@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../home/screens/gradient_text.dart';
+import 'package:rest/core/services/settings_service.dart';
 
 class FailReportScreen extends StatefulWidget {
   @override
@@ -258,16 +259,21 @@ class _FailReportScreenState extends State<FailReportScreen> {
     );
   }
 
-  void _sendReport() {
+  Future<void> _sendReport() async {
     if (_titleController.text.trim().isEmpty || _descriptionController.text.trim().isEmpty) {
       _showErrorDialog('Por favor, completa todos los campos');
       return;
     }
 
-    // Aquí puedes agregar la lógica para enviar el reporte
-    // Por ejemplo, enviar a un servidor o guardar localmente
-
-    _showSuccessDialog();
+    try {
+      await SettingsService().report(
+        titulo: _titleController.text.trim(),
+        descripcion: _descriptionController.text.trim(),
+      );
+      if (mounted) _showSuccessDialog();
+    } catch (e) {
+      if (mounted) _showErrorDialog(e.toString().replaceFirst('Exception: ', ''));
+    }
   }
 
   void _showErrorDialog(String message) {

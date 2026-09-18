@@ -292,6 +292,14 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
     try {
       final result = await _personalService.activarRachaDiaria();
       if (!mounted) return;
+      if (!result.activada) {
+        await _loadDailyStarState();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.mensaje)),
+        );
+        return;
+      }
       setState(() {
         _starClaimedToday = true;
         _canClaimStarToday = false;

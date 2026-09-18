@@ -4,6 +4,7 @@ import 'package:rest/core/routes/app_routes.dart';
 import '../../../core/services/user_session.dart';
 import '../../evaluations/widgets/latest_dimensions_card.dart';
 import '../utils/emotion_state_config.dart';
+import 'package:rest/features/professional_care/screens/psychologist_directory_screen.dart';
 
 class TrafficLightScreen extends StatelessWidget {
   final String estado;
@@ -214,7 +215,11 @@ class TrafficLightScreen extends StatelessWidget {
                       ),
                       onPressed: () {
                         if (estado == 'critico') {
-                          Navigator.of(context).pushNamed(AppRoutes.help);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const PsychologistDirectoryScreen(),
+                            ),
+                          );
                         } else if (estado == 'alerta-amarillo') {
                           Navigator.of(context).pushNamed(
                             AppRoutes.advice,

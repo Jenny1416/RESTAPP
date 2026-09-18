@@ -208,20 +208,7 @@ class _ProfessionalCareScreenState extends State<ProfessionalCareScreen> {
             ),
           ],
           SizedBox(height: 20.h),
-          if (approved != null && assignedPsychologist != null)
-            _ActionCard(
-              icon: Icons.chat_bubble_rounded,
-              color: careTeal,
-              title: 'Chatear con tu psicólogo',
-              subtitle: 'Conversación habilitada, escribe cuando quieras',
-              onTap: () => _open(
-                ProfessionalChatScreen(
-                  psychologist: assignedPsychologist,
-                  assignmentApproved: true,
-                ),
-              ),
-            )
-          else
+          if (approved == null || assignedPsychologist == null)
             Container(
               padding: EdgeInsets.all(15.w),
               decoration: BoxDecoration(

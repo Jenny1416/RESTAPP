@@ -213,7 +213,7 @@ class ChatService {
       );
     }).toList();
 
-    return messages.reversed.toList();
+    return messages;
   }
 
   Future<ChatStopFeedback> detenerSesionIA() async {

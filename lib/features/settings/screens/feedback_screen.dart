@@ -2,6 +2,7 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/utils/app_toast.dart';
 import '../../home/screens/gradient_text.dart';
+import 'package:rest/core/services/settings_service.dart';
 
 class FeedbackScreen extends StatefulWidget {
   @override
@@ -383,7 +384,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     );
   }
 
-  void _sendFeedback() {
+  Future<void> _sendFeedback() async {
     if (selectedRating == -1) {
       _showSnackBar('Por favor selecciona una calificación');
       return;
@@ -393,10 +394,19 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       return;
     }
 
-    _showSnackBar('¡Gracias por tu feedback!');
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) Navigator.pop(context);
-    });
+    try {
+      final options = _selectedOptions.map((i) => _currentOptions[i]).join(', ');
+      await SettingsService().feedback(
+        puntaje: selectedRating + 1,
+        queMasTeGusto: options.isEmpty ? commentController.text.trim() : options,
+        comentarios: commentController.text,
+      );
+      if (!mounted) return;
+      _showSnackBar('¡Gracias por tu feedback!');
+      Navigator.pop(context);
+    } catch (e) {
+      if (mounted) _showSnackBar(e.toString().replaceFirst('Exception: ', ''));
+    }
   }
 
   void _showSnackBar(String message) {

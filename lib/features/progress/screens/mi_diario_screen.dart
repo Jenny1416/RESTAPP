@@ -5,7 +5,9 @@ import 'package:rest/core/routes/app_routes.dart';
 import 'package:rest/core/services/diary_service.dart';
 
 class MiDiarioScreen extends StatefulWidget {
-  const MiDiarioScreen({super.key});
+  const MiDiarioScreen({super.key, this.entry});
+
+  final DiaryEntry? entry;
 
   @override
   State<MiDiarioScreen> createState() => _MiDiarioScreenState();
@@ -24,6 +26,13 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
   );
 
   @override
+  void initState() {
+    super.initState();
+    _tituloController.text = widget.entry?.titulo ?? '';
+    _descripcionController.text = widget.entry?.contenido ?? '';
+  }
+
+  @override
   void dispose() {
     _tituloController.dispose();
     _descripcionController.dispose();
@@ -38,7 +47,7 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
 
     if (titulo.isEmpty || contenido.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Completa titulo y descripcion para guardar.'),
           backgroundColor: Colors.orange,
         ),
@@ -48,11 +57,22 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
 
     setState(() => _saving = true);
     try {
-      await _diaryService.createEntry(titulo: titulo, contenido: contenido);
+      final entry = widget.entry;
+      if (entry == null) {
+        await _diaryService.createEntry(titulo: titulo, contenido: contenido);
+      } else {
+        await _diaryService.updateEntry(
+          id: entry.id,
+          titulo: titulo,
+          contenido: contenido,
+        );
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Entrada guardada correctamente'),
+        SnackBar(
+          content: Text(widget.entry == null
+              ? 'Entrada guardada correctamente'
+              : 'Entrada actualizada correctamente'),
           backgroundColor: Color(0xFF4CAF50),
         ),
       );
@@ -286,7 +306,7 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
                               ),
                             )
                           : Text(
-                              'Guardar',
+                          widget.entry == null ? 'Guardar' : 'Guardar cambios',
                               style: GoogleFonts.fredoka(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.bold,

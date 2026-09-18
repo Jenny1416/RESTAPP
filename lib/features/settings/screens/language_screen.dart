@@ -2,6 +2,7 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/utils/app_toast.dart';
 import '../../home/screens/gradient_text.dart';
+import 'package:rest/core/services/settings_service.dart';
 
 class LanguageScreen extends StatefulWidget {
   @override
@@ -252,11 +253,17 @@ class _LanguageScreenState extends State<LanguageScreen> {
               ),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
-                // Aquí puedes agregar la lógica para aplicar el cambio de idioma
-                Navigator.of(context).pop(); // Regresar a la pantalla anterior
-                AppToast.success(context, 'Idioma cambiado a $selectedLanguage');
+                final code = languages.firstWhere((item) => item['name'] == selectedLanguage)['code']!;
+                try {
+                  await SettingsService().preference(code);
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  AppToast.success(context, 'Idioma cambiado a $selectedLanguage');
+                } catch (e) {
+                  if (mounted) AppToast.error(context, e.toString().replaceFirst('Exception: ', ''));
+                }
               },
               child: Text(
                 'Guardar',

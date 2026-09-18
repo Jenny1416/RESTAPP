@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/services/user_session.dart';
@@ -21,6 +22,7 @@ class ProfessionalCareScreen extends StatefulWidget {
 class _ProfessionalCareScreenState extends State<ProfessionalCareScreen> {
   final _service = ProfessionalCareService();
   bool _loading = true;
+  Timer? _refreshTimer;
   String? _error;
   List<CareAssignment> _assignments = const [];
   List<ProfessionalChat> _chats = const [];
@@ -40,11 +42,20 @@ class _ProfessionalCareScreenState extends State<ProfessionalCareScreen> {
   void initState() {
     super.initState();
     _load();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) _load(silent: true);
+    });
   }
 
-  Future<void> _load() async {
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _load({bool silent = false}) async {
     setState(() {
-      _loading = true;
+      if (!silent) _loading = true;
       _error = null;
     });
     try {

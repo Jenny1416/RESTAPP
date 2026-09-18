@@ -51,6 +51,39 @@ class EvaluationService {
     return Evaluation.fromJson(Map<String, dynamic>.from(decoded));
   }
 
+  Future<List<Map<String, dynamic>>> getPreguntas() async {
+    final response = await _client
+        .get(Uri.parse('$_baseUrl/api/evaluaciones/preguntas'))
+        .timeout(const Duration(seconds: 20));
+    final decoded = _decode(response);
+    final list = decoded is Map ? decoded['data'] : decoded;
+    if (list is! List) throw Exception('Formato de preguntas inválido.');
+    return list.whereType<Map>().map((item) => Map<String, dynamic>.from(item)).toList();
+  }
+
+  Future<Map<String, dynamic>> submitEvaluation(
+      List<Map<String, int>> respuestas) async {
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/api/evaluaciones'),
+      headers: {..._headers, 'Content-Type': 'application/json'},
+      body: jsonEncode({'respuestas': respuestas}),
+    );
+    final decoded = _decode(response);
+    if (decoded is Map) return Map<String, dynamic>.from(decoded['data'] is Map ? decoded['data'] as Map : decoded);
+    throw Exception('Respuesta de evaluación inválida.');
+  }
+
+  Future<Map<String, dynamic>> assignTrafficLight() async {
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/api/evaluaciones/asignacion-semaforo'),
+      headers: {..._headers, 'Content-Type': 'application/json'},
+      body: jsonEncode({}),
+    );
+    final decoded = _decode(response);
+    if (decoded is Map) return Map<String, dynamic>.from(decoded['data'] is Map ? decoded['data'] as Map : decoded);
+    return <String, dynamic>{};
+  }
+
   dynamic _decode(http.Response response) {
     dynamic decoded;
     try {

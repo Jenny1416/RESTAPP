@@ -51,12 +51,22 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
   }
 
   Future<void> _activarRachaDiaria() async {
-    if (_activatingStreak) return;
+    if (_activatingStreak || _data?.estrellaHoyActivada == true ||
+        _data?.puedeActivarEstrellaHoy != true) return;
     setState(() => _activatingStreak = true);
 
     try {
       final result = await _personalService.activarRachaDiaria();
       if (!mounted) return;
+
+      if (!result.activada) {
+        await _loadPersonalData();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.mensaje)),
+        );
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

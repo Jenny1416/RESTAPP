@@ -115,7 +115,7 @@ class MyApp extends StatelessWidget {
                 // Mi Progreso
                 AppRoutes.globalprogress: (context) => GlobalProgressScreen(),
                 AppRoutes.progress: (context) => MyProgressScreen(),
-                AppRoutes.miDiario: (context) => const MiDiarioScreen(),
+                AppRoutes.miDiario: (context) => const MisCapitulosScreen(),
                 AppRoutes.misCapitulos: (context) => const MisCapitulosScreen(),
                 AppRoutes.misTecnicas: (context) => const MisTecnicasScreen(),
 

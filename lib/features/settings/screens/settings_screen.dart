@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../home/screens/gradient_text.dart';
 import 'feedback_screen.dart';
 import 'profile_screen.dart'; // Importar la pantalla de perfil
+import 'change_password_screen.dart';
 import 'fail_report_screen.dart'; // Importar la pantalla de reporte de fallas
 import 'terms_screen.dart'; // Importar la pantalla de términos
 import 'privacity_screen.dart'; // Importar la pantalla de privacidad
@@ -82,6 +83,14 @@ class SettingsScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => ProfileScreen()),
+                  );
+                }, context),
+                _buildConfigItem('Contraseña', Icons.lock_outline, () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChangePasswordScreen(),
+                    ),
                   );
                 }, context),
                 _buildConfigItem(

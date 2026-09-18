@@ -6,3 +6,8 @@ build
 coverage
 android/.gradle
 **/*.log
+android
+ios
+linux
+macos
+windows

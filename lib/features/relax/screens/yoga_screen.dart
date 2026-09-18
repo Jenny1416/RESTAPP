@@ -104,8 +104,14 @@ class _YogaScreenState extends State<YogaScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cerrar', style: TextStyle(fontFamily: 'Fredoka')),
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(this.context, true);
+            },
+            child: Text(
+              'Finalizar práctica',
+              style: TextStyle(fontFamily: 'Fredoka'),
+            ),
           ),
         ],
       ),

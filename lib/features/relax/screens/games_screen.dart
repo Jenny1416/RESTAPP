@@ -44,6 +44,7 @@ class _GamesScreenState extends State<GamesScreen> {
         _revealed[index] = true;
 
         Future.delayed(const Duration(milliseconds: 500), () {
+          if (!mounted) return;
           if (_cards[_firstSelected!] == _cards[_secondSelected!]) {
             _matches++;
             _score += 10;
@@ -69,6 +70,13 @@ class _GamesScreenState extends State<GamesScreen> {
         title: Text('¡Ganaste!'),
         content: Text('Puntuación: $_score'),
         actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(this.context, true);
+            },
+            child: const Text('Finalizar'),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);

@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MusicScreen extends StatefulWidget {
   const MusicScreen({super.key});
@@ -10,6 +11,7 @@ class MusicScreen extends StatefulWidget {
 
 class _MusicScreenState extends State<MusicScreen> {
   bool _isPlaying = false;
+  bool _musicOpened = false;
   int _selectedPlaylist = 0;
 
   final List<Map<String, String>> playlists = [
@@ -25,6 +27,26 @@ class _MusicScreenState extends State<MusicScreen> {
     'Océano Tranquilo',
     'Atardecer Rosa',
   ];
+
+  Future<void> _openMusic([String? song]) async {
+    final selected = song ?? playlists[_selectedPlaylist]['name']!;
+    final query = Uri.encodeQueryComponent('$selected música relajante');
+    final uri = Uri.parse(
+      'https://www.youtube.com/results?search_query=$query',
+    );
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!mounted) return;
+    if (opened) {
+      setState(() {
+        _isPlaying = true;
+        _musicOpened = true;
+      });
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('No se pudo abrir la música.')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +124,7 @@ class _MusicScreenState extends State<MusicScreen> {
                     ),
                     SizedBox(height: 16.h),
                     GestureDetector(
-                      onTap: () => setState(() => _isPlaying = !_isPlaying),
+                      onTap: _openMusic,
                       child: Container(
                         width: 80.w,
                         height: 80.h,
@@ -218,40 +240,57 @@ class _MusicScreenState extends State<MusicScreen> {
               SizedBox(height: 16.h),
               ...List.generate(
                 songs.length,
-                (index) => Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.music_note_rounded,
-                        color: colorScheme.primary,
-                        size: 24,
-                      ),
-                      SizedBox(width: 16.w),
-                      Expanded(
-                        child: Text(
-                          songs[index],
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontFamily: 'Fredoka',
-                            color: colorScheme.onSurface,
+                (index) => GestureDetector(
+                  onTap: () => _openMusic(songs[index]),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.music_note_rounded,
+                          color: colorScheme.primary,
+                          size: 24,
+                        ),
+                        SizedBox(width: 16.w),
+                        Expanded(
+                          child: Text(
+                            songs[index],
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontFamily: 'Fredoka',
+                              color: colorScheme.onSurface,
+                            ),
                           ),
                         ),
-                      ),
-                      Icon(
-                        Icons.play_circle_filled_rounded,
-                        color: colorScheme.primary,
-                        size: 24,
-                      ),
-                    ],
+                        Icon(
+                          Icons.open_in_new_rounded,
+                          color: colorScheme.primary,
+                          size: 24,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
+              if (_musicOpened) ...[
+                SizedBox(height: 24.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => Navigator.pop(context, true),
+                    icon: const Icon(Icons.check_circle_outline_rounded),
+                    label: const Text('Finalizar práctica'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

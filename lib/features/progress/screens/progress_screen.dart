@@ -9,9 +9,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:rest/features/progress/screens/emotional_calendar_screen.dart';
 import 'package:rest/features/progress/widgets/activity_completion_sheet.dart';
 import 'package:rest/features/progress/screens/streak_screen.dart';
-import 'package:rest/features/relax/screens/jokes_screen.dart';
+import 'package:rest/features/relax/screens/games_screen.dart';
+import 'package:rest/features/relax/screens/guided_relaxation_screen.dart';
 import 'package:rest/features/relax/screens/music_screen.dart';
-import 'package:rest/features/relax/screens/physical_activity_screen.dart';
 import 'package:rest/features/relax/screens/yoga_screen.dart';
 
 class ProgressScreen extends StatefulWidget {
@@ -353,22 +353,33 @@ class _ProgressScreenState extends State<ProgressScreen> {
     }
   }
 
-  Future<void> _registrarTecnicaYEntrar(
+  Future<void> _abrirTecnica(
     RelaxTechnique tecnica,
     Widget screen,
   ) async {
-    if (tecnica.id > 0) {
-      try {
-        await _progressService.registrarPracticaTecnica(opcionId: tecnica.id);
-        if (!mounted) return;
-        AppToast.success(context, 'Práctica registrada: ${tecnica.nombre}');
-      } catch (_) {
-        // Si falla el registro no bloquea navegación
-      }
+    final completed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => screen),
+    );
+    if (!mounted || completed != true) return;
+
+    if (tecnica.id <= 0) {
+      AppToast.success(context, '${tecnica.nombre} completado');
+      return;
     }
 
-    if (!mounted) return;
-    Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+    try {
+      await _progressService.registrarPracticaTecnica(
+        opcionId: tecnica.id,
+        observaciones: 'Práctica completada desde la app',
+      );
+      await _loadDailyActivities();
+      if (!mounted) return;
+      AppToast.success(context, 'Práctica registrada: ${tecnica.nombre}');
+    } catch (e) {
+      if (!mounted) return;
+      AppToast.error(context, 'No se pudo registrar la práctica: $e');
+    }
   }
 
   @override
@@ -1629,7 +1640,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'API',
+                  data.tecnica.id > 0 ? 'API' : 'APP',
                   style: TextStyle(
                     fontSize: 11.sp,
                     color: Color(0xFF00796B),
@@ -1666,8 +1677,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () =>
-                    _registrarTecnicaYEntrar(data.tecnica, data.screen),
+                onPressed: () => _abrirTecnica(data.tecnica, data.screen),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   backgroundColor: const Color(0xFF2F9FE8),
@@ -1691,73 +1701,86 @@ class _ProgressScreenState extends State<ProgressScreen> {
     if (value.contains('yoga')) {
       return ('assets/images/yoga.png', const YogaScreen());
     }
-    if (value.contains('chiste')) {
-      return ('assets/images/chistes.png', const JokesScreen());
-    }
     if (value.contains('musi')) {
       return ('assets/images/musica.png', const MusicScreen());
     }
-    if (value.contains('fisic') || value.contains('gim')) {
-      return ('assets/images/gym.png', const PhysicalActivityScreen());
+    if (value.contains('juego')) {
+      return ('assets/images/juegos.png', const GamesScreen());
     }
-    return ('assets/images/normalrest.jpg', const YogaScreen());
+    if (value.contains('medit')) {
+      return (
+        'assets/images/normalrest.jpg',
+        const GuidedRelaxationScreen(
+          title: 'Meditación guiada',
+          icon: Icons.self_improvement_rounded,
+          steps: [
+            'Busca una postura cómoda y relaja los hombros.',
+            'Cierra los ojos y observa tu respiración sin cambiarla.',
+            'Lleva la atención al cuerpo, desde los pies hasta la cabeza.',
+            'Respira profundamente y abre los ojos cuando estés listo.',
+          ],
+        ),
+      );
+    }
+    if (value.contains('respir')) {
+      return (
+        'assets/images/normalrest.jpg',
+        const GuidedRelaxationScreen(
+          title: 'Respiración profunda',
+          icon: Icons.air_rounded,
+          steps: [
+            'Inhala lentamente por la nariz durante 4 segundos.',
+            'Mantén el aire durante 4 segundos.',
+            'Exhala suavemente por la boca durante 6 segundos.',
+            'Repite el ciclo tres veces y observa cómo te sientes.',
+          ],
+        ),
+      );
+    }
+    if (value.contains('muscular') || value.contains('relajacion')) {
+      return (
+        'assets/images/gym.png',
+        const GuidedRelaxationScreen(
+          title: 'Relajación muscular',
+          icon: Icons.accessibility_new_rounded,
+          steps: [
+            'Aprieta suavemente las manos durante 5 segundos y relaja.',
+            'Eleva los hombros durante 5 segundos y suéltalos.',
+            'Tensa las piernas durante 5 segundos y relaja.',
+            'Respira profundo y nota la diferencia en todo tu cuerpo.',
+          ],
+        ),
+      );
+    }
+    return (
+      'assets/images/normalrest.jpg',
+      GuidedRelaxationScreen(
+        title: nombre,
+        icon: Icons.spa_rounded,
+        steps: const [
+          'Busca un lugar tranquilo y adopta una postura cómoda.',
+          'Sigue la técnica lentamente y presta atención a tu cuerpo.',
+          'Respira profundo antes de finalizar la práctica.',
+        ],
+      ),
+    );
   }
 
   List<RelaxTechnique> _buildAllowedTechniques(List<RelaxTechnique> input) {
-    RelaxTechnique? yoga;
-    RelaxTechnique? chistes;
-    RelaxTechnique? musica;
-    RelaxTechnique? actividadFisica;
-
-    for (final t in input) {
-      final value = _normalizeText(t.nombre);
-      if (yoga == null && value.contains('yoga')) {
-        yoga = t;
-      } else if (chistes == null && value.contains('chiste')) {
-        chistes = t;
-      } else if (musica == null && value.contains('musi')) {
-        musica = t;
-      } else if (actividadFisica == null &&
-          (value.contains('fisic') || value.contains('gim'))) {
-        actividadFisica = t;
-      }
-    }
-
-    RelaxTechnique fallback(String nombre) => RelaxTechnique(
-      id: 0,
-      nombre: nombre,
-      descripcion: 'Disponible en la app',
+    final techniques = List<RelaxTechnique>.from(input);
+    final hasGames = techniques.any(
+      (technique) => _normalizeText(technique.nombre).contains('juego'),
     );
-
-    return [
-      RelaxTechnique(
-        id: yoga?.id ?? 0,
-        nombre: 'Yoga',
-        descripcion: yoga?.descripcion ?? 'Disponible en la app',
-        imageUrl: yoga?.imageUrl,
-      ),
-      RelaxTechnique(
-        id: chistes?.id ?? 0,
-        nombre: 'Chistes',
-        descripcion: chistes?.descripcion ?? 'Disponible en la app',
-        imageUrl: chistes?.imageUrl,
-      ),
-      RelaxTechnique(
-        id: actividadFisica?.id ?? 0,
-        nombre: 'Actividad Física',
-        descripcion:
-            actividadFisica?.descripcion ??
-            fallback('Actividad Física').descripcion,
-        imageUrl: actividadFisica?.imageUrl,
-      ),
-      RelaxTechnique(
-        id: musica?.id ?? 0,
-        nombre: 'Escuchar Música',
-        descripcion:
-            musica?.descripcion ?? fallback('Escuchar Música').descripcion,
-        imageUrl: musica?.imageUrl,
-      ),
-    ];
+    if (!hasGames) {
+      techniques.add(
+        RelaxTechnique(
+          id: 0,
+          nombre: 'Juegos',
+          descripcion: 'Juego de memoria disponible en la app',
+        ),
+      );
+    }
+    return techniques;
   }
 
   String? _normalizeApiDateKey(String raw) {

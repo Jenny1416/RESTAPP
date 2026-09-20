@@ -1,29 +1,25 @@
 import 'package:flutter/foundation.dart';
 
 class ApiConfig {
-  static const String testBaseUrl = 'https://api-test.restapp.site';
-  static const String productionBaseUrl = 'https://api.restapp.site';
-
   static const String _envBaseUrl = String.fromEnvironment('API_BASE_URL');
-  static const String _apiEnvironment = String.fromEnvironment('API_ENV');
+  static const String _androidEnvBaseUrl = String.fromEnvironment(
+    'ANDROID_API_BASE_URL',
+  );
 
   static String get baseUrl {
-    if (_envBaseUrl.isNotEmpty) {
-      return _withoutTrailingSlash(_envBaseUrl);
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        _androidEnvBaseUrl.isNotEmpty) {
+      return _withoutTrailingSlash(_androidEnvBaseUrl);
     }
 
-    switch (_apiEnvironment) {
-      case 'production':
-        return productionBaseUrl;
-      case 'test':
-        return testBaseUrl;
-      case '':
-        return kReleaseMode
-            ? productionBaseUrl
-            : testBaseUrl;
-      default:
-        throw StateError('API_ENV must be test or production');
+    if (_envBaseUrl.isEmpty) {
+      throw StateError(
+        'API_BASE_URL is required. Define it with --dart-define.',
+      );
     }
+
+    return _withoutTrailingSlash(_envBaseUrl);
   }
 
   static String _withoutTrailingSlash(String value) {

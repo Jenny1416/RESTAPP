@@ -8,7 +8,7 @@ services:
       - >-
         flutter pub get &&
         flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8081
-        --dart-define=API_BASE_URL=https://api-test.restapp.site
+        --dart-define=API_BASE_URL=${API_BASE_URL:?API_BASE_URL is required}
     ports:
       - "${APP_DEV_HOST_PORT:-8081}:8081"
     volumes:

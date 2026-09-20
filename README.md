@@ -67,66 +67,11 @@ Archivos clave:
 flutter pub get
 ```
 
-## 6) Ejecucion local
-
-```bash
-flutter run --dart-define-from-file=.env
-```
-
-Para listar dispositivos:
-
-```bash
-flutter devices
-```
-
-## 7) Scripts/comandos utiles
-
-- Ejecutar app: `flutter run --dart-define-from-file=.env`
-- Analisis estatico: `flutter analyze`
-- Pruebas: `flutter test`
-- Formateo: `dart format .`
-
-> Nota: no hay scripts custom en `pubspec.yaml`; se usan comandos estandar de Flutter/Dart.
-
-### Contenedor de Flutter Web
-
-La API se elige exclusivamente mediante el archivo `.env`, que no se versiona.
-El contenedor publica la aplicacion en `http://localhost:8081`:
-
-```powershell
-docker compose --env-file .env -p restapp up -d --build
-```
-
-### Desarrollo de ramas test con volumen
-
-Para desarrollo local, usa el servidor Flutter con el codigo montado como volumen:
-
-```powershell
-docker compose --env-file .env -p restapp-dev -f docker-compose.dev.yml up -d
-```
-
-Abre `http://localhost:8081`. Los cambios de rama no requieren `docker build`. Tras un `git switch`, reinicia solamente el proceso Flutter para compilar el codigo de la rama nueva:
-
-```powershell
-docker compose -p restapp-dev -f docker-compose.dev.yml restart app
-```
-
-Para hot reload durante cambios visuales, adjunta la terminal, pulsa `r` y separala con `Ctrl+P`, `Ctrl+Q`:
-
-```powershell
-docker attach restapp-dev-app-1
-```
-
-Detener desarrollo:
-
-```powershell
-docker compose -p restapp-dev -f docker-compose.dev.yml down
-```
-
-## 8) Configuracion de backend y entorno
+## 6) Configuracion del entorno
 
 La URL se inyecta en compilacion mediante un unico archivo `.env`; no existe
-una URL fija dentro del codigo. Crea el archivo a partir de la plantilla:
+una URL fija dentro del codigo y el archivo real no se versiona. Crealo a
+partir de la plantilla:
 
 ```bash
 cp .env.example .env
@@ -138,16 +83,36 @@ En PowerShell:
 Copy-Item .env.example .env
 ```
 
-Para elegir local, test o produccion, cambia `API_BASE_URL` dentro de ese mismo
-archivo. En local, `ANDROID_API_BASE_URL` permite usar una URL diferente para
-el emulador Android. En test y produccion puede eliminarse esa variable.
-La seleccion se resuelve en:
+Configura el mismo `.env` según la API que quieras consumir.
+
+### Backend local
+
+```dotenv
+API_BASE_URL=http://localhost:3000
+ANDROID_API_BASE_URL=http://10.0.2.2:3000
+```
+
+### API de pruebas
+
+```dotenv
+API_BASE_URL=https://api-test.restapp.site
+```
+
+### API de produccion
+
+```dotenv
+API_BASE_URL=https://api.restapp.site
+```
+
+`ANDROID_API_BASE_URL` solo es necesario para alcanzar desde el emulador
+Android un backend ejecutado en el computador. La seleccion se resuelve en:
 
 - `lib/core/config/api_config.dart`
 
-### Cambiar backend
+## 7) Ejecutar localmente
 
-No es necesario editar el codigo. Usa uno de estos comandos:
+Una vez configurado `.env`, el comando es el mismo para cualquiera de las tres
+APIs:
 
 ```bash
 flutter run --dart-define-from-file=.env
@@ -159,15 +124,46 @@ Los APK se generan con la misma seleccion:
 flutter build apk --release --dart-define-from-file=.env
 ```
 
-Tambien puede inyectarse una URL sin archivo:
-
-```bash
-flutter run --dart-define=API_BASE_URL=http://localhost:3000
-```
-
 `API_BASE_URL` es obligatoria. En Android, `ANDROID_API_BASE_URL` la sobrescribe
 cuando esta definida, lo que permite que `.env` use `10.0.2.2` sin
 afectar Web, Windows o iOS.
+
+Para listar dispositivos:
+
+```bash
+flutter devices
+```
+
+## 8) Ejecutar en contenedor
+
+El contenedor usa el mismo `.env` y publica Flutter Web en
+`http://localhost:8081`:
+
+```powershell
+docker compose --env-file .env -p restapp up -d --build
+```
+
+Para desarrollo con el codigo montado como volumen y hot reload:
+
+```powershell
+docker compose --env-file .env -p restapp-dev -f docker-compose.dev.yml up -d
+docker attach restapp-dev-app-1
+```
+
+Pulsa `r` para hot reload y separa la terminal con `Ctrl+P`, `Ctrl+Q`.
+
+Detener los contenedores:
+
+```powershell
+docker compose --env-file .env -p restapp down
+docker compose --env-file .env -p restapp-dev -f docker-compose.dev.yml down
+```
+
+## Comandos utiles
+
+- Analisis estatico: `flutter analyze`
+- Pruebas: `flutter test`
+- Formateo: `dart format .`
 
 ### Importante para pruebas en Android emulator/device
 

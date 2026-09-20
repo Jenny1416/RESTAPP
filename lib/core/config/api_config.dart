@@ -1,42 +1,25 @@
 import 'package:flutter/foundation.dart';
 
 class ApiConfig {
-  static const String localBaseUrl = 'http://localhost:3000';
-  static const String androidEmulatorBaseUrl = 'http://10.0.2.2:3000';
-  static const String universityBaseUrl = 'http://179.197.239.216:3000';
-  static const String testBaseUrl = 'https://api-test.restapp.site';
-  static const String productionBaseUrl = 'https://api.restapp.site';
-
   static const String _envBaseUrl = String.fromEnvironment('API_BASE_URL');
-  static const String _apiEnvironment = String.fromEnvironment('API_ENV');
+  static const String _androidEnvBaseUrl = String.fromEnvironment(
+    'ANDROID_API_BASE_URL',
+  );
 
   static String get baseUrl {
-    if (_envBaseUrl.isNotEmpty) {
-      return _withoutTrailingSlash(_envBaseUrl);
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        _androidEnvBaseUrl.isNotEmpty) {
+      return _withoutTrailingSlash(_androidEnvBaseUrl);
     }
 
-    switch (_apiEnvironment) {
-      case 'test':
-        return testBaseUrl;
-      case 'production':
-        return productionBaseUrl;
-      case 'university':
-        return universityBaseUrl;
-      case 'local':
-      case '':
-        return _localBaseUrl;
-      default:
-        throw StateError(
-          'API_ENV must be local, test, production or university',
-        );
+    if (_envBaseUrl.isEmpty) {
+      throw StateError(
+        'API_BASE_URL is required. Define it with --dart-define-from-file=.env.',
+      );
     }
-  }
 
-  static String get _localBaseUrl {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      return androidEmulatorBaseUrl;
-    }
-    return localBaseUrl;
+    return _withoutTrailingSlash(_envBaseUrl);
   }
 
   static String _withoutTrailingSlash(String value) {

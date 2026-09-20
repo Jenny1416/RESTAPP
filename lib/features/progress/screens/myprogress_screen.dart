@@ -51,12 +51,22 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
   }
 
   Future<void> _activarRachaDiaria() async {
-    if (_activatingStreak) return;
+    if (_activatingStreak || _data?.estrellaHoyActivada == true ||
+        _data?.puedeActivarEstrellaHoy != true) return;
     setState(() => _activatingStreak = true);
 
     try {
       final result = await _personalService.activarRachaDiaria();
       if (!mounted) return;
+
+      if (!result.activada) {
+        await _loadPersonalData();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result.mensaje)),
+        );
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -107,7 +117,9 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    'He trabajado $diasTrabajados días en mí',
+                    diasTrabajados == 1
+                        ? 'He trabajado 1 día en mí'
+                        : 'He trabajado $diasTrabajados días en mí',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -408,33 +420,63 @@ class _DayItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (active)
-          const Icon(Icons.star_rounded, color: Color(0xFFFFB300), size: 24)
-        else if (completed)
-          const Icon(
-            Icons.check_circle_outline_rounded,
-            color: Color(0xFF26A69A),
-            size: 24,
-          )
-        else
-          const Icon(
-            Icons.radio_button_unchecked,
-            color: Colors.grey,
-            size: 24,
-          ),
-        SizedBox(height: 4.h),
-        Text(
-          day,
-          style: TextStyle(
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
+    return Tooltip(
+      message: day,
+      child: Semantics(
+        label: '$day, ${active ? 'estrella activada' : completed ? 'registro completado' : 'pendiente'}',
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (active)
+              const Icon(Icons.star_rounded, color: Color(0xFFFFB300), size: 24)
+            else if (completed)
+              const Icon(
+                Icons.check_circle_outline_rounded,
+                color: Color(0xFF26A69A),
+                size: 24,
+              )
+            else
+              const Icon(
+                Icons.radio_button_unchecked,
+                color: Colors.grey,
+                size: 24,
+              ),
+            SizedBox(height: 4.h),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                _shortDay(day),
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
+  }
+
+  String _shortDay(String value) {
+    const labels = <String, String>{
+      'lunes': 'Lun',
+      'martes': 'Mar',
+      'miércoles': 'Mié',
+      'miercoles': 'Mié',
+      'jueves': 'Jue',
+      'viernes': 'Vie',
+      'sábado': 'Sáb',
+      'sabado': 'Sáb',
+      'domingo': 'Dom',
+    };
+    final normalized = value.trim().toLowerCase();
+    if (labels.containsKey(normalized)) return labels[normalized]!;
+    if (value.length <= 3) return value;
+    return value.substring(0, 3);
   }
 }
 

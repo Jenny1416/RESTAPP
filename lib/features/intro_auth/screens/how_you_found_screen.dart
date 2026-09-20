@@ -1,9 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rest/core/services/user_session.dart';
+import 'package:rest/core/utils/app_toast.dart';
 import 'package:rest/features/emotion/screens/emotionregister_screen.dart';
 import 'package:rest/features/navigation/main_app.dart';
+import 'package:rest/features/onboarding/screens/onboarding_status_screen.dart';
+import 'package:rest/features/onboarding/services/onboarding_service.dart';
 import 'package:rest/features/intro_auth/widgets/star_rain_widget.dart';
 import 'login_screen.dart';
 
@@ -24,11 +27,39 @@ class _HowYouFoundScreenState extends State<HowYouFoundScreen> {
     'Por otras cosas...',
   ];
 
-  void _continuar() {
+  Future<void> _continuar() async {
     if (selectedOption == null) return;
 
     // El token y userId ya vienen guardados desde RegisterScreen
     if (UserSession.authToken != null && UserSession.userId != null) {
+      Widget destinationBuilder(BuildContext _) => UserSession.canDoTestToday()
+          ? const EmotionRegisterScreen()
+          : const MainApp();
+
+      try {
+        final onboarding = await OnboardingService().getEstado();
+        if (!onboarding.completado) {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OnboardingStatusScreen(
+                destinationBuilder: destinationBuilder,
+              ),
+            ),
+          );
+          return;
+        }
+      } catch (_) {
+        if (mounted) {
+          AppToast.warning(
+            context,
+            'No pudimos consultar el onboarding. Podrás completarlo después.',
+          );
+        }
+      }
+
+      if (!mounted) return;
       // Validar si el usuario puede hacer el test hoy (solo una vez al día)
       if (UserSession.canDoTestToday()) {
         // Mostrar EmotionRegisterScreen si puede hacer el test

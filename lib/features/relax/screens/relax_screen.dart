@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'games_screen.dart';
+import 'jokes_screen.dart';
+import 'music_screen.dart';
+import 'physical_activity_screen.dart';
+import 'yoga_screen.dart';
 
 class RelaxScreen extends StatelessWidget {
   const RelaxScreen({super.key});
@@ -121,12 +126,26 @@ class _CardTecnica extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
 
-    return Container(
-      decoration: BoxDecoration(
+    Widget destination() {
+      if (titulo == 'Yoga') return const YogaScreen();
+      if (titulo == 'Chistes') return const JokesScreen();
+      if (titulo == 'Juegos') return const GamesScreen();
+      if (titulo.contains('Musica')) return const MusicScreen();
+      return const PhysicalActivityScreen();
+    }
+
+    return InkWell(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => destination()),
+      ),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
         color: Colors.lightBlue.shade100,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
+        child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
@@ -146,6 +165,7 @@ class _CardTecnica extends StatelessWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }

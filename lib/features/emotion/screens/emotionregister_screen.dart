@@ -1,10 +1,13 @@
-﻿// emotionregister_screen.dart (Preguntas de evaluación emocional)
+// emotionregister_screen.dart (Preguntas de evaluación emocional)
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/routes/app_routes.dart';
 import 'package:rest/core/services/emotion_service.dart';
+import 'package:rest/core/services/personal_progress_service.dart';
 import 'package:rest/core/services/user_session.dart';
-import 'package:rest/features/emotion/utils/emotion_calculator.dart';
+import 'package:rest/features/evaluations/services/evaluation_service.dart';
 
 class EmotionRegisterScreen extends StatefulWidget {
   const EmotionRegisterScreen({super.key});
@@ -14,13 +17,18 @@ class EmotionRegisterScreen extends StatefulWidget {
 }
 
 class _CheckScreenState extends State<EmotionRegisterScreen> {
+  static const int _dailyQuestionLimit = 5;
+  final EvaluationService _evaluationService = EvaluationService();
   final EmotionService _emotionService = EmotionService();
+  final PersonalProgressService _personalProgressService =
+      PersonalProgressService();
 
   bool _isLoading = true;
   String? _error;
   List<Map<String, dynamic>> _preguntas = [];
   final Map<int, int> _opcionSeleccionadaPorPregunta =
       {}; // preguntaId -> opcionId
+  int _currentQuestion = 0;
 
   final List<String> _facesAssets = const [
     'assets/images/sadrest.jpg',
@@ -51,14 +59,50 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
       _error = null;
     });
     try {
-      // Obtener preguntas aleatorias del backend
-      final preguntasData = await _emotionService.fetchPreguntas();
+      // Se consultan ambos bancos. La misma respuesta se guarda como
+      // evaluación (semaforo) y como registro emocional (calendario/racha).
+      final results = await Future.wait<dynamic>([
+        _evaluationService.getPreguntas(),
+        _emotionService.fetchPreguntas(),
+      ]);
+      final evaluationQuestions = List<Map<String, dynamic>>.from(
+        (results[0] as List).map(
+          (p) => p is Map ? Map<String, dynamic>.from(p) : <String, dynamic>{},
+        ),
+      );
+      final emotionalQuestions = List<Map<String, dynamic>>.from(
+        (results[1] as List).map(
+          (p) => p is Map ? Map<String, dynamic>.from(p) : <String, dynamic>{},
+        ),
+      );
+      final evaluationByText = <String, Map<String, dynamic>>{
+        for (final question in evaluationQuestions)
+          _normalizeQuestion(question['texto'] ?? question['pregunta']): question,
+      };
+      // El registro emocional selecciona las preguntas adaptativas del día.
+      // Se conserva esa selección y se encuentra su equivalente para el
+      // endpoint de evaluaciones.
+      final questions = emotionalQuestions
+          .map((emotional) {
+            final evaluation = evaluationByText[
+                _normalizeQuestion(emotional['texto'] ?? emotional['pregunta'])];
+            if (evaluation == null || evaluation['id'] is! int || emotional['id'] is! int || emotional['opciones'] is! List) {
+              return <String, dynamic>{};
+            }
+            return <String, dynamic>{
+              ...evaluation,
+              'categoria': emotional['categoria'],
+              'registroPreguntaId': emotional['id'],
+              'registroOpciones': emotional['opciones'],
+            };
+          })
+          .where((question) => question.isNotEmpty)
+          .toList();
+      if (questions.isEmpty) {
+        throw Exception('No hay preguntas compatibles para el registro diario.');
+      }
       setState(() {
-        _preguntas = List<Map<String, dynamic>>.from(
-          preguntasData.map(
-            (p) => p is Map ? Map<String, dynamic>.from(p) : {},
-          ),
-        );
+        _preguntas = _dailyQuestions(questions);
         _isLoading = false;
       });
     } catch (e) {
@@ -73,12 +117,30 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
     if (_preguntas.isEmpty) return;
 
     final respuestas = <Map<String, int>>[];
+    final registroRespuestas = <Map<String, int>>[];
     for (final q in _preguntas) {
       final int? preguntaId = q['id'] is int ? q['id'] as int : null;
       if (preguntaId == null) continue;
-      final int? opcionId = _opcionSeleccionadaPorPregunta[preguntaId];
-      if (opcionId == null) continue;
-      respuestas.add({'pregunta_id': preguntaId, 'opcion_id': opcionId});
+      final int? score = _opcionSeleccionadaPorPregunta[preguntaId];
+      if (score == null) continue;
+      respuestas.add({'pregunta_id': preguntaId, 'respuesta': score});
+
+      final registroPreguntaId = q['registroPreguntaId'];
+      final registroOpciones = q['registroOpciones'] as List? ?? const [];
+      Map? selectedOption;
+      for (final option in registroOpciones.whereType<Map>()) {
+        if (option['puntaje'] == score) {
+          selectedOption = option;
+          break;
+        }
+      }
+      final optionId = selectedOption?['id'];
+      if (registroPreguntaId is int && optionId is int) {
+        registroRespuestas.add({
+          'pregunta_id': registroPreguntaId,
+          'opcion_id': optionId,
+        });
+      }
     }
 
     if (respuestas.isEmpty) {
@@ -93,17 +155,48 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
     });
 
     try {
-      await _emotionService.enviarRegistroEmocional(respuestas: respuestas);
+      if (respuestas.length != _preguntas.length) {
+        throw Exception('Responde todas las preguntas para continuar.');
+      }
+      if (registroRespuestas.length != _preguntas.length) {
+        throw Exception('No se pudieron preparar las respuestas del registro diario.');
+      }
+      final evaluation = await _evaluationService.submitEvaluation(respuestas);
+      await _emotionService.enviarRegistroEmocional(
+        respuestas: registroRespuestas,
+      );
+      final assignment = await _evaluationService.assignTrafficLight();
+      final streak = await _personalProgressService.activarRachaDiaria();
 
       // Actualizar fecha del último test completado
       UserSession.lastTestDate = DateTime.now();
       await UserSession.persist();
 
       if (!mounted) return;
-      final resultado = EmotionCalculator.calcularEstado(
-        preguntas: _preguntas,
-        opcionSeleccionadaPorPregunta: _opcionSeleccionadaPorPregunta,
-      );
+      final assignmentData = assignment['data'] is Map
+          ? Map<String, dynamic>.from(assignment['data'] as Map)
+          : assignment;
+      final evaluationData = evaluation['evaluacion'] is Map
+          ? Map<String, dynamic>.from(evaluation['evaluacion'] as Map)
+          : evaluation;
+      final estadoRaw = (assignmentData['estado_semaforo'] ??
+              assignmentData['estado'] ??
+              evaluationData['estado_semaforo'] ??
+              evaluation['estado'] ??
+              evaluation['semaforo'] ??
+              'normal')
+          .toString()
+          .toLowerCase();
+      final resultado = {
+        'estado': estadoRaw == 'rojo' ? 'critico' : estadoRaw,
+        'mensaje': (assignmentData['mensaje'] ??
+                assignmentData['observaciones'] ??
+                evaluation['mensaje'] ??
+                'Tu resultado ha sido actualizado.')
+            .toString(),
+        'botonTexto': estadoRaw == 'rojo' ? 'Buscar psicólogo' : 'Continuar',
+        'rachaActivada': streak.activada,
+      };
       // Navegar directo al semáforo emocional
       Navigator.pushReplacementNamed(
         context,
@@ -112,23 +205,25 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      
+
       if (e.toString().contains('CONFLICT_ERROR')) {
         // El test de hoy ya fue completado
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ya has completado el test emocional de hoy.')),
+          const SnackBar(
+            content: Text('Ya has completado el test emocional de hoy.'),
+          ),
         );
         UserSession.lastTestDate = DateTime.now();
         await UserSession.persist();
-        
+
         // Redirigir a MainApp
         if (mounted) {
           Navigator.pushReplacementNamed(context, AppRoutes.mainApp);
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) {
@@ -137,6 +232,39 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
         });
       }
     }
+  }
+
+  Future<void> _nextQuestion() async {
+    if (_preguntas.isEmpty) return;
+    final id = _preguntas[_currentQuestion]['id'] as int?;
+    if (id == null || !_opcionSeleccionadaPorPregunta.containsKey(id)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecciona una respuesta para continuar.')),
+      );
+      return;
+    }
+    if (_currentQuestion < _preguntas.length - 1) {
+      setState(() => _currentQuestion++);
+    } else {
+      await _guardarRespuestas();
+    }
+  }
+
+  List<Map<String, dynamic>> _dailyQuestions(List<Map<String, dynamic>> all) {
+    if (all.length <= _dailyQuestionLimit) return all;
+
+    final today = DateTime.now();
+    final seed = today.year * 10000 + today.month * 100 + today.day;
+    final shuffled = List<Map<String, dynamic>>.from(all)..shuffle(Random(seed));
+    return shuffled.take(_dailyQuestionLimit).toList();
+  }
+
+  String _normalizeQuestion(Object? value) {
+    return value
+        .toString()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-záéíóúüñ0-9]+'), ' ')
+        .trim();
   }
 
   @override
@@ -149,13 +277,13 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
           children: [
             // Header con logo y título
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 8.h),
               child: Row(
                 children: [
                   // Logo igual al del chat
                   Container(
-                    width: 80.w,
-                    height: 80.h,
+                    width: 68.w,
+                    height: 68.h,
                     decoration: BoxDecoration(
                       gradient: RadialGradient(
                         colors: [
@@ -178,8 +306,8 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                     child: ClipOval(
                       child: Image.asset(
                         'assets/images/normalrest.jpg',
-                        width: 80.w,
-                        height: 80.h,
+                        width: 68.w,
+                        height: 68.h,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -188,10 +316,10 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                   // Título
                   Expanded(
                     child: Text(
-                      "¡Cuéntame\nsobre tu día¡",
+                      '¡Cuéntame\nsobre tu día!',
                       style: TextStyle(
                         fontFamily: 'Fredoka',
-                        fontSize: 35.sp,
+                        fontSize: 30.sp,
                         height: 0.9,
                         fontWeight: FontWeight.bold,
                         foreground: Paint()
@@ -212,19 +340,11 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
 
             // Contenido principal
             Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Color(0xFF2196F3), width: 2),
-                ),
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _error != null
-                    ? _buildErrorContent()
-                    : _buildPreguntasContent(context),
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _error != null
+                  ? _buildErrorContent()
+                  : _buildPreguntasContent(context),
             ),
 
             // Botón guardar
@@ -244,24 +364,25 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                     ),
                     borderRadius: BorderRadius.circular(32),
                   ),
-                  child: TextButton(
-                    onPressed: _isLoading ? null : _guardarRespuestas,
-                    style: TextButton.styleFrom(
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _nextQuestion,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
                       padding: EdgeInsets.zero,
-                      minimumSize: Size(0, 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(32),
                       ),
                     ),
                     child: Text(
-                      "GUARDAR",
+                      _currentQuestion < _preguntas.length - 1 ? 'CONTINUAR' : 'VER MI RESULTADO',
                       style: TextStyle(
                         fontFamily: 'Fredoka',
-                        fontSize: 30.sp,
+                        fontSize: 21.sp,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        letterSpacing: 3.0,
+                        letterSpacing: 1.2,
                       ),
                     ),
                   ),
@@ -307,51 +428,116 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 0),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8F4FF),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(children: [
+              Text(
+                'Pregunta ${_currentQuestion + 1} de ${_preguntas.length}',
+                style: TextStyle(
+                  color: const Color(0xFF1769AA),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14.sp,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: _preguntas.isEmpty ? 0 : (_currentQuestion + 1) / _preguntas.length,
+                    minHeight: 7.h,
+                    backgroundColor: const Color(0xFFCFE3F7),
+                    valueColor: const AlwaysStoppedAnimation(Color(0xFF38A6D9)),
+                  ),
+                ),
+              ),
+            ]),
+          ),
+        ),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            "Test Personal Diario",
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-              fontFamily: 'Freeman',
-            ),
-            textAlign: TextAlign.left,
+          padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 4.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Chequeo emocional diario',
+                style: TextStyle(
+                  fontSize: 22.sp,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                  fontFamily: 'Fredoka',
+                ),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                'Te tomará menos de un minuto.',
+                style: TextStyle(fontSize: 14.sp, color: colorScheme.onSurfaceVariant),
+              ),
+            ],
           ),
         ),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: _preguntas.map((q) {
+              children: _preguntas.where((q) => _preguntas.indexOf(q) == _currentQuestion).map((q) {
                 final int? id = (q['id'] as int?);
                 if (id == null) return const SizedBox.shrink();
                 final String textoPregunta = (q['texto'] ?? q['pregunta'] ?? '')
                     .toString();
+                final String categoria = (q['categoria'] ?? '').toString();
                 final List<dynamic> opciones = (q['opciones'] is List)
                     ? q['opciones'] as List
-                    : const [];
+                    : List.generate(5, (index) => {'id': index, 'nombre': _emotionLabels[index]});
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (categoria.isNotEmpty) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF5CCFC0,
+                            ).withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            _dimensionLabel(categoria),
+                            style: const TextStyle(
+                              color: Color(0xFF167E76),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                      ],
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(18.w),
                         decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(8),
+                          color: const Color(0xFFF0F8FF),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: const Color(0xFFB9E0F7)),
                         ),
                         child: Text(
                           textoPregunta,
                           style: TextStyle(
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w900,
+                            fontSize: 17.sp,
+                            fontWeight: FontWeight.bold,
                             color: colorScheme.onPrimaryContainer,
                             fontFamily: 'Freeman',
                           ),
@@ -387,13 +573,7 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                                     MainAxisAlignment.spaceEvenly,
                                 children: List.generate(count, (index) {
                                   final dynamic opcion = opciones[index];
-                                  final int? opcionId =
-                                      (opcion is Map && opcion['id'] is int)
-                                      ? opcion['id'] as int
-                                      : null;
-                                  if (opcionId == null) {
-                                    return const SizedBox.shrink();
-                                  }
+                                  final int opcionId = index;
                                   final bool seleccionado =
                                       _opcionSeleccionadaPorPregunta[id] ==
                                       opcionId;
@@ -476,5 +656,18 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
         ),
       ],
     );
+  }
+
+  String _dimensionLabel(String value) {
+    const labels = {
+      'ansiedad': 'Ansiedad',
+      'estres_academico': 'Estrés académico',
+      'humor_depresivo': 'Estado de ánimo',
+      'sueno': 'Sueño',
+      'relaciones_sociales': 'Relaciones sociales',
+      'autoestima_autocuidado': 'Autoestima y autocuidado',
+      'energia_motivacion': 'Energía y motivación',
+    };
+    return labels[value] ?? value.replaceAll('_', ' ');
   }
 }

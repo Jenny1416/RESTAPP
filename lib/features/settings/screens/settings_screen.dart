@@ -1,12 +1,15 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../home/screens/gradient_text.dart';
 import 'feedback_screen.dart';
 import 'profile_screen.dart'; // Importar la pantalla de perfil
+import 'change_password_screen.dart';
 import 'fail_report_screen.dart'; // Importar la pantalla de reporte de fallas
-import 'terms_screen.dart'; // Importar la pantalla de términos
-import 'privacity_screen.dart'; // Importar la pantalla de privacidad
-import 'behaviour_code_screen.dart'; // Importar la pantalla de código de conducta
+import 'language_screen.dart';
+import 'remote_legal_screen.dart';
+import 'behaviour_code_screen.dart';
+import 'privacity_screen.dart';
+import 'terms_screen.dart';
 import 'package:rest/core/routes/app_routes.dart';
 import 'package:rest/core/services/user_session.dart';
 import 'package:rest/core/services/theme_service.dart';
@@ -84,6 +87,14 @@ class SettingsScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => ProfileScreen()),
                   );
                 }, context),
+                _buildConfigItem('Contraseña', Icons.lock_outline, () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChangePasswordScreen(),
+                    ),
+                  );
+                }, context),
                 _buildConfigItem(
                   'Plan Actual',
                   Icons.diamond_outlined,
@@ -124,13 +135,12 @@ class SettingsScreen extends StatelessWidget {
                   context,
                   disabled: true,
                 ),
-                _buildConfigItem(
-                  'Idioma',
-                  Icons.language_outlined,
-                  () {},
-                  context,
-                  disabled: true,
-                ),
+                _buildConfigItem('Idioma', Icons.language_outlined, () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => LanguageScreen()),
+                  );
+                }, context),
 
                 SizedBox(height: 30.h),
                 _buildSectionTitle('Soporte', context),
@@ -166,7 +176,11 @@ class SettingsScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => BehaviourCodeScreen(),
+                        builder: (context) => RemoteLegalScreen(
+                          title: 'Código de conducta',
+                          path: '/api/settings/code-of-conduct',
+                          fallbackBuilder: (_) => BehaviourCodeScreen(),
+                        ),
                       ),
                     );
                   },
@@ -179,7 +193,11 @@ class SettingsScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PrivacityScreen(),
+                        builder: (context) => RemoteLegalScreen(
+                          title: 'Aviso de privacidad',
+                          path: '/api/settings/privacy-policy',
+                          fallbackBuilder: (_) => PrivacityScreen(),
+                        ),
                       ),
                     );
                   },
@@ -191,7 +209,13 @@ class SettingsScreen extends StatelessWidget {
                   () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => TermsScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => RemoteLegalScreen(
+                          title: 'Términos y condiciones',
+                          path: '/api/settings/terms',
+                          fallbackBuilder: (_) => TermsScreen(),
+                        ),
+                      ),
                     );
                   },
                   context,

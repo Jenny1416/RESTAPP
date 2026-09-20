@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
+import 'package:rest/core/constants/profile_options.dart';
 import 'package:rest/core/utils/app_toast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'how_you_found_screen.dart';
@@ -77,36 +78,7 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   // Listas para los dropdowns
   final List<String> _edades = List.generate(56, (i) => (i + 15).toString());
-  final List<String> _ciudades = [
-    'Barranquilla',
-    'Bogotá',
-    'Cali',
-    'Cartagena',
-    'Medellín',
-    'Santa Marta',
-    'Valledupar',
-    'Bucaramanga',
-    'Cúcuta',
-    'Ibagué',
-    'Manizales',
-    'Pereira',
-    'Armenia',
-    'Popayán',
-    'Pasto',
-    'Túquerres',
-    'Quibdó',
-    'Montería',
-    'Sincelejo',
-    'Riohacha',
-    'Santa Fe de Antioquia',
-    'Envigado',
-    'Sabaneta',
-    'La Estrella',
-    'Bello',
-    'Copacabana',
-    'Girardota',
-    'Barbosa',
-  ];
+  final List<String> _ciudades = ProfileOptions.cities;
   final List<String> _carreras = [
     // 🎓 PREGRADOS
     // ⚖️ Derecho y ciencias sociales
@@ -192,27 +164,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     'Doctorado en Derecho Administrativo',
     'Doctorado en Filosofía del Derecho y Teoría Jurídica',
   ];
-  final List<String> _semestres = [
-    '1',
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    '10',
-    '1 y 2',
-    '2 y 3',
-    '3 y 4',
-    '4 y 5',
-    '5 y 6',
-    '6 y 7',
-    '7 y 8',
-    '8 y 9',
-    '9 y 10',
-  ];
+  final List<String> _semestres = ProfileOptions.semesters;
   final List<String> _sexos = [
     'Femenino',
     'Masculino',

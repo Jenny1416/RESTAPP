@@ -74,7 +74,7 @@ class _CheckScreenState extends State<CheckScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF2D2D2D),
+      backgroundColor: colorScheme.surface,
       body: Center(
         child: SingleChildScrollView(
           child: Container(

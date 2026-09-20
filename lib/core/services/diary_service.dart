@@ -86,4 +86,41 @@ class DiaryService {
     entries.sort((a, b) => b.fecha.compareTo(a.fecha));
     return entries;
   }
+
+  Future<DiaryEntry> fetchEntry(int id) async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/diario/$id'),
+      headers: _authHeaders(),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('No se pudo cargar la entrada (${response.statusCode}).');
+    }
+    final decoded = jsonDecode(response.body);
+    final data = decoded is Map && decoded['data'] is Map
+        ? decoded['data'] as Map
+        : decoded;
+    if (data is! Map) throw Exception('Respuesta de diario inválida.');
+    final fecha = DateTime.tryParse((data['fecha'] ?? '').toString()) ?? DateTime.now();
+    return DiaryEntry(
+      id: (data['id'] as num?)?.toInt() ?? id,
+      titulo: (data['titulo'] ?? '').toString(),
+      contenido: (data['contenido'] ?? '').toString(),
+      fecha: fecha,
+    );
+  }
+
+  Future<void> updateEntry({
+    required int id,
+    required String titulo,
+    required String contenido,
+  }) async {
+    final response = await http.patch(
+      Uri.parse('$_baseUrl/api/diario/$id'),
+      headers: _authHeaders(withJson: true),
+      body: jsonEncode({'titulo': titulo.trim(), 'contenido': contenido.trim()}),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('No se pudo actualizar la entrada (${response.statusCode}).');
+    }
+  }
 }

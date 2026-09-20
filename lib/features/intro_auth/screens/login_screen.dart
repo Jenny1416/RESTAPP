@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:rest/core/utils/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,6 +10,8 @@ import 'package:rest/core/routes/app_routes.dart';
 import 'package:rest/core/services/user_session.dart';
 import 'package:rest/features/emotion/screens/emotionregister_screen.dart';
 import 'package:rest/features/navigation/main_app.dart';
+import 'package:rest/features/onboarding/screens/onboarding_status_screen.dart';
+import 'package:rest/features/onboarding/services/onboarding_service.dart';
 import 'package:rest/core/widgets/primary_gradient_button.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -19,7 +21,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen>
+    with TickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
@@ -68,57 +71,94 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     );
 
     _logoFade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.0, 0.35, curve: Curves.easeOut)),
+      CurvedAnimation(
+        parent: _entryCtrl,
+        curve: const Interval(0.0, 0.35, curve: Curves.easeOut),
+      ),
     );
-    _logoSlide = Tween<Offset>(begin: const Offset(0, -0.4), end: Offset.zero).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.0, 0.35, curve: Curves.easeOut)),
-    );
+    _logoSlide = Tween<Offset>(begin: const Offset(0, -0.4), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _entryCtrl,
+            curve: const Interval(0.0, 0.35, curve: Curves.easeOut),
+          ),
+        );
 
     _field1Fade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.2, 0.55, curve: Curves.easeOut)),
+      CurvedAnimation(
+        parent: _entryCtrl,
+        curve: const Interval(0.2, 0.55, curve: Curves.easeOut),
+      ),
     );
-    _field1Slide = Tween<Offset>(begin: const Offset(0.08, 0), end: Offset.zero).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.2, 0.55, curve: Curves.easeOut)),
-    );
+    _field1Slide = Tween<Offset>(begin: const Offset(0.08, 0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _entryCtrl,
+            curve: const Interval(0.2, 0.55, curve: Curves.easeOut),
+          ),
+        );
 
     _field2Fade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.35, 0.65, curve: Curves.easeOut)),
+      CurvedAnimation(
+        parent: _entryCtrl,
+        curve: const Interval(0.35, 0.65, curve: Curves.easeOut),
+      ),
     );
-    _field2Slide = Tween<Offset>(begin: const Offset(0.08, 0), end: Offset.zero).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.35, 0.65, curve: Curves.easeOut)),
-    );
+    _field2Slide = Tween<Offset>(begin: const Offset(0.08, 0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _entryCtrl,
+            curve: const Interval(0.35, 0.65, curve: Curves.easeOut),
+          ),
+        );
 
     _buttonFade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.5, 0.78, curve: Curves.easeOut)),
+      CurvedAnimation(
+        parent: _entryCtrl,
+        curve: const Interval(0.5, 0.78, curve: Curves.easeOut),
+      ),
     );
-    _buttonSlide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.5, 0.78, curve: Curves.easeOut)),
-    );
+    _buttonSlide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _entryCtrl,
+            curve: const Interval(0.5, 0.78, curve: Curves.easeOut),
+          ),
+        );
 
     _bottomFade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.7, 1.0, curve: Curves.easeOut)),
+      CurvedAnimation(
+        parent: _entryCtrl,
+        curve: const Interval(0.7, 1.0, curve: Curves.easeOut),
+      ),
     );
-    _bottomSlide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _entryCtrl, curve: const Interval(0.7, 1.0, curve: Curves.easeOut)),
-    );
+    _bottomSlide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _entryCtrl,
+            curve: const Interval(0.7, 1.0, curve: Curves.easeOut),
+          ),
+        );
 
     // Shimmer continuo en botón INGRESAR
     _shimmerCtrl = AnimationController(
       duration: const Duration(milliseconds: 1800),
       vsync: this,
     )..repeat();
-    _shimmer = Tween<double>(begin: -1.5, end: 2.5).animate(
-      CurvedAnimation(parent: _shimmerCtrl, curve: Curves.easeInOut),
-    );
+    _shimmer = Tween<double>(
+      begin: -1.5,
+      end: 2.5,
+    ).animate(CurvedAnimation(parent: _shimmerCtrl, curve: Curves.easeInOut));
 
     // Flecha animada en UNIRME
     _arrowCtrl = AnimationController(
       duration: const Duration(milliseconds: 700),
       vsync: this,
     )..repeat(reverse: true);
-    _arrowOffset = Tween<double>(begin: 0, end: 6).animate(
-      CurvedAnimation(parent: _arrowCtrl, curve: Curves.easeInOut),
-    );
+    _arrowOffset = Tween<double>(
+      begin: 0,
+      end: 6,
+    ).animate(CurvedAnimation(parent: _arrowCtrl, curve: Curves.easeInOut));
 
     // Lanzar animación de entrada
     Timer(const Duration(milliseconds: 100), () {
@@ -226,10 +266,40 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       } catch (e) {
         // Si falla la consulta, mostramos error y no navegamos a ciegas
         if (mounted) {
-          AppToast.error(context, 'No se pudo verificar el estado del test diario. Inténtalo de nuevo.');
+          AppToast.error(
+            context,
+            'No se pudo verificar el estado del test diario. Inténtalo de nuevo.',
+          );
         }
         setState(() => _isLoading = false);
         return;
+      }
+
+      if (!mounted) return;
+
+      try {
+        final onboarding = await OnboardingService().getEstado();
+        if (!onboarding.completado) {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OnboardingStatusScreen(
+                destinationBuilder: (_) => yaHizoTest
+                    ? const MainApp()
+                    : const EmotionRegisterScreen(),
+              ),
+            ),
+          );
+          return;
+        }
+      } catch (_) {
+        if (mounted) {
+          AppToast.warning(
+            context,
+            'No pudimos consultar el onboarding. Puedes completarlo después desde Inicio.',
+          );
+        }
       }
 
       if (!mounted) return;
@@ -335,17 +405,28 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: () => Navigator.pushNamed(context, AppRoutes.forgotPassword),
+                          onPressed: () => Navigator.pushNamed(
+                            context,
+                            AppRoutes.forgotPassword,
+                          ),
                           style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 2,
+                            ),
                           ),
                           child: RichText(
                             text: TextSpan(
-                              style: GoogleFonts.fredoka(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.fredoka(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
                               children: [
                                 TextSpan(
                                   text: '¿Se te olvidó? ',
-                                  style: TextStyle(color: colorScheme.onSurfaceVariant),
+                                  style: TextStyle(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
                                 const TextSpan(
                                   text: 'Recuperar →',
@@ -376,7 +457,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                       opacity: _bottomFade,
                       child: Row(
                         children: [
-                          Expanded(child: Divider(color: colorScheme.outlineVariant, thickness: 1)),
+                          Expanded(
+                            child: Divider(
+                              color: colorScheme.outlineVariant,
+                              thickness: 1,
+                            ),
+                          ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Text(
@@ -388,7 +474,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                               ),
                             ),
                           ),
-                          Expanded(child: Divider(color: colorScheme.outlineVariant, thickness: 1)),
+                          Expanded(
+                            child: Divider(
+                              color: colorScheme.outlineVariant,
+                              thickness: 1,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -559,7 +650,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             style: GoogleFonts.fredoka(
               fontSize: isFocused || hasText ? 13 : 15,
               fontWeight: FontWeight.bold,
-              color: isFocused ? const Color(0xFF3A5AFF) : colorScheme.onSurfaceVariant,
+              color: isFocused
+                  ? const Color(0xFF3A5AFF)
+                  : colorScheme.onSurfaceVariant,
             ),
             child: Padding(
               padding: const EdgeInsets.only(left: 4, bottom: 6),
@@ -606,7 +699,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                     duration: const Duration(milliseconds: 200),
                     child: Icon(
                       icon,
-                      color: isFocused ? const Color(0xFF3A5AFF) : colorScheme.onSurfaceVariant,
+                      color: isFocused
+                          ? const Color(0xFF3A5AFF)
+                          : colorScheme.onSurfaceVariant,
                       size: 20,
                     ),
                   ),
@@ -627,7 +722,11 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                 color: Color(0xFF3709EC),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.check, color: Colors.white, size: 15),
+                              child: const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 15,
+                              ),
                             ),
                           ),
                         ),
@@ -635,13 +734,19 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                         Padding(
                           padding: const EdgeInsets.only(right: 12),
                           child: GestureDetector(
-                            onTap: () => setState(() => _passwordVisible = !_passwordVisible),
+                            onTap: () => setState(
+                              () => _passwordVisible = !_passwordVisible,
+                            ),
                             child: AnimatedSwitcher(
                               duration: const Duration(milliseconds: 200),
                               child: Icon(
-                                _passwordVisible ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                                _passwordVisible
+                                    ? Icons.visibility_rounded
+                                    : Icons.visibility_off_rounded,
                                 key: ValueKey(_passwordVisible),
-                                color: isFocused ? const Color(0xFF3A5AFF) : colorScheme.onSurfaceVariant,
+                                color: isFocused
+                                    ? const Color(0xFF3A5AFF)
+                                    : colorScheme.onSurfaceVariant,
                                 size: 20,
                               ),
                             ),
@@ -649,7 +754,10 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                         ),
                     ],
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 14,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -692,7 +800,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           context,
           PageRouteBuilder(
             pageBuilder: (_, a, __) => const RegisterScreen(),
-            transitionsBuilder: (_, anim, __, child) => FadeTransition(opacity: anim, child: child),
+            transitionsBuilder: (_, anim, __, child) =>
+                FadeTransition(opacity: anim, child: child),
             transitionDuration: const Duration(milliseconds: 300),
           ),
         );

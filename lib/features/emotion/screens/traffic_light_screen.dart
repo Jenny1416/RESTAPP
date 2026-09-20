@@ -1,8 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/routes/app_routes.dart';
 import '../../../core/services/user_session.dart';
+import '../../evaluations/widgets/latest_dimensions_card.dart';
 import '../utils/emotion_state_config.dart';
+import 'package:rest/features/professional_care/screens/psychologist_directory_screen.dart';
 
 class TrafficLightScreen extends StatelessWidget {
   final String estado;
@@ -25,7 +27,7 @@ class TrafficLightScreen extends StatelessWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF2D2D2D),
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Container(
           width: double.infinity,
@@ -180,6 +182,9 @@ class TrafficLightScreen extends StatelessWidget {
                     SizedBox(height: 24.h),
                   ],
 
+                  const LatestDimensionsCard(),
+                  SizedBox(height: 24.h),
+
                   // Botón de acción
                   Container(
                     width: 220.w,
@@ -209,10 +214,13 @@ class TrafficLightScreen extends StatelessWidget {
                         ),
                       ),
                       onPressed: () {
-                        // TODAS las rutas van a CheckScreen (Registro Guardado)
-                        if (estado == 'alerta-amarillo' ||
-                            estado == 'critico') {
-                          // Primero mostrar consejos, luego ir a registro guardado
+                        if (estado == 'critico') {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const PsychologistDirectoryScreen(),
+                            ),
+                          );
+                        } else if (estado == 'alerta-amarillo') {
                           Navigator.of(context).pushNamed(
                             AppRoutes.advice,
                             arguments: {
@@ -221,7 +229,6 @@ class TrafficLightScreen extends StatelessWidget {
                             },
                           );
                         } else {
-                          // Estados buenos van directo a registro guardado
                           Navigator.of(context).pushReplacementNamed(
                             AppRoutes.check,
                             arguments: {'promedioHoy': promedioHoy},

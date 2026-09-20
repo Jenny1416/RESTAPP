@@ -1,29 +1,33 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:rest/core/constants/profile_options.dart';
 import 'package:rest/core/services/profile_service.dart';
 import 'package:rest/core/services/user_session.dart';
-
-import '../../home/screens/gradient_text.dart';
+import 'package:rest/core/utils/app_toast.dart';
 
 class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final ProfileService _profileService = ProfileService();
-  final TextEditingController _nombreController = TextEditingController();
-  final TextEditingController _apellidosController = TextEditingController();
-  final TextEditingController _correoController = TextEditingController();
-  final TextEditingController _ciudadController = TextEditingController();
-  final TextEditingController _semestreController = TextEditingController();
-  final TextEditingController _telefonoController = TextEditingController();
-  final TextEditingController _fechaNacimientoController =
-      TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _profileService = ProfileService();
+  final _nombreController = TextEditingController();
+  final _apellidosController = TextEditingController();
+  final _correoController = TextEditingController();
+  final _telefonoController = TextEditingController();
 
   bool _isLoading = true;
   bool _isUpdating = false;
   String? _errorMessage;
+  String? _selectedCity;
+  String? _selectedSemester;
+  DateTime? _birthDate;
 
   @override
   void initState() {
@@ -36,89 +40,80 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _isLoading = true;
       _errorMessage = null;
     });
-
     try {
       final profile = await _profileService.fetchProfile();
       if (!mounted) return;
-
       setState(() {
         _nombreController.text = profile.nombres;
         _apellidosController.text = profile.apellidos;
         _correoController.text = profile.correo;
-        _ciudadController.text = profile.ciudad ?? '';
-        _semestreController.text = profile.semestreActual ?? '';
         _telefonoController.text = profile.telefono ?? '';
-        _fechaNacimientoController.text = profile.fechaNacimientoFormateada;
+        _selectedCity = profile.ciudad;
+        _selectedSemester = profile.semestreActual;
+        _birthDate = profile.fechaNacimiento;
         _isLoading = false;
       });
-
-      // Actualizar nombre en la sesión global para otras pantallas
       UserSession.currentUserName = profile.nombres;
       await UserSession.persist();
-    } catch (e) {
+    } catch (error) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = e.toString().replaceFirst('Exception: ', '');
+        _errorMessage = error.toString().replaceFirst('Exception: ', '');
         _isLoading = false;
       });
     }
   }
 
-  Future<void> _handleSave() async {
-    if (_isUpdating) return;
+  Future<void> _save() async {
+    if (_isUpdating || !(_formKey.currentState?.validate() ?? false)) return;
+    if (_selectedSemester == null || _birthDate == null) {
+      AppToast.warning(
+        context,
+        'Selecciona tu semestre y fecha de nacimiento.',
+      );
+      return;
+    }
 
-    setState(() {
-      _isUpdating = true;
-    });
-
+    setState(() => _isUpdating = true);
     try {
-      // Construir el payload según el contrato corregido
-      final Map<String, dynamic> payload = {
+      final date = _birthDate!;
+      await _profileService.updateProfile({
         'nombres': _nombreController.text.trim(),
         'apellidos': _apellidosController.text.trim(),
-        'semestre_actual': _semestreController.text.trim(),
         'telefono': _telefonoController.text.trim(),
-      };
-
-      // Manejar la fecha de nacimiento si tiene contenido
-      final fechaRaw = _fechaNacimientoController.text.trim();
-      if (fechaRaw.isNotEmpty) {
-        // Convertir de DD/MM/YYYY a YYYY-MM-DD
-        final parts = fechaRaw.split('/');
-        if (parts.length == 3) {
-          final day = parts[0].padLeft(2, '0');
-          final month = parts[1].padLeft(2, '0');
-          final year = parts[2];
-          payload['fecha_nacimiento'] = '$year-$month-$day';
-        }
-      }
-
-      await _profileService.updateProfile(payload);
-      
+        'semestre_actual': _selectedSemester,
+        'fecha_nacimiento':
+            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
+      });
+      UserSession.currentUserName = _nombreController.text.trim();
+      await UserSession.persist();
       if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Perfil actualizado correctamente'),
-          backgroundColor: Color(0xFF4FC3F7),
-        ),
-      );
-
-      // Recargar perfil para confirmar cambios
+      AppToast.success(context, 'Perfil actualizado correctamente.');
       await _loadProfile();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al actualizar: $e'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-    } finally {
+    } catch (error) {
       if (mounted) {
-        setState(() => _isUpdating = false);
+        AppToast.error(
+          context,
+          'No se pudo actualizar: ${error.toString().replaceFirst('Exception: ', '')}',
+        );
       }
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
     }
+  }
+
+  Future<void> _pickBirthDate() async {
+    final now = DateTime.now();
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: _birthDate ?? DateTime(now.year - 18, now.month, now.day),
+      firstDate: DateTime(1900),
+      lastDate: now,
+      helpText: 'Selecciona tu fecha de nacimiento',
+      cancelText: 'Cancelar',
+      confirmText: 'Seleccionar',
+    );
+    if (selected != null && mounted) setState(() => _birthDate = selected);
   }
 
   @override
@@ -126,244 +121,406 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _nombreController.dispose();
     _apellidosController.dispose();
     _correoController.dispose();
-    _ciudadController.dispose();
-    _semestreController.dispose();
     _telefonoController.dispose();
-    _fechaNacimientoController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: colors.brightness == Brightness.dark
+          ? colors.surface
+          : const Color(0xFFF5F7FF),
       appBar: AppBar(
-        titleSpacing: 0,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-        leadingWidth: 70,
-        leading: Center(
-          child: Container(
-            margin: const EdgeInsets.only(left: 20),
-            child: InkWell(
-              onTap: () => Navigator.pop(context),
-              customBorder: CircleBorder(),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Color(0xFF08B1DD),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 3,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: Icon(Icons.arrow_back, color: Colors.white, size: 25),
-              ),
-            ),
-          ),
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Mi perfil',
+          style: TextStyle(fontFamily: 'Fredoka', fontWeight: FontWeight.bold),
         ),
-        title: Container(
-          margin: const EdgeInsets.only(left: 10),
-          child: GradientText(
-            'Perfil',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 30.sp),
-            gradient: LinearGradient(
-              colors: [Color(0xFF0AF3FF), Color(0xFF0419FF)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        centerTitle: false,
       ),
-      body: _buildBody(),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+          ? _ErrorState(message: _errorMessage!, onRetry: _loadProfile)
+          : _buildForm(colors),
     );
   }
 
-  Widget _buildBody() {
-    if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
-    }
+  Widget _buildForm(ColorScheme colors) {
+    final cityOptions = <String>{
+      ...ProfileOptions.cities,
+      if (_selectedCity?.trim().isNotEmpty == true) _selectedCity!,
+    }.toList();
+    final semesterOptions = <String>{
+      ...ProfileOptions.semesters,
+      if (_selectedSemester?.trim().isNotEmpty == true) _selectedSemester!,
+    }.toList();
 
-    if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                color: Colors.redAccent,
-                size: 40,
-              ),
-              SizedBox(height: 12.h),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14.sp),
-              ),
-              SizedBox(height: 16.h),
-              ElevatedButton(
-                onPressed: _loadProfile,
-                child: Text('Reintentar'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 100.w,
-                height: 100.h,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF0AF3FF), Color(0xFF0419FF)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+    return Form(
+      key: _formKey,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 30.h),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 620),
+            child: Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(22.w),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF39C4B6), Color(0xFF347BC2)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(26.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF347BC2).withValues(alpha: 0.2),
+                        blurRadius: 22,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0xFF0AF3FF).withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      offset: Offset(0, 5),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 88.w,
+                        height: 88.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.45),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.person_rounded,
+                          color: Colors.white,
+                          size: 48,
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+                      Text(
+                        '${_nombreController.text} ${_apellidosController.text}'
+                            .trim(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Fredoka',
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 3.h),
+                      Text(
+                        _correoController.text,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.88),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 18.h),
+                _FormSection(
+                  title: 'Información personal',
+                  children: [
+                    _textField(
+                      label: 'Nombres',
+                      controller: _nombreController,
+                      icon: Icons.person_outline_rounded,
+                      validator: _requiredName,
+                    ),
+                    SizedBox(height: 14.h),
+                    _textField(
+                      label: 'Apellidos',
+                      controller: _apellidosController,
+                      icon: Icons.badge_outlined,
+                      validator: _requiredName,
+                    ),
+                    SizedBox(height: 14.h),
+                    _textField(
+                      label: 'Correo institucional',
+                      controller: _correoController,
+                      icon: Icons.alternate_email_rounded,
+                      readOnly: true,
+                      helperText: 'El correo de la cuenta no se puede editar.',
+                    ),
+                    SizedBox(height: 14.h),
+                    _textField(
+                      label: 'Teléfono',
+                      controller: _telefonoController,
+                      icon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      validator: (value) {
+                        final text = value?.trim() ?? '';
+                        if (text.length < 7) {
+                          return 'Ingresa un teléfono válido';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 14.h),
+                    _dateField(),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                _FormSection(
+                  title: 'Información académica',
+                  children: [
+                    _dropdown(
+                      label: 'Ciudad',
+                      value: _selectedCity,
+                      items: cityOptions,
+                      icon: Icons.location_city_outlined,
+                      onChanged: null,
+                      helperText:
+                          'La API actual todavía no permite cambiar la ciudad.',
+                    ),
+                    SizedBox(height: 14.h),
+                    _dropdown(
+                      label: 'Semestre actual',
+                      value: _selectedSemester,
+                      items: semesterOptions,
+                      icon: Icons.school_outlined,
+                      onChanged: (value) =>
+                          setState(() => _selectedSemester = value),
                     ),
                   ],
                 ),
-                child: Icon(Icons.person, color: Colors.white, size: 50),
-              ),
-            ),
-            SizedBox(height: 30.h),
-            _buildInputField('Nombres', _nombreController),
-            SizedBox(height: 20.h),
-            _buildInputField('Apellidos', _apellidosController),
-            SizedBox(height: 20.h),
-            _buildInputField('Correo', _correoController),
-            SizedBox(height: 20.h),
-            _buildInputField('Ciudad', _ciudadController),
-            SizedBox(height: 20.h),
-            _buildInputField('Semestre', _semestreController),
-            SizedBox(height: 20.h),
-            _buildInputField('Teléfono', _telefonoController),
-            SizedBox(height: 20.h),
-            _buildInputField('Fecha de nacimiento', _fechaNacimientoController),
-            SizedBox(height: 40.h),
-            Container(
-              width: double.infinity,
-              height: 55.h,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF0AF3FF), Color(0xFF0419FF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0xFF0AF3FF).withValues(alpha: 0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(15),
-                  onTap: _isUpdating ? null : _handleSave,
-                  child: Center(
-                    child: _isUpdating
+                SizedBox(height: 22.h),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56.h,
+                  child: FilledButton.icon(
+                    onPressed: _isUpdating ? null : _save,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF326FB6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(17.r),
+                      ),
+                    ),
+                    icon: _isUpdating
                         ? const SizedBox(
-                            width: 24,
-                            height: 24,
+                            width: 20,
+                            height: 20,
                             child: CircularProgressIndicator(
-                              color: Colors.white,
                               strokeWidth: 2,
+                              color: Colors.white,
                             ),
                           )
-                        : Text(
-                            'GUARDAR CAMBIOS',
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
+                        : const Icon(Icons.save_outlined),
+                    label: Text(
+                      _isUpdating ? 'Guardando…' : 'Guardar cambios',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _textField({
+    required String label,
+    required TextEditingController controller,
+    required IconData icon,
+    bool readOnly = false,
+    String? helperText,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      readOnly: readOnly,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      validator: validator,
+      style: GoogleFonts.fredoka(fontWeight: FontWeight.w500),
+      decoration: _decoration(
+        label: label,
+        icon: icon,
+        helperText: helperText,
+        filledColor: readOnly
+            ? Theme.of(context).colorScheme.surfaceContainerHighest
+            : null,
+      ),
+    );
+  }
+
+  Widget _dropdown({
+    required String label,
+    required String? value,
+    required List<String> items,
+    required IconData icon,
+    required ValueChanged<String?>? onChanged,
+    String? helperText,
+  }) {
+    return DropdownButtonFormField<String>(
+      key: ValueKey('$label-$value'),
+      initialValue: value != null && items.contains(value) ? value : null,
+      isExpanded: true,
+      decoration: _decoration(
+        label: label,
+        icon: icon,
+        helperText: helperText,
+        filledColor: onChanged == null
+            ? Theme.of(context).colorScheme.surfaceContainerHighest
+            : null,
+      ),
+      items: items
+          .map(
+            (item) => DropdownMenuItem(
+              value: item,
+              child: Text(item, overflow: TextOverflow.ellipsis),
+            ),
+          )
+          .toList(),
+      onChanged: onChanged,
+      validator: onChanged == null
+          ? null
+          : (selected) => selected == null ? 'Selecciona una opción' : null,
+    );
+  }
+
+  Widget _dateField() {
+    final date = _birthDate;
+    final formatted = date == null
+        ? 'Selecciona tu fecha'
+        : '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: _pickBirthDate,
+      child: InputDecorator(
+        decoration: _decoration(
+          label: 'Fecha de nacimiento',
+          icon: Icons.calendar_month_outlined,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                formatted,
+                style: GoogleFonts.fredoka(
+                  color: date == null
+                      ? Theme.of(context).colorScheme.onSurfaceVariant
+                      : Theme.of(context).colorScheme.onSurface,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            SizedBox(height: 20.h),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Color(0xFF326FB6),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInputField(String label, TextEditingController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
+  InputDecoration _decoration({
+    required String label,
+    required IconData icon,
+    String? helperText,
+    Color? filledColor,
+  }) {
+    final colors = Theme.of(context).colorScheme;
+    return InputDecoration(
+      labelText: label,
+      helperText: helperText,
+      helperMaxLines: 2,
+      prefixIcon: Icon(icon, color: const Color(0xFF326FB6)),
+      filled: true,
+      fillColor: filledColor ?? colors.surfaceContainerLow,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: colors.outlineVariant),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: colors.outlineVariant),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFF326FB6), width: 2),
+      ),
+    );
+  }
+
+  String? _requiredName(String? value) {
+    if ((value?.trim().length ?? 0) < 2) return 'Ingresa al menos 2 caracteres';
+    return null;
+  }
+}
+
+class _FormSection extends StatelessWidget {
+  final String title;
+  final List<Widget> children;
+
+  const _FormSection({required this.title, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(17),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontFamily: 'Fredoka',
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
+          const SizedBox(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _ErrorState({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.cloud_off_rounded, size: 50),
+            const SizedBox(height: 12),
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            FilledButton(onPressed: onRetry, child: const Text('Reintentar')),
+          ],
         ),
-        SizedBox(height: 8.h),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant,
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: TextFormField(
-            controller: controller,
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
-              hintStyle: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 14.sp,
-              ),
-            ),
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

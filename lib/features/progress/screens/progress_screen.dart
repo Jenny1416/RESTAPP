@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/utils/app_toast.dart';
 import 'package:rest/core/routes/app_routes.dart';
@@ -7,6 +7,7 @@ import 'package:rest/core/services/progress_service.dart';
 import 'package:rest/core/services/user_session.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rest/features/progress/screens/emotional_calendar_screen.dart';
+import 'package:rest/features/progress/widgets/activity_completion_sheet.dart';
 import 'package:rest/features/progress/screens/streak_screen.dart';
 import 'package:rest/features/relax/screens/jokes_screen.dart';
 import 'package:rest/features/relax/screens/music_screen.dart';
@@ -316,7 +317,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
       await _progressService.requestReward(premioId: reward.id);
       await _loadRewardsCatalog();
       if (!mounted) return;
-      AppToast.success(context, 'Solicitud enviada: ${reward.nombre}. Bienestar Universitario recibió el correo.');
+      AppToast.success(
+        context,
+        'Solicitud enviada: ${reward.nombre}. Bienestar Universitario recibió el correo.',
+      );
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
@@ -330,6 +334,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   Future<void> _completeActivity(DailyActivity activity) async {
     if (_sendingActivityId != null) return;
+    final completed = await showActivityCompletionSheet(context, activity);
+    if (!mounted || completed != true) return;
     setState(() => _sendingActivityId = activity.id);
 
     try {
@@ -403,19 +409,22 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   Widget _buildRachaCard(BuildContext context) {
     final streak = UserSession.streakCount;
-    final goal   = UserSession.goalDays;
+    final goal = UserSession.goalDays;
     final goalSet = UserSession.streakGoalSet;
     final progress = goalSet ? (streak / goal).clamp(0.0, 1.0) : 0.0;
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(PageRouteBuilder(
-          pageBuilder: (_, __, ___) => goalSet
-              ? const StreakCelebrationScreen()
-              : const GoalPickerScreen(),
-          transitionsBuilder: (_, anim, __, child) => FadeTransition(opacity: anim, child: child),
-          transitionDuration: const Duration(milliseconds: 300),
-        ));
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => goalSet
+                ? const StreakCelebrationScreen()
+                : const GoalPickerScreen(),
+            transitionsBuilder: (_, anim, __, child) =>
+                FadeTransition(opacity: anim, child: child),
+            transitionDuration: const Duration(milliseconds: 300),
+          ),
+        );
       },
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -428,13 +437,21 @@ class _ProgressScreenState extends State<ProgressScreen> {
           ),
           border: Border.all(color: const Color(0xFFCDD8FF), width: 1.5),
           boxShadow: [
-            BoxShadow(color: const Color(0xFF3A5AFF).withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: const Color(0xFF3A5AFF).withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Row(
           children: [
             // Llama
-            Image.asset('assets/images/RachaDaily.png', width: 52.w, height: 52.h),
+            Image.asset(
+              'assets/images/RachaDaily.png',
+              width: 52.w,
+              height: 52.h,
+            ),
             SizedBox(width: 14.w),
             Expanded(
               child: Column(
@@ -443,21 +460,28 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   Row(
                     children: [
                       Text(
-                        goalSet ? '$streak ${streak == 1 ? "día" : "días"} de racha' : 'Sin racha activa',
+                        goalSet
+                            ? '$streak ${streak == 1 ? "día" : "días"} de racha'
+                            : 'Sin racha activa',
                         style: GoogleFonts.fredoka(
-                          fontSize: 17.sp, fontWeight: FontWeight.bold,
+                          fontSize: 17.sp,
+                          fontWeight: FontWeight.bold,
                           color: const Color(0xFF3A5AFF),
                         ),
                       ),
                       SizedBox(width: 6.w),
-                      if (streak > 0) Text('🔥', style: TextStyle(fontSize: 16.sp)),
+                      if (streak > 0)
+                        Text('🔥', style: TextStyle(fontSize: 16.sp)),
                     ],
                   ),
                   SizedBox(height: 4.h),
                   if (goalSet) ...[
                     Text(
                       'Meta: $goal días · faltan ${(goal - streak).clamp(0, goal)} días',
-                      style: GoogleFonts.fredoka(fontSize: 12.sp, color: const Color(0xFF6B7280)),
+                      style: GoogleFonts.fredoka(
+                        fontSize: 12.sp,
+                        color: const Color(0xFF6B7280),
+                      ),
                     ),
                     SizedBox(height: 6.h),
                     ClipRRect(
@@ -466,19 +490,28 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         value: progress,
                         minHeight: 7,
                         backgroundColor: const Color(0xFFE0E7FF),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A5AFF)),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF3A5AFF),
+                        ),
                       ),
                     ),
                   ] else
                     Text(
                       'Toca para elegir tu meta y activar la racha',
-                      style: GoogleFonts.fredoka(fontSize: 12.sp, color: const Color(0xFF8C4EFF)),
+                      style: GoogleFonts.fredoka(
+                        fontSize: 12.sp,
+                        color: const Color(0xFF8C4EFF),
+                      ),
                     ),
                 ],
               ),
             ),
             SizedBox(width: 8.w),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFF3A5AFF), size: 20),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFF3A5AFF),
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -919,7 +952,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      '$estrellasHoy de $metaDiaria completadas hoy. Objetivo: 5 actividades por dia.',
+                      '$estrellasHoy de $metaDiaria completadas hoy. Objetivo: $metaDiaria actividades por día.',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: colorScheme.onSurfaceVariant,
@@ -1414,7 +1447,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       ),
                     )
                   : const Icon(Icons.star_rounded, size: 18),
-              label: Text(isSendingThisItem ? 'Completando...' : 'Completar'),
+              label: Text(isSendingThisItem ? 'Guardando...' : 'Realizar'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF26A69A),
                 foregroundColor: Colors.white,
@@ -1474,7 +1507,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Image.asset('assets/images/dairy.jpg', width: 110.w, height: 90.h),
+                Image.asset(
+                  'assets/images/dairy.jpg',
+                  width: 110.w,
+                  height: 90.h,
+                ),
                 SizedBox(width: 16.w),
                 Expanded(
                   child: Text(

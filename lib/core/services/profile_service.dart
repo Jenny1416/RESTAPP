@@ -187,7 +187,9 @@ class ProfileService {
     }
 
     final decoded = jsonDecode(response.body);
-    final rawProfile = decoded is Map<String, dynamic> ? decoded['data'] : null;
+    final rawProfile = decoded is Map<String, dynamic>
+        ? decoded['data'] ?? decoded['user']
+        : null;
 
     if (rawProfile is Map<String, dynamic>) {
       return UserProfile.fromJson(rawProfile);

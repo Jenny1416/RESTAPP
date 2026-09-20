@@ -230,7 +230,7 @@ class PersonalProgressService {
         : <String, dynamic>{};
 
     return DailyStreakActivationResult(
-      activada: data['activada'] == true,
+      activada: data['activada'] == true || data['activated_today'] == true,
       mensaje: (data['mensaje'] ?? 'Racha procesada').toString(),
       fecha: (data['fecha'] ?? '').toString(),
       estrellaOtorgada: (data['estrella_otorgada'] as num?)?.toInt() ?? 0,

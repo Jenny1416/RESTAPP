@@ -70,7 +70,7 @@ flutter pub get
 ## 6) Ejecucion local
 
 ```bash
-flutter run --dart-define-from-file=.env.local
+flutter run --dart-define-from-file=.env
 ```
 
 Para listar dispositivos:
@@ -81,7 +81,7 @@ flutter devices
 
 ## 7) Scripts/comandos utiles
 
-- Ejecutar app local: `flutter run --dart-define-from-file=.env.local`
+- Ejecutar app: `flutter run --dart-define-from-file=.env`
 - Analisis estatico: `flutter analyze`
 - Pruebas: `flutter test`
 - Formateo: `dart format .`
@@ -90,18 +90,11 @@ flutter devices
 
 ### Contenedor de Flutter Web
 
-La API se elige exclusivamente mediante el archivo de variables indicado. El
-contenedor publica la aplicacion en `http://localhost:8081`:
+La API se elige exclusivamente mediante el archivo `.env`, que no se versiona.
+El contenedor publica la aplicacion en `http://localhost:8081`:
 
 ```powershell
-# Frontend local conectado al backend local
-docker compose --env-file .env.local -p restapp-local up -d --build
-
-# Frontend local conectado al backend de pruebas
-docker compose --env-file .env.test -p restapp-test up -d --build
-
-# Frontend local conectado al backend de produccion
-docker compose --env-file .env.production -p restapp-production up -d --build
+docker compose --env-file .env -p restapp up -d --build
 ```
 
 ### Desarrollo de ramas test con volumen
@@ -109,7 +102,7 @@ docker compose --env-file .env.production -p restapp-production up -d --build
 Para desarrollo local, usa el servidor Flutter con el codigo montado como volumen:
 
 ```powershell
-docker compose --env-file .env.local -p restapp-dev -f docker-compose.dev.yml up -d
+docker compose --env-file .env -p restapp-dev -f docker-compose.dev.yml up -d
 ```
 
 Abre `http://localhost:8081`. Los cambios de rama no requieren `docker build`. Tras un `git switch`, reinicia solamente el proceso Flutter para compilar el codigo de la rama nueva:
@@ -132,8 +125,22 @@ docker compose -p restapp-dev -f docker-compose.dev.yml down
 
 ## 8) Configuracion de backend y entorno
 
-La URL se inyecta en compilacion mediante variables definidas en `.env.local`,
-`.env.test` o `.env.production`; no existe una URL fija dentro del codigo.
+La URL se inyecta en compilacion mediante un unico archivo `.env`; no existe
+una URL fija dentro del codigo. Crea el archivo a partir de la plantilla:
+
+```bash
+cp .env.example .env
+```
+
+En PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Para elegir local, test o produccion, cambia `API_BASE_URL` dentro de ese mismo
+archivo. En local, `ANDROID_API_BASE_URL` permite usar una URL diferente para
+el emulador Android. En test y produccion puede eliminarse esa variable.
 La seleccion se resuelve en:
 
 - `lib/core/config/api_config.dart`
@@ -143,22 +150,13 @@ La seleccion se resuelve en:
 No es necesario editar el codigo. Usa uno de estos comandos:
 
 ```bash
-# Local: localhost en web/escritorio y 10.0.2.2 en emulador Android
-flutter run --dart-define-from-file=.env.local
-
-# Backend de pruebas del VPS
-flutter run --dart-define-from-file=.env.test
-
-# Backend de produccion del VPS
-flutter run --dart-define-from-file=.env.production
+flutter run --dart-define-from-file=.env
 ```
 
 Los APK se generan con la misma seleccion:
 
 ```bash
-flutter build apk --release --dart-define-from-file=.env.local
-flutter build apk --release --dart-define-from-file=.env.test
-flutter build apk --release --dart-define-from-file=.env.production
+flutter build apk --release --dart-define-from-file=.env
 ```
 
 Tambien puede inyectarse una URL sin archivo:
@@ -168,7 +166,7 @@ flutter run --dart-define=API_BASE_URL=http://localhost:3000
 ```
 
 `API_BASE_URL` es obligatoria. En Android, `ANDROID_API_BASE_URL` la sobrescribe
-cuando esta definida, lo que permite que `.env.local` use `10.0.2.2` sin
+cuando esta definida, lo que permite que `.env` use `10.0.2.2` sin
 afectar Web, Windows o iOS.
 
 ### Importante para pruebas en Android emulator/device
@@ -204,9 +202,10 @@ Variables de compilacion admitidas:
 - `API_BASE_URL=<url>` (obligatoria)
 - `ANDROID_API_BASE_URL=<url>` (opcional, solo Android)
 
-Los nombres de los archivos representan el entorno; la aplicacion solo recibe
-variables. Las URLs publicas de una API siempre son visibles en el trafico del
-navegador o de la aplicacion y no deben considerarse secretos.
+Solo `.env.example` se versiona. `.env` esta ignorado por Git y debe contener la
+configuracion activa de cada equipo o servidor. Las URLs publicas de una API
+siempre son visibles en el trafico del navegador o de la aplicacion y no deben
+considerarse secretos.
 
 ## 11) Convenciones del proyecto
 

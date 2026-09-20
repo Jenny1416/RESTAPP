@@ -33,6 +33,11 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Local environment configuration (never commit the real file)
+.env
+.env.*
+!.env.example
+
 # Symbolication related
 app.*.symbols
 

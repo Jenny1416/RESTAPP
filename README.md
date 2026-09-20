@@ -118,6 +118,15 @@ flutter build apk --release --dart-define=API_ENV=production
 flutter build apk --release --dart-define=API_ENV=university
 ```
 
+Generar Flutter Web:
+
+```bash
+flutter build web --release
+flutter build web --release --dart-define=API_ENV=test
+flutter build web --release --dart-define=API_ENV=production
+flutter build web --release --dart-define=API_ENV=university
+```
+
 Para listar dispositivos:
 
 ```bash
@@ -130,6 +139,8 @@ El contenedor publica Flutter Web en `http://localhost:8081`. En PowerShell:
 
 ```powershell
 # Local (predeterminado)
+$env:API_ENV = "local"
+$env:API_BASE_URL = ""
 docker compose -p restapp up -d --build --force-recreate
 
 # Pruebas

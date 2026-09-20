@@ -8,9 +8,11 @@ RUN flutter pub get
 
 COPY . .
 
-ARG API_BASE_URL
-RUN test -n "$API_BASE_URL"
-RUN flutter build web --release --dart-define=API_BASE_URL=${API_BASE_URL}
+ARG API_ENV=local
+ARG API_BASE_URL=
+RUN flutter build web --release \
+  --dart-define=API_ENV=${API_ENV} \
+  --dart-define=API_BASE_URL=${API_BASE_URL}
 
 FROM nginx:1.28-alpine
 

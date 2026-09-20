@@ -3,7 +3,8 @@ services:
     build:
       context: .
       args:
-        API_BASE_URL: ${API_BASE_URL:?API_BASE_URL is required}
+        API_ENV: ${API_ENV:-local}
+        API_BASE_URL: ${API_BASE_URL:-}
     restart: unless-stopped
     ports:
       - "${APP_HOST_PORT:-8081}:80"

@@ -69,64 +69,54 @@ flutter pub get
 
 ## 6) Configuracion del entorno
 
-La URL se inyecta en compilacion mediante un unico archivo `.env`; no existe
-una URL fija dentro del codigo y el archivo real no se versiona. Crealo a
-partir de la plantilla:
+La aplicacion selecciona dinamicamente su API. `API_BASE_URL`, cuando se
+proporciona, tiene prioridad sobre `API_ENV`. Si no se proporciona ninguna de
+las dos variables, usa el backend local.
 
-```bash
-cp .env.example .env
-```
+| Entorno | URL |
+|---|---|
+| `local` | `http://localhost:3000` |
+| `local` en emulador Android | `http://10.0.2.2:3000` |
+| `test` | `https://api-test.restapp.site` |
+| `production` | `https://api.restapp.site` |
+| `university` | `http://179.197.239.216:3000` |
 
-En PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Configura el mismo `.env` según la API que quieras consumir.
-
-### Backend local
-
-```dotenv
-API_BASE_URL=http://localhost:3000
-ANDROID_API_BASE_URL=http://10.0.2.2:3000
-```
-
-### API de pruebas
-
-```dotenv
-API_BASE_URL=https://api-test.restapp.site
-```
-
-### API de produccion
-
-```dotenv
-API_BASE_URL=https://api.restapp.site
-```
-
-`ANDROID_API_BASE_URL` solo es necesario para alcanzar desde el emulador
-Android un backend ejecutado en el computador. La seleccion se resuelve en:
+La seleccion se resuelve en:
 
 - `lib/core/config/api_config.dart`
 
 ## 7) Ejecutar localmente
 
-Una vez configurado `.env`, el comando es el mismo para cualquiera de las tres
-APIs:
+Ejecutar contra el backend local, que es el comportamiento predeterminado:
 
 ```bash
-flutter run --dart-define-from-file=.env
+flutter run
 ```
 
-Los APK se generan con la misma seleccion:
+Ejecutar contra cada API remota:
 
 ```bash
-flutter build apk --release --dart-define-from-file=.env
+flutter run --dart-define=API_ENV=test
+flutter run --dart-define=API_ENV=production
+flutter run --dart-define=API_ENV=university
 ```
 
-`API_BASE_URL` es obligatoria. En Android, `ANDROID_API_BASE_URL` la sobrescribe
-cuando esta definida, lo que permite que `.env` use `10.0.2.2` sin
-afectar Web, Windows o iOS.
+Una URL personalizada siempre tiene prioridad:
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://192.168.1.100:3000
+```
+
+Generar APK:
+
+```bash
+# Local: Android usa automaticamente 10.0.2.2
+flutter build apk --release
+
+flutter build apk --release --dart-define=API_ENV=test
+flutter build apk --release --dart-define=API_ENV=production
+flutter build apk --release --dart-define=API_ENV=university
+```
 
 Para listar dispositivos:
 
@@ -136,17 +126,35 @@ flutter devices
 
 ## 8) Ejecutar en contenedor
 
-El contenedor usa el mismo `.env` y publica Flutter Web en
-`http://localhost:8081`:
+El contenedor publica Flutter Web en `http://localhost:8081`. En PowerShell:
 
 ```powershell
-docker compose --env-file .env -p restapp up -d --build
+# Local (predeterminado)
+docker compose -p restapp up -d --build --force-recreate
+
+# Pruebas
+$env:API_ENV = "test"
+$env:API_BASE_URL = ""
+docker compose -p restapp up -d --build --force-recreate
+
+# Produccion
+$env:API_ENV = "production"
+$env:API_BASE_URL = ""
+docker compose -p restapp up -d --build --force-recreate
+
+# Universidad
+$env:API_ENV = "university"
+$env:API_BASE_URL = ""
+docker compose -p restapp up -d --build --force-recreate
+
+Remove-Item Env:API_ENV -ErrorAction SilentlyContinue
+Remove-Item Env:API_BASE_URL -ErrorAction SilentlyContinue
 ```
 
 Para desarrollo con el codigo montado como volumen y hot reload:
 
 ```powershell
-docker compose --env-file .env -p restapp-dev -f docker-compose.dev.yml up -d
+docker compose -p restapp-dev -f docker-compose.dev.yml up -d
 docker attach restapp-dev-app-1
 ```
 
@@ -155,8 +163,8 @@ Pulsa `r` para hot reload y separa la terminal con `Ctrl+P`, `Ctrl+Q`.
 Detener los contenedores:
 
 ```powershell
-docker compose --env-file .env -p restapp down
-docker compose --env-file .env -p restapp-dev -f docker-compose.dev.yml down
+docker compose -p restapp down
+docker compose -p restapp-dev -f docker-compose.dev.yml down
 ```
 
 ## Comandos utiles
@@ -195,13 +203,11 @@ docker compose --env-file .env -p restapp-dev -f docker-compose.dev.yml down
 
 Variables de compilacion admitidas:
 
-- `API_BASE_URL=<url>` (obligatoria)
-- `ANDROID_API_BASE_URL=<url>` (opcional, solo Android)
+- `API_ENV=local|test|production|university` (opcional; por defecto `local`)
+- `API_BASE_URL=<url>` (opcional; tiene prioridad sobre `API_ENV`)
 
-Solo `.env.example` se versiona. `.env` esta ignorado por Git y debe contener la
-configuracion activa de cada equipo o servidor. Las URLs publicas de una API
-siempre son visibles en el trafico del navegador o de la aplicacion y no deben
-considerarse secretos.
+Las URLs publicas de una API siempre son visibles en el trafico del navegador o
+de la aplicacion y no deben considerarse secretos.
 
 ## 11) Convenciones del proyecto
 

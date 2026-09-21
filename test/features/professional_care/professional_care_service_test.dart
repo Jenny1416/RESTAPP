@@ -126,4 +126,77 @@ void main() {
       ),
     );
   });
+
+  test('solo muestra chats de solicitudes aprobadas', () async {
+    final service = ProfessionalCareService(
+      client: MockClient((request) async {
+        if (request.url.path == '/api/asignaciones/mis-solicitudes') {
+          return http.Response(
+            jsonEncode({
+              'success': true,
+              'data': [
+                {'id': 1, 'psicologo_id': 7, 'estado': 'aprobado'},
+                {'id': 2, 'psicologo_id': 8, 'estado': 'rechazado'},
+              ],
+            }),
+            200,
+          );
+        }
+
+        expect(request.url.path, '/api/chats');
+        return http.Response(
+          jsonEncode([
+            {
+              'id': 20,
+              'estudiante_id': 12,
+              'psicologo_id': 7,
+              'is_active': true,
+              'isSendByAi': false,
+            },
+            {
+              'id': 21,
+              'estudiante_id': 12,
+              'psicologo_id': 8,
+              'is_active': true,
+              'isSendByAi': false,
+            },
+          ]),
+          200,
+        );
+      }),
+    );
+
+    final chats = await service.getChats();
+
+    expect(chats, hasLength(1));
+    expect(chats.single.psychologistId, 7);
+  });
+
+  test('no crea un chat antes de que la solicitud sea aprobada', () async {
+    final service = ProfessionalCareService(
+      client: MockClient((request) async {
+        expect(request.url.path, '/api/asignaciones/mis-solicitudes');
+        return http.Response(
+          jsonEncode({
+            'success': true,
+            'data': [
+              {'id': 2, 'psicologo_id': 8, 'estado': 'pendiente'},
+            ],
+          }),
+          200,
+        );
+      }),
+    );
+
+    expect(
+      () => service.getOrCreateActiveChat(8),
+      throwsA(
+        isA<ProfessionalCareException>().having(
+          (error) => error.statusCode,
+          'statusCode',
+          403,
+        ),
+      ),
+    );
+  });
 }

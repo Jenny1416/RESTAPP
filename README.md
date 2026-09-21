@@ -67,10 +67,107 @@ Archivos clave:
 flutter pub get
 ```
 
-## 6) Ejecucion local
+## 6) Configuracion del entorno
+
+La aplicación no contiene URLs de API en el código. Lee `API_BASE_URL` desde un
+único `.env` privado durante la compilación. En Android, la variable opcional
+`ANDROID_API_BASE_URL` tiene prioridad para permitir el uso de `10.0.2.2` en el
+emulador.
+
+| Entorno | URL |
+|---|---|
+| Local | `http://localhost:3000` |
+| Local en emulador Android | `http://10.0.2.2:3000` |
+| Pruebas | `https://api-test.restapp.site` |
+| Producción | `https://api.restapp.site` |
+| Universidad | `http://179.197.239.216:3000` |
+
+Crea el archivo inicial:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+`.env` está ignorado por Git. Para cambiar de entorno, reemplaza únicamente su
+contenido.
+
+### Local
+
+```powershell
+@(
+  'API_BASE_URL=http://localhost:3000'
+  'ANDROID_API_BASE_URL=http://10.0.2.2:3000'
+) | Out-File .env -Encoding ascii
+```
+
+### Pruebas
+
+```powershell
+'API_BASE_URL=https://api-test.restapp.site' | Out-File .env -Encoding ascii
+```
+
+### Producción
+
+```powershell
+'API_BASE_URL=https://api.restapp.site' | Out-File .env -Encoding ascii
+```
+
+### Universidad
+
+```powershell
+'API_BASE_URL=http://179.197.239.216:3000' | Out-File .env -Encoding ascii
+```
+
+## 7) Ejecutar localmente
+
+La URL se puede enviar directamente en el comando, sin modificar `.env`.
+
+Ejecutar la aplicación:
+
+```powershell
+# Local
+flutter run --dart-define=API_BASE_URL=http://localhost:3000
+
+# Local en emulador Android
+flutter run --dart-define=API_BASE_URL=http://localhost:3000 --dart-define=ANDROID_API_BASE_URL=http://10.0.2.2:3000
+
+# Pruebas
+flutter run --dart-define=API_BASE_URL=https://api-test.restapp.site
+
+# Producción
+flutter run --dart-define=API_BASE_URL=https://api.restapp.site
+```
+
+Generar Flutter Web:
+
+```powershell
+# Local
+flutter build web --release --dart-define=API_BASE_URL=http://localhost:3000
+
+# Pruebas
+flutter build web --release --dart-define=API_BASE_URL=https://api-test.restapp.site
+
+# Producción
+flutter build web --release --dart-define=API_BASE_URL=https://api.restapp.site
+```
+
+Generar APK:
+
+```powershell
+# Pruebas
+flutter build apk --release --dart-define=API_BASE_URL=https://api-test.restapp.site
+
+# Producción
+flutter build apk --release --dart-define=API_BASE_URL=https://api.restapp.site
+```
+
+Como alternativa, para utilizar la URL guardada en `.env`:
 
 ```bash
-flutter run
+flutter run --dart-define-from-file=.env
+flutter build apk --release --dart-define-from-file=.env
+flutter build appbundle --release --dart-define-from-file=.env
+flutter build web --release --dart-define-from-file=.env
 ```
 
 Para listar dispositivos:
@@ -79,89 +176,36 @@ Para listar dispositivos:
 flutter devices
 ```
 
-## 7) Scripts/comandos utiles
+## 8) Ejecutar en contenedor
 
-- Ejecutar app: `flutter run`
-- Analisis estatico: `flutter analyze`
-- Pruebas: `flutter test`
-- Formateo: `dart format .`
-
-> Nota: no hay scripts custom en `pubspec.yaml`; se usan comandos estandar de Flutter/Dart.
-
-### Contenedor local de Flutter Web
-
-Por defecto el contenedor consume el entorno `test` y publica la aplicacion en `http://localhost:8081`:
-
-```bash
-docker compose up -d --build
-```
-
-Para conectarlo a otra API, define `API_BASE_URL` antes de construir. `localhost` es una sobrescritura de desarrollo, no un tercer entorno.
-
-### Desarrollo de ramas test con volumen
-
-Para `develop` y `feature/*`, usa el servidor Flutter de desarrollo. El codigo del repositorio se monta como volumen y siempre consume `https://api-test.restapp.site`:
+El contenedor usa el mismo `.env` y publica Flutter Web en
+`http://localhost:8081`:
 
 ```powershell
-docker compose -p restapp-dev -f docker-compose.dev.yml up -d
+docker compose --env-file .env -p restapp up -d --build --force-recreate
 ```
 
-Abre `http://localhost:8081`. Los cambios de rama no requieren `docker build`. Tras un `git switch`, reinicia solamente el proceso Flutter para compilar el codigo de la rama nueva:
+Para desarrollo con el codigo montado como volumen y hot reload:
 
 ```powershell
-docker compose -p restapp-dev -f docker-compose.dev.yml restart app
-```
-
-Para hot reload durante cambios visuales, adjunta la terminal, pulsa `r` y separala con `Ctrl+P`, `Ctrl+Q`:
-
-```powershell
+docker compose --env-file .env -p restapp-dev -f docker-compose.dev.yml up -d
 docker attach restapp-dev-app-1
 ```
 
-Para validar `main` contra produccion, usa la imagen release:
+Pulsa `r` para hot reload y separa la terminal con `Ctrl+P`, `Ctrl+Q`.
+
+Detener los contenedores:
 
 ```powershell
-$env:API_BASE_URL = "https://api.restapp.site"
-docker compose -p restapp-release up -d --build
-Remove-Item Env:API_BASE_URL
+docker compose --env-file .env -p restapp down
+docker compose --env-file .env -p restapp-dev -f docker-compose.dev.yml down
 ```
 
-Detener desarrollo:
+## Comandos utiles
 
-```powershell
-docker compose -p restapp-dev -f docker-compose.dev.yml down
-```
-
-## 8) Configuracion de backend y entorno
-
-La app no usa archivo `.env`; la URL del backend se selecciona en compilacion mediante `--dart-define` y se resuelve en:
-
-- `lib/core/config/api_config.dart`
-
-Entornos desplegados:
-
-- `testBaseUrl = https://api-test.restapp.site`
-- `productionBaseUrl = https://api.restapp.site`
-
-### Cambiar backend
-
-No es necesario editar el codigo. Usa uno de estos comandos:
-
-```bash
-# Frontend local conectado al backend de pruebas del VPS
-flutter run --dart-define=API_ENV=test
-
-# Frontend local conectado al backend de produccion del VPS
-flutter run --dart-define=API_ENV=production
-
-# URL explicita: tiene prioridad sobre API_ENV
-flutter run --dart-define=API_BASE_URL=http://localhost:3000
-
-# Emulador Android conectado a un backend local
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000
-```
-
-Si no se especifica ninguna variable, debug usa `test` y release usa `production`. `localhost` es solamente una sobrescritura de desarrollo, no un tercer entorno.
+- Analisis estatico: `flutter analyze`
+- Pruebas: `flutter test`
+- Formateo: `dart format .`
 
 ### Importante para pruebas en Android emulator/device
 
@@ -193,10 +237,11 @@ Si no se especifica ninguna variable, debug usa `test` y release usa `production
 
 Variables de compilacion admitidas:
 
-- `API_ENV=test|production`
-- `API_BASE_URL=<url>` para sobrescribir cualquier entorno
+- `API_BASE_URL=<url>` (obligatoria)
+- `ANDROID_API_BASE_URL=<url>` (opcional y exclusiva de Android)
 
-Los builds Docker de pruebas y produccion deben inyectar `API_BASE_URL` con el dominio correspondiente.
+Las URLs publicas de una API siempre son visibles en el trafico del navegador o
+de la aplicacion y no deben considerarse secretos.
 
 ## 11) Convenciones del proyecto
 
@@ -210,7 +255,7 @@ Los builds Docker de pruebas y produccion deben inyectar `API_BASE_URL` con el d
 
 ### Error de conexion al backend
 
-- Verifica URL activa en `api_config.dart`.
+- Verifica las variables activas en `.env`.
 - Confirma que el backend este corriendo y accesible desde el dispositivo.
 - En emulador Android, evita `localhost` y prueba `10.0.2.2`.
 

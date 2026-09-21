@@ -120,27 +120,53 @@ contenido.
 
 ## 7) Ejecutar localmente
 
-Después de seleccionar el entorno en `.env`, el comando siempre es el mismo:
+La URL se puede enviar directamente en el comando, sin modificar `.env`.
 
-```bash
-flutter run --dart-define-from-file=.env
-```
+Ejecutar la aplicación:
 
-Generar APK:
+```powershell
+# Local
+flutter run --dart-define=API_BASE_URL=http://localhost:3000
 
-```bash
-flutter build apk --release --dart-define-from-file=.env
-```
+# Local en emulador Android
+flutter run --dart-define=API_BASE_URL=http://localhost:3000 --dart-define=ANDROID_API_BASE_URL=http://10.0.2.2:3000
 
-Generar Android App Bundle:
+# Pruebas
+flutter run --dart-define=API_BASE_URL=https://api-test.restapp.site
 
-```bash
-flutter build appbundle --release --dart-define-from-file=.env
+# Producción
+flutter run --dart-define=API_BASE_URL=https://api.restapp.site
 ```
 
 Generar Flutter Web:
 
+```powershell
+# Local
+flutter build web --release --dart-define=API_BASE_URL=http://localhost:3000
+
+# Pruebas
+flutter build web --release --dart-define=API_BASE_URL=https://api-test.restapp.site
+
+# Producción
+flutter build web --release --dart-define=API_BASE_URL=https://api.restapp.site
+```
+
+Generar APK:
+
+```powershell
+# Pruebas
+flutter build apk --release --dart-define=API_BASE_URL=https://api-test.restapp.site
+
+# Producción
+flutter build apk --release --dart-define=API_BASE_URL=https://api.restapp.site
+```
+
+Como alternativa, para utilizar la URL guardada en `.env`:
+
 ```bash
+flutter run --dart-define-from-file=.env
+flutter build apk --release --dart-define-from-file=.env
+flutter build appbundle --release --dart-define-from-file=.env
 flutter build web --release --dart-define-from-file=.env
 ```
 

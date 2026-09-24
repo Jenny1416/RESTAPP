@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:rest/core/services/progress_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/features/progress/widgets/activity_completion_sheet.dart';
 
 class ActivitiesScreen extends StatefulWidget {
@@ -76,6 +77,12 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     final hechas = _summary?.hechas ?? const <DailyActivity>[];
     final formato = DateFormat('dd/MM/yyyy');
     final hoy = formato.format(DateTime.now());
+    final appColors = context.appColors;
+    final headerGradient = LinearGradient(
+      colors: [appColors.accentTeal, appColors.accentPurple],
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+    );
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -95,30 +102,27 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                       width: 40.w,
                       height: 40.h,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF0BBDAC), Color(0xFF6110E8)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
+                        gradient: headerGradient,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.close, color: Colors.white, size: 24),
+                      child: Icon(
+                        Icons.close,
+                        color: appColors.overlayOnGradient,
+                        size: 24,
+                      ),
                     ),
                   ),
                   Expanded(
                     child: Center(
                       child: ShaderMask(
-                        shaderCallback: (bounds) => LinearGradient(
-                          colors: [Color(0xFF0BBDAC), Color(0xFF6110E8)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ).createShader(bounds),
+                        shaderCallback: (bounds) =>
+                            headerGradient.createShader(bounds),
                         child: Text(
                           'Mis Actividades',
                           style: TextStyle(
                             fontSize: 32.sp,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: appColors.overlayOnGradient,
                           ),
                         ),
                       ),
@@ -175,7 +179,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                         children: [
                           Text(
                             'No se pudo cargar actividades',
-                            style: TextStyle(color: Colors.red[700]),
+                            style: TextStyle(color: appColors.dangerFg),
                           ),
                           SizedBox(height: 8.h),
                           Text(_error!, textAlign: TextAlign.center),
@@ -194,11 +198,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                           2,
                         ), // Grosor del borde con gradiente
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF0BBDAC), Color(0xFF6110E8)],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
+                          gradient: headerGradient,
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Container(
@@ -307,9 +307,9 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                       : onAction,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: completed
-                        ? const Color(0xFF4CAF50)
-                        : const Color(0xFF0BBDAC),
-                    foregroundColor: Colors.white,
+                        ? context.appColors.successFg
+                        : context.appColors.accentTeal,
+                    foregroundColor: context.appColors.overlayOnGradient,
                     textStyle: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   child: Text(completed ? 'Completada' : 'Realizar'),

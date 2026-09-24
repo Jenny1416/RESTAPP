@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rest/core/routes/app_routes.dart';
 import 'package:rest/core/services/diary_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 class MiDiarioScreen extends StatefulWidget {
   const MiDiarioScreen({super.key, this.entry});
@@ -18,12 +19,6 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
   final TextEditingController _descripcionController = TextEditingController();
   final DiaryService _diaryService = DiaryService();
   bool _saving = false;
-
-  final _gradient = const RadialGradient(
-    center: Alignment.center,
-    radius: 1.2,
-    colors: [Color(0xFF5CCFC0), Color(0xFF2981C1)],
-  );
 
   @override
   void initState() {
@@ -49,7 +44,7 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Completa titulo y descripcion para guardar.'),
-          backgroundColor: Colors.orange,
+          backgroundColor: context.appColors.warmBadgeFg,
         ),
       );
       return;
@@ -73,7 +68,7 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
           content: Text(widget.entry == null
               ? 'Entrada guardada correctamente'
               : 'Entrada actualizada correctamente'),
-          backgroundColor: Color(0xFF4CAF50),
+          backgroundColor: context.appColors.successFg,
         ),
       );
       Navigator.pop(context, true);
@@ -82,7 +77,7 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('No se pudo guardar: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: context.appColors.dangerFg,
         ),
       );
     } finally {
@@ -95,6 +90,12 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
+    final gradient = RadialGradient(
+      center: Alignment.center,
+      radius: 1.2,
+      colors: [appColors.accentTeal, appColors.accentBlue],
+    );
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
@@ -113,12 +114,12 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
                       width: 40.w,
                       height: 40.h,
                       decoration: BoxDecoration(
-                        gradient: _gradient,
+                        gradient: gradient,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.close,
-                        color: Colors.white,
+                        color: appColors.overlayOnGradient,
                         size: 24,
                       ),
                     ),
@@ -127,13 +128,13 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
 
                   // Texto con gradiente “Mi Diario”
                   ShaderMask(
-                    shaderCallback: (bounds) => _gradient.createShader(bounds),
+                    shaderCallback: (bounds) => gradient.createShader(bounds),
                     child: Text(
                       'Mi Diario',
                       style: GoogleFonts.fredoka(
                         fontSize: 26.sp,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white, // se pinta con el ShaderMask
+                        color: appColors.overlayOnGradient,
                       ),
                     ),
                   ),
@@ -159,9 +160,9 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.warning_amber_rounded,
-                      color: Color(0xFFFFA726),
+                      color: appColors.warmBadgeFg,
                       size: 20,
                     ),
                     SizedBox(width: 8.w),
@@ -186,7 +187,7 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
-                    gradient: _gradient,
+                    gradient: gradient,
                   ),
                   padding: const EdgeInsets.all(2),
                   child: Container(
@@ -214,7 +215,7 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
                             contentPadding: EdgeInsets.zero,
                           ),
                         ),
-                        const Divider(color: Color(0xFFE0E0E0), thickness: 1),
+                        Divider(color: colorScheme.outlineVariant, thickness: 1),
                         SizedBox(height: 8.h),
 
                         // Campo descripción
@@ -254,7 +255,7 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
                     child: Container(
                       height: 52.h,
                       decoration: BoxDecoration(
-                        gradient: _gradient,
+                        gradient: gradient,
                         borderRadius: BorderRadius.circular(25),
                       ),
                       child: ElevatedButton(
@@ -271,7 +272,7 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
                         child: Text(
                           'Ver mis Capítulos',
                           style: GoogleFonts.fredoka(
-                            color: Colors.white,
+                            color: appColors.overlayOnGradient,
                             fontWeight: FontWeight.bold,
                             fontSize: 15.sp,
                           ),
@@ -286,8 +287,8 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
                     child: ElevatedButton(
                       onPressed: _saving ? null : _saveEntry,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50),
-                        foregroundColor: Colors.white,
+                        backgroundColor: appColors.successFg,
+                        foregroundColor: appColors.overlayOnGradient,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25),
@@ -301,7 +302,7 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2.2,
                                 valueColor: AlwaysStoppedAnimation(
-                                  Colors.white,
+                                  appColors.overlayOnGradient,
                                 ),
                               ),
                             )
@@ -310,7 +311,7 @@ class _MiDiarioScreenState extends State<MiDiarioScreen> {
                               style: GoogleFonts.fredoka(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: appColors.overlayOnGradient,
                               ),
                             ),
                     ),

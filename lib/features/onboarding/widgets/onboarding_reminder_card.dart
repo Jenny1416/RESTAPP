@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:rest/core/theme/app_colors.dart';
 import '../screens/onboarding_status_screen.dart';
 import '../services/onboarding_service.dart';
 
@@ -38,33 +39,44 @@ class _OnboardingReminderCardState extends State<OnboardingReminderCard> {
   @override
   Widget build(BuildContext context) {
     if (!_visible) return const SizedBox.shrink();
+    final appColors = context.appColors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Material(
-        color: const Color(0xFFFFF4DD),
+        color: appColors.reminderCardBg,
         borderRadius: BorderRadius.circular(18),
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
           onTap: _open,
-          child: const Padding(
-            padding: EdgeInsets.all(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Icon(Icons.assignment_outlined, color: Color(0xFFB56700)),
-                SizedBox(width: 12),
+                Icon(Icons.assignment_outlined, color: appColors.reminderCardFg),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Completa tu onboarding',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: appColors.reminderCardFg,
+                        ),
                       ),
-                      Text('Ayuda a NOA a conocerte mejor.'),
+                      Text(
+                        'Ayuda a NOA a conocerte mejor.',
+                        style: TextStyle(color: appColors.reminderCardFg),
+                      ),
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios_rounded, size: 18),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 18,
+                  color: appColors.reminderCardFg,
+                ),
               ],
             ),
           ),

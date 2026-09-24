@@ -5,6 +5,7 @@ import 'activities_screen.dart';
 import 'package:rest/features/emotion/screens/chat_screen.dart';
 import 'conversations_screen.dart';
 import 'package:rest/core/services/user_session.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/core/widgets/app_header_bar.dart';
 import 'package:rest/features/onboarding/widgets/onboarding_reminder_card.dart';
 
@@ -23,6 +24,7 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
@@ -98,7 +100,7 @@ class MainScreen extends StatelessWidget {
                       'Ver todas',
                       style: TextStyle(
                         fontSize: 16.sp,
-                        color: Color(0xFF2E86AB),
+                        color: colorScheme.primary,
                         fontFamily: 'Fredoka',
                       ),
                     ),
@@ -152,7 +154,7 @@ class MainScreen extends StatelessWidget {
                               width: 90.w,
                               height: 95.h,
                               decoration: BoxDecoration(
-                                color: Color(0xFF87CEEB),
+                                color: appColors.brandSoft,
                                 shape: BoxShape.circle,
                                 image: DecorationImage(
                                   image: AssetImage(
@@ -209,7 +211,7 @@ class MainScreen extends StatelessWidget {
                               width: 100.w,
                               height: 90.h,
                               decoration: BoxDecoration(
-                                color: Color(0xFF87CEEB),
+                                color: appColors.brandSoft,
                                 shape: BoxShape.circle,
                                 image: DecorationImage(
                                   image: AssetImage(
@@ -243,19 +245,13 @@ class _ChatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark
-        ? const Color(0xFF1E3A4A)
-        : const Color(0xFF87CEEB);
-    final iconBg = isDark ? const Color(0xFF2E5568) : Colors.white;
-    final iconColor = isDark
-        ? const Color(0xFF90CAF9)
-        : const Color(0xFF4A9DC5);
-    final titleColor = isDark ? const Color(0xFF90CAF9) : Colors.white;
-    final subtitleColor = isDark ? const Color(0xFF64B5F6) : Colors.white70;
-    final shadowColor = isDark
-        ? Colors.black.withValues(alpha: 0.3)
-        : const Color(0xFF87CEEB).withValues(alpha: 0.4);
+    final appColors = context.appColors;
+    final cardColor = appColors.brandSoft;
+    final iconBg = appColors.chipAvatarBg;
+    final iconColor = appColors.brandBorder;
+    final titleColor = appColors.overlayOnGradient;
+    final subtitleColor = appColors.overlayOnGradient.withValues(alpha: 0.7);
+    final shadowColor = appColors.brandSoft.withValues(alpha: 0.4);
 
     return InkWell(
       onTap: onTap,

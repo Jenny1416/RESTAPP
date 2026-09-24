@@ -7,6 +7,7 @@ import 'package:rest/core/routes/app_routes.dart';
 import 'package:rest/core/services/emotion_service.dart';
 import 'package:rest/core/services/personal_progress_service.dart';
 import 'package:rest/core/services/user_session.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/features/evaluations/services/evaluation_service.dart';
 
 class EmotionRegisterScreen extends StatefulWidget {
@@ -290,6 +291,7 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
@@ -307,19 +309,19 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                     decoration: BoxDecoration(
                       gradient: RadialGradient(
                         colors: [
-                          Color(0xFF7DFDFE),
-                          Color(0xFF4ECDC4),
-                          Color(0xFF00B4D8),
+                          appColors.heroGradientCoolEnd,
+                          appColors.accentTeal,
+                          appColors.brandBorder,
                         ],
-                        stops: [0.0, 0.6, 1.0],
+                        stops: const [0.0, 0.6, 1.0],
                       ),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Color(0xFF4ECDC4), width: 4),
+                      border: Border.all(color: appColors.accentTeal, width: 4),
                       boxShadow: [
                         BoxShadow(
-                          color: Color(0xFF4ECDC4).withValues(alpha: 0.3),
+                          color: appColors.accentTeal.withValues(alpha: 0.3),
                           blurRadius: 8,
-                          offset: Offset(0, 2),
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
@@ -345,12 +347,12 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                         foreground: Paint()
                           ..shader = LinearGradient(
                             colors: [
-                              Color(0xFF7DFDFE), // Celeste
-                              Color(0xFF2196F3), // Azul
+                              appColors.heroGradientCoolStart,
+                              appColors.brandBorder,
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                          ).createShader(Rect.fromLTWH(0, 0, 250, 60)),
+                          ).createShader(const Rect.fromLTWH(0, 0, 250, 60)),
                       ),
                     ),
                   ),
@@ -376,8 +378,8 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Color(0xFF2196F3), // Azul izquierdo
-                        Color(0xFF3973D1), // Azul derecho (más oscuro)
+                        appColors.brandBorder,
+                        appColors.accentBlue,
                       ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
@@ -388,7 +390,7 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                     onPressed: _isLoading ? null : _nextQuestion,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
-                      foregroundColor: Colors.white,
+                      foregroundColor: appColors.overlayOnGradient,
                       elevation: 0,
                       padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(
@@ -401,7 +403,7 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                         fontFamily: 'Fredoka',
                         fontSize: 21.sp,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: appColors.overlayOnGradient,
                         letterSpacing: 1.2,
                       ),
                     ),
@@ -431,7 +433,7 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
               child: Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12.sp, color: Colors.red),
+                style: TextStyle(fontSize: 12.sp, color: context.appColors.dangerFg),
               ),
             ),
           SizedBox(height: 12.h),
@@ -446,6 +448,7 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
 
   Widget _buildPreguntasContent(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Column(
       children: [
         Padding(
@@ -453,14 +456,14 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8F4FF),
+              color: appColors.infoBadgeBg,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(children: [
               Text(
                 'Pregunta ${_currentQuestion + 1} de ${_preguntas.length}',
                 style: TextStyle(
-                  color: const Color(0xFF1769AA),
+                  color: appColors.infoBadgeFg,
                   fontWeight: FontWeight.bold,
                   fontSize: 14.sp,
                 ),
@@ -472,8 +475,8 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                   child: LinearProgressIndicator(
                     value: _preguntas.isEmpty ? 0 : (_currentQuestion + 1) / _preguntas.length,
                     minHeight: 7.h,
-                    backgroundColor: const Color(0xFFCFE3F7),
-                    valueColor: const AlwaysStoppedAnimation(Color(0xFF38A6D9)),
+                    backgroundColor: appColors.progressTrackCool,
+                    valueColor: AlwaysStoppedAnimation(appColors.progressFillCool),
                   ),
                 ),
               ),
@@ -530,15 +533,13 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(
-                              0xFF5CCFC0,
-                            ).withValues(alpha: 0.16),
+                            color: appColors.accentTeal.withValues(alpha: 0.16),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             _dimensionLabel(categoria),
-                            style: const TextStyle(
-                              color: Color(0xFF167E76),
+                            style: TextStyle(
+                              color: appColors.progressFillCool,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -549,9 +550,9 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                         width: double.infinity,
                         padding: EdgeInsets.all(18.w),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF0F8FF),
+                          color: colorScheme.primaryContainer,
                           borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: const Color(0xFFB9E0F7)),
+                          border: Border.all(color: appColors.cardBorderTeal),
                         ),
                         child: Text(
                           textoPregunta,
@@ -611,7 +612,7 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                                         shape: BoxShape.circle,
                                         border: Border.all(
                                           color: seleccionado
-                                              ? const Color(0xFFFFC107)
+                                              ? appColors.goldStart
                                               : Colors.transparent,
                                           width: 3,
                                         ),

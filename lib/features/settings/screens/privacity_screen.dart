@@ -1,15 +1,18 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../home/screens/gradient_text.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 class PrivacityScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         titleSpacing: 0,
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leadingWidth: 70,
         leading: Center(
@@ -21,11 +24,11 @@ class PrivacityScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Color(0xFF08B1DD),
+                  color: appColors.brandBorder,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: colorScheme.onSurface.withValues(alpha: 0.1),
                       blurRadius: 3,
                       offset: Offset(0, 1),
                     ),
@@ -33,7 +36,7 @@ class PrivacityScreen extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.arrow_back,
-                  color: Colors.white,
+                  color: appColors.overlayOnGradient,
                   size: 25,
                 ),
               ),
@@ -50,8 +53,8 @@ class PrivacityScreen extends StatelessWidget {
             ),
             gradient: LinearGradient(
               colors: [
-                Color(0xFF0AF3FF),
-                Color(0xFF0419FF),
+                appColors.accentTeal,
+                appColors.accentBlue,
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -74,7 +77,7 @@ class PrivacityScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: colorScheme.onSurface.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -87,7 +90,7 @@ class PrivacityScreen extends StatelessWidget {
                       height: 50.h,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Color(0xFF0AF3FF), Color(0xFF0419FF)],
+                          colors: [appColors.accentTeal, appColors.accentBlue],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -95,7 +98,7 @@ class PrivacityScreen extends StatelessWidget {
                       ),
                       child: Icon(
                         Icons.privacy_tip,
-                        color: Colors.white,
+                        color: appColors.overlayOnGradient,
                         size: 28,
                       ),
                     ),
@@ -125,7 +128,7 @@ class PrivacityScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
+                      color: colorScheme.onSurface.withValues(alpha: 0.03),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),

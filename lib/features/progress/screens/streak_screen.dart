@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rest/core/services/personal_progress_service.dart';
 import 'package:rest/core/services/user_session.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 // ─────────────────────────────────────────────────────────────
 //  PUNTO DE ENTRADA PÚBLICO
@@ -43,10 +44,6 @@ class _GoalPickerScreenState extends State<GoalPickerScreen>
   late Animation<double> _entryFade;
   late Animation<Offset> _entrySlide;
 
-  static const _kBlue   = Color(0xFF3A5AFF);
-  static const _kPurple = Color(0xFF8C4EFF);
-  static const _kTeal   = Color(0xFF5CCFC0);
-
   final List<_GoalOption> _goals = const [
     _GoalOption(days: 7,  label: '7 días',  emoji: '🌱', desc: 'El primer hábito'),
     _GoalOption(days: 14, label: '14 días', emoji: '🔥', desc: 'Ya vas en serio'),
@@ -82,8 +79,10 @@ class _GoalPickerScreenState extends State<GoalPickerScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: FadeTransition(
           opacity: _entryFade,
@@ -105,11 +104,11 @@ class _GoalPickerScreenState extends State<GoalPickerScreen>
                 SizedBox(height: 18.h),
 
                 ShaderMask(
-                  shaderCallback: (b) => const LinearGradient(
-                    colors: [_kBlue, _kPurple],
+                  shaderCallback: (b) => LinearGradient(
+                    colors: [appColors.accentBlue, appColors.accentPurple],
                   ).createShader(b),
                   child: Text('¡Empieza tu racha!',
-                    style: GoogleFonts.fredoka(fontSize: 30.sp, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: GoogleFonts.fredoka(fontSize: 30.sp, fontWeight: FontWeight.bold, color: appColors.overlayOnGradient),
                   ),
                 ),
 
@@ -119,7 +118,7 @@ class _GoalPickerScreenState extends State<GoalPickerScreen>
                   child: Text(
                     'Habla con NOA cada día y elige cuántos días quieres mantener tu racha.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.fredoka(fontSize: 14.sp, color: const Color(0xFF6B7280), height: 1.4),
+                    style: GoogleFonts.fredoka(fontSize: 14.sp, color: appColors.neutralMutedText, height: 1.4),
                   ),
                 ),
 
@@ -141,13 +140,17 @@ class _GoalPickerScreenState extends State<GoalPickerScreen>
                           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
-                            gradient: selected ? const LinearGradient(colors: [_kBlue, _kPurple]) : null,
-                            color: selected ? null : const Color(0xFFF3F4FF),
+                            gradient: selected
+                                ? LinearGradient(colors: [appColors.accentBlue, appColors.accentPurple])
+                                : null,
+                            color: selected ? null : appColors.goalCardUnselectedBg,
                             border: Border.all(
-                              color: selected ? Colors.transparent : const Color(0xFFCDD8FF),
+                              color: selected ? Colors.transparent : appColors.goalCardUnselectedBorder,
                               width: 1.5,
                             ),
-                            boxShadow: selected ? [BoxShadow(color: _kBlue.withValues(alpha: 0.25), blurRadius: 14, offset: const Offset(0, 4))] : [],
+                            boxShadow: selected
+                                ? [BoxShadow(color: appColors.accentBlue.withValues(alpha: 0.25), blurRadius: 14, offset: const Offset(0, 4))]
+                                : [],
                           ),
                           child: Row(
                             children: [
@@ -159,11 +162,13 @@ class _GoalPickerScreenState extends State<GoalPickerScreen>
                                   children: [
                                     Text(g.label, style: GoogleFonts.fredoka(
                                       fontSize: 19.sp, fontWeight: FontWeight.bold,
-                                      color: selected ? Colors.white : const Color(0xFF1A1A2E),
+                                      color: selected ? appColors.overlayOnGradient : appColors.goalCardUnselectedText,
                                     )),
                                     Text(g.desc, style: GoogleFonts.fredoka(
                                       fontSize: 13.sp,
-                                      color: selected ? Colors.white70 : const Color(0xFF6B7280),
+                                      color: selected
+                                          ? appColors.overlayOnGradient.withValues(alpha: 0.7)
+                                          : appColors.neutralMutedText,
                                     )),
                                   ],
                                 ),
@@ -171,8 +176,8 @@ class _GoalPickerScreenState extends State<GoalPickerScreen>
                               if (selected)
                                 Container(
                                   width: 26.w, height: 26.h,
-                                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                                  child: const Icon(Icons.check_rounded, color: _kBlue, size: 16),
+                                  decoration: BoxDecoration(color: appColors.overlayOnGradient, shape: BoxShape.circle),
+                                  child: Icon(Icons.check_rounded, color: appColors.accentBlue, size: 16),
                                 ),
                             ],
                           ),
@@ -189,13 +194,13 @@ class _GoalPickerScreenState extends State<GoalPickerScreen>
                     child: Container(
                       width: double.infinity, height: 56.h,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [_kTeal, _kBlue]),
+                        gradient: LinearGradient(colors: [appColors.accentTeal, appColors.accentBlue]),
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: [BoxShadow(color: _kBlue.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 5))],
+                        boxShadow: [BoxShadow(color: appColors.accentBlue.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 5))],
                       ),
                       child: Center(
                         child: Text('¡Activar mi racha! 🔥',
-                          style: GoogleFonts.fredoka(color: Colors.white, fontSize: 19.sp, fontWeight: FontWeight.bold)),
+                          style: GoogleFonts.fredoka(color: appColors.overlayOnGradient, fontSize: 19.sp, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ),
@@ -221,10 +226,13 @@ class StreakCelebrationScreen extends StatefulWidget {
 
 class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
     with TickerProviderStateMixin {
-  static const _kBlue   = Color(0xFF3A5AFF);
-  static const _kPurple = Color(0xFF8C4EFF);
-  static const _kTeal   = Color(0xFF5CCFC0);
-  static const _kOrange = Color(0xFFFF8C00);
+  List<Color> _particlePalette(AppColors appColors) => [
+        appColors.accentBlue,
+        appColors.accentPurple,
+        appColors.accentTeal,
+        appColors.goldEnd,
+        appColors.goldStart,
+      ];
 
   late AnimationController _bobCtrl;
   late AnimationController _entryCtrl;
@@ -307,7 +315,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result.mensaje),
-          backgroundColor: const Color(0xFF2E7D32),
+          backgroundColor: context.appColors.successFg,
         ),
       );
     } catch (e) {
@@ -315,7 +323,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('No se pudo reclamar la estrella diaria: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: context.appColors.dangerFg,
         ),
       );
     } finally {
@@ -325,13 +333,15 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
     }
   }
 
-  void _generateParticles() {
+  void _generateParticles([AppColors? palette]) {
+    if (_particles.isNotEmpty) return;
+    final colors = _particlePalette(palette ?? AppColors.light);
     final rand = math.Random();
     for (int i = 0; i < 16; i++) {
       _particles.add(_Particle(
         x: rand.nextDouble(), y: rand.nextDouble() * 0.5,
         size: 3 + rand.nextDouble() * 5,
-        color: [_kBlue, _kPurple, _kTeal, _kOrange, const Color(0xFFFFD700)][rand.nextInt(5)],
+        color: colors[rand.nextInt(colors.length)],
         speed: 0.3 + rand.nextDouble() * 0.6,
         angle: rand.nextDouble() * math.pi * 2,
       ));
@@ -375,9 +385,12 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
     final goal   = UserSession.goalDays;
     final remaining = (goal - streak).clamp(0, goal);
     final weekDots  = _buildWeekDots();
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
+    _generateParticles(appColors);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Stack(
           children: [
@@ -414,11 +427,13 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                   child: FadeTransition(
                     opacity: _numberFade,
                     child: ShaderMask(
-                      shaderCallback: (b) => const LinearGradient(colors: [_kBlue, _kPurple]).createShader(b),
+                      shaderCallback: (b) => LinearGradient(
+                        colors: [appColors.accentBlue, appColors.accentPurple],
+                      ).createShader(b),
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text('$streak',
-                          style: GoogleFonts.fredoka(fontSize: 90.sp, fontWeight: FontWeight.bold, color: Colors.white, height: 1.0)),
+                          style: GoogleFonts.fredoka(fontSize: 90.sp, fontWeight: FontWeight.bold, color: appColors.overlayOnGradient, height: 1.0)),
                       ),
                     ),
                   ),
@@ -428,7 +443,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                   opacity: _numberFade,
                   child: Text(
                     streak == 1 ? 'día de racha 🔥' : 'días de racha 🔥',
-                    style: GoogleFonts.fredoka(fontSize: 20.sp, color: _kPurple, fontWeight: FontWeight.w700),
+                    style: GoogleFonts.fredoka(fontSize: 20.sp, color: appColors.accentPurple, fontWeight: FontWeight.w700),
                   ),
                 ),
 
@@ -455,16 +470,16 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                       SizedBox(height: 14.h),
                       if (remaining > 0)
                         RichText(text: TextSpan(
-                          style: GoogleFonts.fredoka(fontSize: 14.sp, color: const Color(0xFF6B7280)),
+                          style: GoogleFonts.fredoka(fontSize: 14.sp, color: appColors.neutralMutedText),
                           children: [
                             const TextSpan(text: 'Alcanza tu próximo objetivo en '),
                             TextSpan(text: '$remaining ${remaining == 1 ? "día" : "días"}',
-                              style: TextStyle(color: _kBlue, fontWeight: FontWeight.bold)),
+                              style: TextStyle(color: appColors.accentBlue, fontWeight: FontWeight.bold)),
                           ],
                         ))
                       else
                         Text('🏆 ¡Meta alcanzada! ¡Eres increíble!',
-                          style: GoogleFonts.fredoka(fontSize: 15.sp, color: _kPurple, fontWeight: FontWeight.bold)),
+                          style: GoogleFonts.fredoka(fontSize: 15.sp, color: appColors.accentPurple, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -483,9 +498,9 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('Tu meta: $goal días',
-                              style: GoogleFonts.fredoka(fontSize: 13.sp, color: const Color(0xFF6B7280))),
+                              style: GoogleFonts.fredoka(fontSize: 13.sp, color: appColors.neutralMutedText)),
                             Text('$streak/$goal',
-                              style: GoogleFonts.fredoka(fontSize: 13.sp, color: _kBlue, fontWeight: FontWeight.bold)),
+                              style: GoogleFonts.fredoka(fontSize: 13.sp, color: appColors.accentBlue, fontWeight: FontWeight.bold)),
                           ],
                         ),
                         SizedBox(height: 6.h),
@@ -496,8 +511,8 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                             builder: (_, __) => LinearProgressIndicator(
                               value: (streak / goal).clamp(0.0, 1.0) * _fill.value,
                               minHeight: 10,
-                              backgroundColor: const Color(0xFFE8EEFF),
-                              valueColor: const AlwaysStoppedAnimation<Color>(_kBlue),
+                              backgroundColor: colorScheme.surfaceContainerHighest,
+                              valueColor: AlwaysStoppedAnimation<Color>(appColors.accentBlue),
                             ),
                           ),
                         ),
@@ -525,13 +540,13 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                               width: double.infinity,
                               height: 52.h,
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFFFFD54F), Color(0xFFFFA000)],
+                                gradient: LinearGradient(
+                                  colors: [appColors.goldStart, appColors.goldEnd],
                                 ),
                                 borderRadius: BorderRadius.circular(14),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFFFA000).withValues(alpha: 0.28),
+                                    color: appColors.goldEnd.withValues(alpha: 0.28),
                                     blurRadius: 14,
                                     offset: const Offset(0, 4),
                                   ),
@@ -544,7 +559,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                                         height: 20.h,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
-                                          color: Colors.white,
+                                          color: appColors.overlayOnGradient,
                                         ),
                                       )
                                     : Text(
@@ -554,7 +569,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                                             ? 'RECLAMAR ESTRELLA DIARIA ⭐'
                                             : 'COMPLETA TU REGISTRO PARA RECLAMAR ⭐',
                                         style: GoogleFonts.fredoka(
-                                          color: Colors.white,
+                                          color: appColors.overlayOnGradient,
                                           fontSize: 14.sp,
                                           fontWeight: FontWeight.bold,
                                           letterSpacing: 0.4,
@@ -570,13 +585,13 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                             child: Container(
                               width: double.infinity, height: 56.h,
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(colors: [_kTeal, _kBlue]),
+                                gradient: LinearGradient(colors: [appColors.accentTeal, appColors.accentBlue]),
                                 borderRadius: BorderRadius.circular(16),
-                                boxShadow: [BoxShadow(color: _kBlue.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 5))],
+                                boxShadow: [BoxShadow(color: appColors.accentBlue.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 5))],
                               ),
                               child: Center(
                                 child: Text('MANTENER MI COMPROMISO 🔥',
-                                  style: GoogleFonts.fredoka(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                                  style: GoogleFonts.fredoka(color: appColors.overlayOnGradient, fontSize: 16.sp, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                               ),
                             ),
                           ),
@@ -584,8 +599,8 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                           GestureDetector(
                             onTap: _dismiss,
                             child: Text('Continuar',
-                              style: GoogleFonts.fredoka(color: const Color(0xFFAAAAAA), fontSize: 13.sp,
-                                decoration: TextDecoration.underline, decorationColor: const Color(0xFFAAAAAA))),
+                              style: GoogleFonts.fredoka(color: appColors.neutralMutedText, fontSize: 13.sp,
+                                decoration: TextDecoration.underline, decorationColor: appColors.neutralMutedText)),
                           ),
                         ],
                       ),
@@ -608,14 +623,13 @@ class _AnimatedDayDot extends StatelessWidget {
   final _DayDot dot;
   final double fillProgress; // 0.0 → 1.0
 
-  static const _kBlue = Color(0xFF3A5AFF);
-  static const _kTeal = Color(0xFF5CCFC0);
-
   const _AnimatedDayDot({required this.dot, required this.fillProgress});
 
   @override
   Widget build(BuildContext context) {
     final fillOpacity = fillProgress.clamp(0.0, 1.0);
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -625,7 +639,7 @@ class _AnimatedDayDot extends StatelessWidget {
           dot.label,
           style: GoogleFonts.fredoka(
             fontSize: 12.sp,
-            color: dot.isToday ? _kBlue : const Color(0xFF9CA3AF),
+            color: dot.isToday ? appColors.accentBlue : colorScheme.onSurfaceVariant,
             fontWeight: dot.isToday ? FontWeight.bold : FontWeight.w500,
           ),
         ),
@@ -642,9 +656,9 @@ class _AnimatedDayDot extends StatelessWidget {
                 width: 40.w, height: 40.h,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFFF0F0F8),
+                  color: colorScheme.surfaceContainerHighest,
                   border: Border.all(
-                    color: dot.isToday ? _kBlue.withValues(alpha: 0.4) : const Color(0xFFDDE1FF),
+                    color: dot.isToday ? appColors.accentBlue.withValues(alpha: 0.4) : colorScheme.outlineVariant,
                     width: 1.5,
                   ),
                 ),
@@ -660,8 +674,8 @@ class _AnimatedDayDot extends StatelessWidget {
                       width: 40.w, height: 40.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [_kTeal, _kBlue],
+                        gradient: LinearGradient(
+                          colors: [appColors.accentTeal, appColors.accentBlue],
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                         ),
@@ -676,7 +690,7 @@ class _AnimatedDayDot extends StatelessWidget {
                   opacity: ((fillOpacity - 0.5) * 2).clamp(0.0, 1.0),
                   child: dot.isToday
                       ? Image.asset('assets/images/RachaDaily.png', width: 26.w, height: 26.h)
-                      : const Icon(Icons.check_rounded, color: Colors.white, size: 18),
+                      : Icon(Icons.check_rounded, color: appColors.overlayOnGradient, size: 18),
                 )
               else if (!dot.completed && dot.isGoal && !dot.isToday)
                 Text('🎯', style: TextStyle(fontSize: 16.sp))

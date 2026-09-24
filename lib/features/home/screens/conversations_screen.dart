@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:rest/core/services/chat_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/features/emotion/screens/chat_screen.dart';
 import 'gradient_text.dart';
 
@@ -49,11 +50,13 @@ class _ConversacionesScreenState extends State<ConversacionesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         titleSpacing: 0,
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leadingWidth: 70,
         leading: Center(
@@ -65,17 +68,21 @@ class _ConversacionesScreenState extends State<ConversacionesScreen> {
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Color(0xFF08B1DD),
+                  color: appColors.brandSoft,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: colorScheme.shadow.withValues(alpha: 0.1),
                       blurRadius: 3,
                       offset: Offset(0, 1),
                     ),
                   ],
                 ),
-                child: Icon(Icons.arrow_back, color: Colors.white, size: 25),
+                child: Icon(
+                  Icons.arrow_back,
+                  color: appColors.overlayOnGradient,
+                  size: 25,
+                ),
               ),
             ),
           ),
@@ -86,7 +93,7 @@ class _ConversacionesScreenState extends State<ConversacionesScreen> {
             'Conversaciones',
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 30.sp),
             gradient: LinearGradient(
-              colors: [Color(0xFF0AF3FF), Color(0xFF0419FF)],
+              colors: [appColors.accentTeal, appColors.accentBlue],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -129,7 +136,10 @@ class _ConversacionesScreenState extends State<ConversacionesScreen> {
       children: [
         Text(
           'No se pudo cargar conversaciones',
-          style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: context.appColors.dangerFg,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         SizedBox(height: 8.h),
         Text(_error ?? '', textAlign: TextAlign.center),
@@ -145,14 +155,18 @@ class _ConversacionesScreenState extends State<ConversacionesScreen> {
   Widget _emptyState() {
     return Column(
       children: [
-        const Icon(Icons.forum_rounded, size: 72, color: Color(0xFF90A4AE)),
+        Icon(
+          Icons.forum_rounded,
+          size: 72,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         SizedBox(height: 10.h),
         Text(
           'Aun no tienes sesiones con NOA',
           style: TextStyle(
             fontFamily: 'Fredoka',
             fontWeight: FontWeight.w700,
-            color: Color(0xFF546E7A),
+            color: context.appColors.neutralMutedText,
           ),
         ),
       ],
@@ -170,10 +184,10 @@ class _ConversacionesScreenState extends State<ConversacionesScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF08B1DD), width: 2.w),
+        border: Border.all(color: context.appColors.brandBorder, width: 2.w),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -192,12 +206,12 @@ class _ConversacionesScreenState extends State<ConversacionesScreen> {
                   width: 44.w,
                   height: 44.h,
                   decoration: BoxDecoration(
-                    color: Colors.black,
+                    color: Theme.of(context).colorScheme.inverseSurface,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.forum_rounded,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onInverseSurface,
                     size: 24,
                   ),
                 ),

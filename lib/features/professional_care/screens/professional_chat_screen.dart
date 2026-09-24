@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:rest/core/services/user_session.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/core/utils/app_toast.dart';
 import 'package:rest/features/professional_care/models/professional_care_models.dart';
 import 'package:rest/features/professional_care/services/chat_socket_service.dart';
@@ -270,7 +271,7 @@ class _ProfessionalChatScreenState extends State<ProfessionalChatScreen> {
         color: colors.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: colors.onSurface.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),
@@ -301,17 +302,17 @@ class _ProfessionalChatScreenState extends State<ProfessionalChatScreen> {
           IconButton.filled(
             onPressed: _sending ? null : _send,
             style: IconButton.styleFrom(
-              backgroundColor: careBlue,
-              foregroundColor: Colors.white,
-              disabledBackgroundColor: careBlue.withValues(alpha: 0.5),
+              backgroundColor: careAccent(context),
+              foregroundColor: context.appColors.overlayOnGradient,
+              disabledBackgroundColor: careAccent(context).withValues(alpha: 0.5),
             ),
             icon: _sending
                 ? SizedBox(
                     width: 20.w,
                     height: 20.w,
-                    child: const CircularProgressIndicator(
+                    child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: context.appColors.overlayOnGradient,
                     ),
                   )
                 : const Icon(Icons.send_rounded),
@@ -331,6 +332,7 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -338,7 +340,7 @@ class _MessageBubble extends StatelessWidget {
         margin: EdgeInsets.only(bottom: 10.h),
         padding: EdgeInsets.fromLTRB(14.w, 10.h, 14.w, 7.h),
         decoration: BoxDecoration(
-          color: mine ? careBlue : colors.surfaceContainerHigh,
+          color: mine ? careAccent(context) : colors.surfaceContainerHigh,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(18.r),
             topRight: Radius.circular(18.r),
@@ -355,7 +357,7 @@ class _MessageBubble extends StatelessWidget {
                 fontFamily: 'Fredoka',
                 fontSize: 15.sp,
                 height: 1.35,
-                color: mine ? Colors.white : colors.onSurface,
+                color: mine ? appColors.overlayOnGradient : colors.onSurface,
               ),
             ),
             SizedBox(height: 3.h),
@@ -365,7 +367,7 @@ class _MessageBubble extends StatelessWidget {
                 fontFamily: 'Fredoka',
                 fontSize: 10.sp,
                 color: mine
-                    ? Colors.white.withValues(alpha: 0.7)
+                    ? appColors.overlayOnGradient.withValues(alpha: 0.7)
                     : colors.onSurfaceVariant,
               ),
             ),

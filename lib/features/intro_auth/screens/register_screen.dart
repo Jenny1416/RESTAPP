@@ -8,6 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'how_you_found_screen.dart';
 import 'package:rest/core/services/auth_service.dart';
 import 'package:rest/core/services/user_session.dart';
+import 'package:rest/core/theme/app_colors.dart';
+import 'package:rest/core/widgets/primary_gradient_button.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -395,6 +397,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   // ── PANTALLA DE CARGA ──
   Widget _buildLoadingScreen() {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: Center(
@@ -405,9 +408,9 @@ class _RegisterScreenState extends State<RegisterScreen>
             SizedBox(height: 24.h),
             SizedBox(
               width: 40.w, height: 40.h,
-              child: const CircularProgressIndicator(
+              child: CircularProgressIndicator(
                 strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3A5AFF)),
+                valueColor: AlwaysStoppedAnimation<Color>(appColors.accentBlue),
               ),
             ),
             SizedBox(height: 20.h),
@@ -427,14 +430,18 @@ class _RegisterScreenState extends State<RegisterScreen>
   // ── PANTALLA ÉXITO NOA ──
   Widget _buildSuccessScreen() {
     final nombre = _nombreController.text.trim();
+    final appColors = context.appColors;
     return AnimatedBuilder(
       animation: _successCtrl,
       builder: (_, __) => Scaffold(
         body: Container(
           width: double.infinity, height: double.infinity,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFFE8F0FF), Color(0xFFF0E8FF)],
+              colors: [
+                appColors.heroGradientLavenderStart,
+                appColors.heroGradientLavenderEnd,
+              ],
               begin: Alignment.topLeft, end: Alignment.bottomRight,
             ),
           ),
@@ -468,15 +475,15 @@ class _RegisterScreenState extends State<RegisterScreen>
                     child: Column(
                       children: [
                         ShaderMask(
-                          shaderCallback: (b) => const LinearGradient(
-                            colors: [Color(0xFF3A5AFF), Color(0xFF8C4EFF)],
+                          shaderCallback: (b) => LinearGradient(
+                            colors: [appColors.accentBlue, appColors.accentPurple],
                           ).createShader(b),
                           child: Text(
                             '¡Bienvenido/a, $nombre! 🎉',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.fredoka(
                               fontSize: 28.sp, fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: appColors.overlayOnGradient,
                             ),
                           ),
                         ),
@@ -488,7 +495,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                             textAlign: TextAlign.center,
                             style: GoogleFonts.fredoka(
                               fontSize: 16.sp, fontWeight: FontWeight.w500,
-                              color: const Color(0xFF5C6080), height: 1.4,
+                              color: appColors.neutralMutedText, height: 1.4,
                             ),
                           ),
                         ),
@@ -503,27 +510,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                               transitionDuration: const Duration(milliseconds: 400),
                             ),
                           ),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF5CCFC0), Color(0xFF2981C1)],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF2981C1).withValues(alpha: 0.35),
-                                  blurRadius: 16, offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              '¡Empecemos! →',
-                              style: GoogleFonts.fredoka(
-                                color: Colors.white, fontSize: 22.sp,
-                                fontWeight: FontWeight.bold, letterSpacing: 0.8,
-                              ),
-                            ),
+                          child: PrimaryGradientButton(
+                            label: '¡Empecemos! →',
+                            height: 56,
+                            fontSize: 22,
+                            widthFraction: 0.7,
                           ),
                         ),
                       ],
@@ -541,6 +532,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   // ── CARRUSEL 3 PASOS ──
   Widget _buildCarousel() {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     final steps = [
       _StepMeta(emoji: '👤', title: '¿Quién eres?', subtitle: 'Cuéntame un poco sobre ti'),
       _StepMeta(emoji: '🎓', title: '¿Dónde estudias?', subtitle: 'Tu información académica'),
@@ -566,11 +558,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                           duration: const Duration(milliseconds: 200),
                           width: 40.w, height: 40.h,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3A5AFF).withValues(alpha: 0.1),
+                            color: appColors.accentBlue.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.arrow_back_ios_rounded,
-                              color: Color(0xFF3A5AFF), size: 18),
+                          child: Icon(Icons.arrow_back_ios_rounded,
+                              color: appColors.accentBlue, size: 18),
                         ),
                       )
                     else
@@ -607,7 +599,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                               value: _progressValue.value,
                               minHeight: 6,
                               backgroundColor: colorScheme.surfaceContainerHighest,
-                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A5AFF)),
+                              valueColor: AlwaysStoppedAnimation<Color>(appColors.accentBlue),
                             ),
                           ),
                         ],
@@ -623,7 +615,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         height: 8.h,
                         decoration: BoxDecoration(
                           color: i <= _currentStep
-                              ? const Color(0xFF3A5AFF)
+                              ? appColors.accentBlue
                               : colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -698,38 +690,14 @@ class _RegisterScreenState extends State<RegisterScreen>
                       child: AnimatedOpacity(
                         opacity: _checkCtrl.isAnimating ? 0 : 1,
                         duration: const Duration(milliseconds: 150),
-                        child: Container(
-                          width: double.infinity, height: 58.h,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF5CCFC0), Color(0xFF2981C1)],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF2981C1).withValues(alpha: 0.3),
-                                blurRadius: 14, offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _currentStep < 2 ? 'Continuar' : 'Crear mi cuenta',
-                                  style: GoogleFonts.fredoka(
-                                    color: Colors.white, fontSize: 20.sp,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(width: 8.w),
-                                const Icon(Icons.arrow_forward_rounded,
-                                    color: Colors.white, size: 20),
-                              ],
-                            ),
+                        child: PrimaryGradientButton(
+                          label: _currentStep < 2 ? 'Continuar' : 'Crear mi cuenta',
+                          height: 58,
+                          fontSize: 20,
+                          trailing: Icon(
+                            Icons.arrow_forward_rounded,
+                            color: appColors.overlayOnGradient,
+                            size: 20,
                           ),
                         ),
                       ),
@@ -742,11 +710,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                           opacity: _checkFade,
                           child: Container(
                             width: 58.w, height: 58.h,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF00C853), shape: BoxShape.circle,
+                            decoration: BoxDecoration(
+                              color: appColors.successFg, shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.check_rounded,
-                                color: Colors.white, size: 32),
+                            child: Icon(Icons.check_rounded,
+                                color: appColors.overlayOnGradient, size: 32),
                           ),
                         ),
                       ),
@@ -829,10 +797,10 @@ class _RegisterScreenState extends State<RegisterScreen>
             padding: const EdgeInsets.only(left: 4),
             child: Row(
               children: [
-                const Icon(Icons.info_outline_rounded, size: 13, color: Color(0xFF8C4EFF)),
+                Icon(Icons.info_outline_rounded, size: 13, color: context.appColors.accentPurple),
                 SizedBox(width: 5.w),
                 Text('Mínimo 9 caracteres',
-                    style: GoogleFonts.fredoka(fontSize: 12.sp, color: const Color(0xFF8C4EFF), fontWeight: FontWeight.w500)),
+                    style: GoogleFonts.fredoka(fontSize: 12.sp, color: context.appColors.accentPurple, fontWeight: FontWeight.w500)),
               ],
             ),
           ),
@@ -846,6 +814,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 
   Widget _buildTermsBlock(ColorScheme colorScheme) {
+    final appColors = context.appColors;
     return AnimatedBuilder(
       animation: _checkboxCtrl,
       builder: (_, __) => Column(
@@ -857,10 +826,10 @@ class _RegisterScreenState extends State<RegisterScreen>
               Container(
                 width: 28.w, height: 28.h,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFF3A5AFF), Color(0xFF8C4EFF)]),
+                  gradient: LinearGradient(colors: [appColors.accentBlue, appColors.accentPurple]),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.gavel_rounded, color: Colors.white, size: 16),
+                child: Icon(Icons.gavel_rounded, color: appColors.overlayOnGradient, size: 16),
               ),
               SizedBox(width: 8.w),
               Text('Términos y Condiciones',
@@ -881,7 +850,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                 )
               else
                 Text('✓ Leídos', style: GoogleFonts.fredoka(
-                  fontSize: 11.sp, color: const Color(0xFF00C853), fontWeight: FontWeight.bold,
+                  fontSize: 11.sp, color: appColors.successFg, fontWeight: FontWeight.bold,
                 )),
             ],
           ),
@@ -895,8 +864,8 @@ class _RegisterScreenState extends State<RegisterScreen>
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: _termsScrolledToBottom
-                    ? const Color(0xFF00C853).withValues(alpha: 0.6)
-                    : const Color(0xFF3A5AFF).withValues(alpha: 0.2),
+                    ? appColors.successFg.withValues(alpha: 0.6)
+                    : appColors.accentBlue.withValues(alpha: 0.2),
                 width: 1.5,
               ),
               color: colorScheme.surfaceContainerLow,
@@ -946,25 +915,25 @@ class _RegisterScreenState extends State<RegisterScreen>
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
                         gradient: _termsAccepted
-                            ? const LinearGradient(
-                                colors: [Color(0xFF00C853), Color(0xFF00897B)])
+                            ? LinearGradient(
+                                colors: [appColors.successFg, appColors.accentTeal])
                             : null,
                         border: _termsAccepted
                             ? null
                             : Border.all(
                                 color: _termsScrolledToBottom
-                                    ? const Color(0xFF3A5AFF)
+                                    ? appColors.accentBlue
                                     : colorScheme.onSurfaceVariant,
                                 width: 2),
                         color: _termsAccepted ? null : Colors.transparent,
                         boxShadow: _termsAccepted
                             ? [BoxShadow(
-                                color: const Color(0xFF00C853).withValues(alpha: 0.35),
+                                color: appColors.successFg.withValues(alpha: 0.35),
                                 blurRadius: 8, offset: const Offset(0, 3))]
                             : [],
                       ),
                       child: _termsAccepted
-                          ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                          ? Icon(Icons.check_rounded, color: appColors.overlayOnGradient, size: 16)
                           : null,
                     ),
                   ),
@@ -976,17 +945,17 @@ class _RegisterScreenState extends State<RegisterScreen>
                           fontSize: 13.sp, color: colorScheme.onSurface,
                           fontWeight: FontWeight.w500,
                         ),
-                        children: const [
-                          TextSpan(text: 'He leído y acepto los '),
+                        children: [
+                          const TextSpan(text: 'He leído y acepto los '),
                           TextSpan(
                             text: 'Términos y Condiciones',
                             style: TextStyle(
-                              color: Color(0xFF3A5AFF),
+                              color: appColors.accentBlue,
                               fontWeight: FontWeight.bold,
                               decoration: TextDecoration.underline,
                             ),
                           ),
-                          TextSpan(text: ' de REST Salud Mental'),
+                          const TextSpan(text: ' de REST Salud Mental'),
                         ],
                       ),
                     ),
@@ -1060,6 +1029,7 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
     List<TextInputFormatter> inputFormatters = const [],
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     final isFocused = focusNode.hasFocus;
     final hasText = controller.text.isNotEmpty;
 
@@ -1069,7 +1039,7 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         boxShadow: isFocused ? [
-          BoxShadow(color: const Color(0xFF3A5AFF).withValues(alpha: 0.2),
+          BoxShadow(color: appColors.accentBlue.withValues(alpha: 0.2),
               blurRadius: 14, offset: const Offset(0, 4)),
         ] : [],
       ),
@@ -1080,7 +1050,7 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
             duration: const Duration(milliseconds: 180),
             style: GoogleFonts.fredoka(
               fontSize: 13.sp, fontWeight: FontWeight.bold,
-              color: isFocused ? const Color(0xFF3A5AFF) : colorScheme.onSurfaceVariant,
+              color: isFocused ? appColors.accentBlue : colorScheme.onSurfaceVariant,
             ),
             child: Padding(
               padding: const EdgeInsets.only(left: 4, bottom: 5),
@@ -1091,8 +1061,11 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(13),
               gradient: isFocused
-                  ? const LinearGradient(colors: [Color(0xFF3A5AFF), Color(0xFF8C4EFF)])
-                  : const LinearGradient(colors: [Color(0xFFCDD8FF), Color(0xFFD8C8FF)]),
+                  ? LinearGradient(colors: [appColors.accentBlue, appColors.accentPurple])
+                  : LinearGradient(colors: [
+                      appColors.goalCardUnselectedBorder,
+                      appColors.accentPurple.withValues(alpha: 0.35),
+                    ]),
             ),
             padding: const EdgeInsets.all(2),
             child: Container(
@@ -1117,7 +1090,7 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
                   ),
                   prefixIcon: Icon(
                     isPassword ? Icons.lock_outline_rounded : Icons.edit_outlined,
-                    color: isFocused ? const Color(0xFF3A5AFF) : colorScheme.onSurfaceVariant,
+                    color: isFocused ? appColors.accentBlue : colorScheme.onSurfaceVariant,
                     size: 18,
                   ),
                   suffixIcon: Row(
@@ -1131,9 +1104,9 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
                             padding: const EdgeInsets.only(right: 4),
                             child: Container(
                               width: 22.w, height: 22.h,
-                              decoration: const BoxDecoration(
-                                  color: Color(0xFF3709EC), shape: BoxShape.circle),
-                              child: const Icon(Icons.check, color: Colors.white, size: 13),
+                              decoration: BoxDecoration(
+                                  color: appColors.accentBlue, shape: BoxShape.circle),
+                              child: Icon(Icons.check, color: appColors.overlayOnGradient, size: 13),
                             ),
                           ),
                         ),
@@ -1147,7 +1120,7 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
                               child: Icon(
                                 _isPasswordVisible ? Icons.visibility_rounded : Icons.visibility_off_rounded,
                                 key: ValueKey(_isPasswordVisible),
-                                color: isFocused ? const Color(0xFF3A5AFF) : colorScheme.onSurfaceVariant,
+                                color: isFocused ? appColors.accentBlue : colorScheme.onSurfaceVariant,
                                 size: 18,
                               ),
                             ),
@@ -1172,6 +1145,7 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
   Widget _dropdown(String label, String hint, String? value,
       List<String> items, ValueChanged<String?> onChanged) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     final hasValue = value != null;
 
     return Column(
@@ -1182,7 +1156,7 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
           child: Text(label,
             style: GoogleFonts.fredoka(
               fontSize: 13.sp, fontWeight: FontWeight.bold,
-              color: hasValue ? const Color(0xFF3A5AFF) : colorScheme.onSurfaceVariant,
+              color: hasValue ? appColors.accentBlue : colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -1190,8 +1164,11 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(13),
             gradient: hasValue
-                ? const LinearGradient(colors: [Color(0xFF3A5AFF), Color(0xFF8C4EFF)])
-                : const LinearGradient(colors: [Color(0xFFCDD8FF), Color(0xFFD8C8FF)]),
+                ? LinearGradient(colors: [appColors.accentBlue, appColors.accentPurple])
+                : LinearGradient(colors: [
+                    appColors.goalCardUnselectedBorder,
+                    appColors.accentPurple.withValues(alpha: 0.35),
+                  ]),
           ),
           padding: const EdgeInsets.all(2),
           child: Container(
@@ -1211,12 +1188,12 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
                   icon: hasValue
                       ? Container(
                           width: 22.w, height: 22.h,
-                          decoration: const BoxDecoration(
-                              color: Color(0xFF3709EC), shape: BoxShape.circle),
-                          child: const Icon(Icons.check, color: Colors.white, size: 13),
+                          decoration: BoxDecoration(
+                              color: appColors.accentBlue, shape: BoxShape.circle),
+                          child: Icon(Icons.check, color: appColors.overlayOnGradient, size: 13),
                         )
-                      : const Icon(Icons.keyboard_arrow_down_rounded,
-                          color: Color(0xFF8C4EFF)),
+                      : Icon(Icons.keyboard_arrow_down_rounded,
+                          color: appColors.accentPurple),
                   items: items.map((item) => DropdownMenuItem(
                     value: item,
                     child: Text(item, style: GoogleFonts.fredoka(
@@ -1238,6 +1215,7 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
   // ── DATE PICKER ──
   Widget _datePicker() {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     final hasDate = _fechaNacimientoController.text.isNotEmpty;
 
     return Column(
@@ -1248,7 +1226,7 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
           child: Text('Fecha de nacimiento',
             style: GoogleFonts.fredoka(
               fontSize: 13.sp, fontWeight: FontWeight.bold,
-              color: hasDate ? const Color(0xFF3A5AFF) : colorScheme.onSurfaceVariant,
+              color: hasDate ? appColors.accentBlue : colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -1268,8 +1246,11 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(13),
               gradient: hasDate
-                  ? const LinearGradient(colors: [Color(0xFF3A5AFF), Color(0xFF8C4EFF)])
-                  : const LinearGradient(colors: [Color(0xFFCDD8FF), Color(0xFFD8C8FF)]),
+                  ? LinearGradient(colors: [appColors.accentBlue, appColors.accentPurple])
+                  : LinearGradient(colors: [
+                      appColors.goalCardUnselectedBorder,
+                      appColors.accentPurple.withValues(alpha: 0.35),
+                    ]),
             ),
             padding: const EdgeInsets.all(2),
             child: Container(
@@ -1281,7 +1262,7 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
               child: Row(
                 children: [
                   Icon(Icons.calendar_today_rounded, size: 18,
-                      color: hasDate ? const Color(0xFF3A5AFF) : colorScheme.onSurfaceVariant),
+                      color: hasDate ? appColors.accentBlue : colorScheme.onSurfaceVariant),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
@@ -1295,9 +1276,9 @@ Al aceptar, confirmas que tienes al menos 15 años de edad y que has leído y co
                   if (hasDate)
                     Container(
                       width: 22.w, height: 22.h,
-                      decoration: const BoxDecoration(
-                          color: Color(0xFF3709EC), shape: BoxShape.circle),
-                      child: const Icon(Icons.check, color: Colors.white, size: 13),
+                      decoration: BoxDecoration(
+                          color: appColors.accentBlue, shape: BoxShape.circle),
+                      child: Icon(Icons.check, color: appColors.overlayOnGradient, size: 13),
                     ),
                 ],
               ),

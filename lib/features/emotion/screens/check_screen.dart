@@ -2,6 +2,7 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/routes/app_routes.dart';
 import 'package:rest/core/services/emotion_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/features/emotion/utils/emotion_calculator.dart';
 
 const List<String> _nombresDias = [
@@ -73,6 +74,7 @@ class _CheckScreenState extends State<CheckScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: Center(
@@ -107,10 +109,13 @@ class _CheckScreenState extends State<CheckScreen> {
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: LinearGradient(
-                              colors: [Color(0xFF4DD0E1), Color(0xFF26C6DA)],
+                              colors: [
+                                appColors.heroGradientCoolStart,
+                                appColors.heroGradientCoolEnd,
+                              ],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                             ),
@@ -126,12 +131,12 @@ class _CheckScreenState extends State<CheckScreen> {
                   SizedBox(height: 20.h),
 
                   ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
+                    shaderCallback: (bounds) => LinearGradient(
                       colors: [
-                        Color(0xFFE91E63),
-                        Color(0xFFFF5722),
-                        Color(0xFFFF9800),
-                        Color(0xFFFFEB3B),
+                        appColors.dangerFg,
+                        appColors.goldEnd,
+                        appColors.goldStart,
+                        appColors.warmBadgeFg,
                       ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
@@ -141,7 +146,7 @@ class _CheckScreenState extends State<CheckScreen> {
                       style: TextStyle(
                         fontSize: 48.sp,
                         fontWeight: FontWeight.w900,
-                        color: Colors.white,
+                        color: appColors.overlayOnGradient,
                         letterSpacing: 2.0,
                         shadows: [
                           Shadow(
@@ -161,12 +166,12 @@ class _CheckScreenState extends State<CheckScreen> {
                     width: double.infinity,
                     padding: EdgeInsets.all(20.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF9ADDFF),
+                      color: appColors.heroGradientCoolStart,
                       borderRadius: BorderRadius.circular(25.r),
-                      border: Border.all(color: Colors.black, width: 1),
+                      border: Border.all(color: colorScheme.outline, width: 1),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF4FC3F7).withValues(alpha: 0.4),
+                          color: appColors.brandBorder.withValues(alpha: 0.4),
                           blurRadius: 10,
                           spreadRadius: 2,
                           offset: const Offset(0, 4),
@@ -180,11 +185,11 @@ class _CheckScreenState extends State<CheckScreen> {
                           style: TextStyle(
                             fontSize: 20.sp,
                             fontWeight: FontWeight.w900,
-                            color: const Color(0xFFFF9800),
+                            color: appColors.goldEnd,
                             letterSpacing: 1.5,
                             shadows: [
                               Shadow(
-                                color: Colors.white,
+                                color: appColors.overlayOnGradient,
                                 offset: const Offset(1, 1),
                                 blurRadius: 1,
                               ),
@@ -196,7 +201,7 @@ class _CheckScreenState extends State<CheckScreen> {
                           style: TextStyle(
                             fontSize: 20.sp,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white,
+                            color: appColors.overlayOnGradient,
                             letterSpacing: 1.5,
                             shadows: [
                               Shadow(
@@ -213,7 +218,7 @@ class _CheckScreenState extends State<CheckScreen> {
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFF0277BD),
+                            color: appColors.infoBadgeFg,
                             letterSpacing: 1.0,
                             fontStyle: FontStyle.italic,
                           ),
@@ -231,14 +236,14 @@ class _CheckScreenState extends State<CheckScreen> {
                     height: 60.h,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(28.r),
-                      gradient: const RadialGradient(
-                        colors: [Color(0xFF0BBDAC), Color(0xFF6110E8)],
+                      gradient: RadialGradient(
+                        colors: [appColors.accentTeal, appColors.accentPurple],
                         center: Alignment.center,
                         radius: 3.5,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0BBDAC).withValues(alpha: 0.4),
+                          color: appColors.accentTeal.withValues(alpha: 0.4),
                           blurRadius: 12,
                           spreadRadius: 1,
                           offset: const Offset(0, 4),
@@ -266,7 +271,7 @@ class _CheckScreenState extends State<CheckScreen> {
                           fontSize: 28.sp,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.1,
-                          color: Colors.white,
+                          color: appColors.overlayOnGradient,
                         ),
                       ),
                     ),
@@ -295,7 +300,7 @@ class _CheckScreenState extends State<CheckScreen> {
           children: [
             Text(
               'No se pudo cargar el historial.',
-              style: TextStyle(fontSize: 14.sp, color: Colors.red[700]),
+              style: TextStyle(fontSize: 14.sp, color: context.appColors.dangerFg),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 8.h),
@@ -453,15 +458,15 @@ class _CheckScreenState extends State<CheckScreen> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: colorScheme.surfaceContainerLow,
-        border: Border.all(color: const Color(0xFF0277BD), width: 2),
+        border: Border.all(color: context.appColors.infoBadgeFg, width: 2),
       ),
       child: Center(
         child: Container(
           width: 8.w,
           height: 8.h,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Color(0xFF0277BD),
+            color: context.appColors.infoBadgeFg,
           ),
         ),
       ),
@@ -508,29 +513,31 @@ class _CheckScreenState extends State<CheckScreen> {
 
   /// Construye un círculo de color según el estado emocional con IMAGEN adentro
   Widget _buildEstadoCircle(String estado, num promedio) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     // Imágenes según el estado
     String imagenAsset;
     Color colorFondo;
 
     switch (estado) {
       case 'excelente':
-        colorFondo = const Color(0xFF08D557); // Verde
+        colorFondo = appColors.successFg;
         imagenAsset = 'assets/images/green_face.png';
         break;
       case 'normal':
-        colorFondo = const Color(0xFF2196F3); // Azul
+        colorFondo = colorScheme.primary;
         imagenAsset = 'assets/images/rest.png';
         break;
       case 'alerta-amarillo':
-        colorFondo = const Color(0xFFFF9800); // Amarillo/Naranja
+        colorFondo = appColors.goldEnd;
         imagenAsset = 'assets/images/yellowrest.jpg';
         break;
       case 'critico':
-        colorFondo = const Color(0xFFE91E63); // Rojo/Rosa
+        colorFondo = colorScheme.error;
         imagenAsset = 'assets/images/pink_face.jpg';
         break;
       default:
-        colorFondo = Colors.grey[300]!;
+        colorFondo = colorScheme.outlineVariant;
         imagenAsset = 'assets/images/normalrest.jpg';
     }
 
@@ -552,7 +559,7 @@ class _CheckScreenState extends State<CheckScreen> {
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(color: Colors.white, width: 2),
+        border: Border.all(color: appColors.overlayOnGradient, width: 2),
       ),
       child: ClipOval(
         child: Image.asset(

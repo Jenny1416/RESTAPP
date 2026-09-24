@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 /// Tarjeta con icono + titulo + contenido, bordeada.
 /// Reemplaza el _InfoCard que estaba duplicado/privado dentro de myprogress_screen.
@@ -23,7 +24,7 @@ class InfoCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF2F9FE8), width: 1.5),
+        border: Border.all(color: context.appColors.brandBorder, width: 1.5),
         borderRadius: BorderRadius.circular(15.r),
       ),
       child: Column(

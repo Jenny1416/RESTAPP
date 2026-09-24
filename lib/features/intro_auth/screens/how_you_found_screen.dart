@@ -7,6 +7,8 @@ import 'package:rest/features/emotion/screens/emotionregister_screen.dart';
 import 'package:rest/features/navigation/main_app.dart';
 import 'package:rest/features/onboarding/screens/onboarding_status_screen.dart';
 import 'package:rest/features/onboarding/services/onboarding_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
+import 'package:rest/core/widgets/primary_gradient_button.dart';
 import 'package:rest/features/intro_auth/widgets/star_rain_widget.dart';
 import 'login_screen.dart';
 
@@ -86,6 +88,7 @@ class _HowYouFoundScreenState extends State<HowYouFoundScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: Stack(
@@ -106,17 +109,17 @@ class _HowYouFoundScreenState extends State<HowYouFoundScreen> {
                     Column(
                       children: [
                         ShaderMask(
-                          shaderCallback: (bounds) => const LinearGradient(
+                          shaderCallback: (bounds) => LinearGradient(
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
-                            colors: [Color(0xFFCA0AFF), Color(0xFF1298FF)],
+                            colors: [appColors.accentPurple, appColors.accentBlue],
                           ).createShader(bounds),
                           child: Text(
                             '¡Perfecto!',
                             style: GoogleFonts.fredoka(
                               fontSize: 60.sp,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: appColors.overlayOnGradient,
                             ),
                           ),
                         ),
@@ -198,7 +201,7 @@ class _HowYouFoundScreenState extends State<HowYouFoundScreen> {
                           style: GoogleFonts.fredoka(
                             fontSize: 32.sp,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF5020FD),
+                            color: appColors.accentPurple,
                           ),
                         ),
                       ],
@@ -234,11 +237,11 @@ class _HowYouFoundScreenState extends State<HowYouFoundScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: selectedOption == option
-                                  ? const Color(0xFF5CCFC0)
+                                  ? appColors.accentTeal
                                   : colorScheme.surfaceContainerLow,
                               borderRadius: BorderRadius.circular(30),
                               border: Border.all(
-                                color: const Color(0xFF5CCFC0),
+                                color: appColors.accentTeal,
                                 width: 2,
                               ),
                             ),
@@ -248,8 +251,8 @@ class _HowYouFoundScreenState extends State<HowYouFoundScreen> {
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.bold,
                                 color: selectedOption == option
-                                    ? Colors.white
-                                    : const Color(0xFF2981C1),
+                                    ? appColors.overlayOnGradient
+                                    : appColors.brandBorder,
                               ),
                             ),
                           ),
@@ -259,38 +262,15 @@ class _HowYouFoundScreenState extends State<HowYouFoundScreen> {
 
                     SizedBox(height: 30.h),
 
-                    Container(
-                      width: 345.w,
-                      height: 52.h,
-                      decoration: const BoxDecoration(
-                        gradient: RadialGradient(
-                          center: Alignment.centerLeft,
-                          radius: 2.5,
-                          colors: [Color(0xFF0BBDAC), Color(0xFF3667CA)],
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(30)),
-                      ),
-                      child: ElevatedButton(
-                        onPressed: selectedOption != null ? _continuar : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          fixedSize: Size(345.w, 52.h),
-                          padding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Siguiente',
-                            style: GoogleFonts.fredoka(
-                              fontSize: 30.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
+                    Opacity(
+                      opacity: selectedOption != null ? 1 : 0.5,
+                      child: GestureDetector(
+                        onTap: selectedOption != null ? _continuar : null,
+                        child: PrimaryGradientButton(
+                          label: 'Siguiente',
+                          height: 52,
+                          fontSize: 30,
+                          widthFraction: 0.82,
                         ),
                       ),
                     ),

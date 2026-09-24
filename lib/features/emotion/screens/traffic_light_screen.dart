@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/routes/app_routes.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import '../../../core/services/user_session.dart';
 import '../../evaluations/widgets/latest_dimensions_card.dart';
 import '../utils/emotion_state_config.dart';
@@ -22,10 +23,11 @@ class TrafficLightScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final config = EmotionStateConfig.getConfig(estado);
+    final config = EmotionStateConfig.getConfig(estado, context);
     final recomendaciones = config.getRandomRecommendations(count: 3);
 
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
@@ -106,7 +108,7 @@ class TrafficLightScreen extends StatelessWidget {
                       vertical: 14,
                     ),
                     decoration: BoxDecoration(
-                      color: config.colorPrincipal.withValues(alpha: 0.1),
+                      color: colorScheme.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: config.colorPrincipal.withValues(alpha: 0.3),
@@ -170,7 +172,7 @@ class TrafficLightScreen extends StatelessWidget {
                                   rec,
                                   style: TextStyle(
                                     fontSize: 12.sp,
-                                    color: Colors.black87,
+                                    color: colorScheme.onSurface,
                                     height: 1.3,
                                   ),
                                 ),
@@ -240,7 +242,7 @@ class TrafficLightScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: appColors.overlayOnGradient,
                           letterSpacing: 0.5,
                         ),
                       ),

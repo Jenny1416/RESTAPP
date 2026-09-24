@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 import '../models/onboarding_models.dart';
 import '../services/onboarding_service.dart';
@@ -142,6 +143,7 @@ class _OnboardingContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     final title = completed
         ? '¡Tu perfil de bienestar está listo!'
         : 'Conozcámonos un poco mejor';
@@ -174,7 +176,7 @@ class _OnboardingContent extends StatelessWidget {
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.6,
-                            color: onboardingPurple,
+                            color: appColors.accentBlue,
                           ),
                         ),
                         Text(
@@ -199,11 +201,11 @@ class _OnboardingContent extends StatelessWidget {
                   color: colors.surface,
                   borderRadius: BorderRadius.circular(28.r),
                   border: Border.all(
-                    color: onboardingPurple.withValues(alpha: 0.12),
+                    color: appColors.accentBlue.withValues(alpha: 0.12),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: onboardingPurple.withValues(alpha: 0.1),
+                      color: appColors.accentBlue.withValues(alpha: 0.1),
                       blurRadius: 28,
                       offset: const Offset(0, 12),
                     ),
@@ -242,7 +244,7 @@ class _OnboardingContent extends StatelessWidget {
                               icon: Icons.quiz_outlined,
                               value: questionCount?.toString() ?? '—',
                               label: 'preguntas',
-                              color: onboardingPurple,
+                              color: appColors.accentBlue,
                             ),
                           ),
                           SizedBox(width: 10.w),
@@ -251,16 +253,16 @@ class _OnboardingContent extends StatelessWidget {
                               icon: Icons.bubble_chart_outlined,
                               value: dimensionCount?.toString() ?? '—',
                               label: 'dimensiones',
-                              color: onboardingBlue,
+                              color: appColors.brandBorder,
                             ),
                           ),
                           SizedBox(width: 10.w),
-                          const Expanded(
+                          Expanded(
                             child: _Metric(
                               icon: Icons.schedule_rounded,
                               value: 'A tu',
                               label: 'ritmo',
-                              color: Color(0xFF8C4EFF),
+                              color: appColors.accentPurple,
                             ),
                           ),
                         ],
@@ -283,7 +285,7 @@ class _OnboardingContent extends StatelessWidget {
                   child: Text(
                     'Ahora no, continuar a la app',
                     style: GoogleFonts.fredoka(
-                      color: onboardingBlue,
+                      color: appColors.brandBorder,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -314,9 +316,11 @@ class _HeaderButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(13.r),
-          border: Border.all(color: onboardingPurple.withValues(alpha: 0.14)),
+          border: Border.all(
+            color: context.appColors.accentBlue.withValues(alpha: 0.14),
+          ),
         ),
-        child: Icon(icon, color: onboardingPurple, size: 18),
+        child: Icon(icon, color: context.appColors.accentBlue, size: 18),
       ),
     );
   }
@@ -385,7 +389,7 @@ class _PrivacyNote extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF4DC),
+        color: context.appColors.reminderCardBg,
         borderRadius: BorderRadius.circular(17.r),
       ),
       child: Row(
@@ -394,14 +398,14 @@ class _PrivacyNote extends StatelessWidget {
           Container(
             width: 34.w,
             height: 34.w,
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFE7B5),
+            decoration: BoxDecoration(
+              color: context.appColors.warmBadgeBg,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.shield_outlined,
               size: 19,
-              color: Color(0xFFB76A00),
+              color: context.appColors.warmBadgeFg,
             ),
           ),
           SizedBox(width: 11.w),
@@ -411,7 +415,7 @@ class _PrivacyNote extends StatelessWidget {
               style: GoogleFonts.fredoka(
                 fontSize: 12.sp,
                 height: 1.35,
-                color: const Color(0xFF704300),
+                color: context.appColors.reminderCardFg,
               ),
             ),
           ),

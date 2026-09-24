@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import '../home/screens/home_screen.dart';
 import '../progress/screens/progress_screen.dart';
 import '../progress/screens/myprogress_screen.dart';
@@ -85,13 +86,14 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     return Container(
       margin: EdgeInsets.all(16.w),
       height: 70.h,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25.r),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4DB6AC), Color(0xFF3F51B5)],
+        gradient: LinearGradient(
+          colors: [appColors.navGradientStart, appColors.navGradientEnd],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
@@ -119,14 +121,16 @@ class CustomBottomNavBar extends StatelessWidget {
         height: 50.h,
         decoration: BoxDecoration(
           color: isActive
-              ? Colors.white.withValues(alpha: 0.9)
+              ? context.appColors.overlayOnGradient.withValues(alpha: 0.9)
               : Colors.transparent,
           shape: BoxShape.circle,
         ),
         child: Icon(
           icon,
           size: 30.sp,
-          color: isActive ? const Color(0xFF4A90E2) : Colors.white,
+          color: isActive
+              ? context.appColors.infoBadgeFg
+              : context.appColors.overlayOnGradient,
         ),
       ),
     );

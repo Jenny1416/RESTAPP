@@ -186,15 +186,18 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
               evaluation['semaforo'] ??
               'normal')
           .toString()
-          .toLowerCase();
+          .toLowerCase()
+          .trim();
+      final estadoUi = _mapEstadoToUiKey(estadoRaw);
+      final esCritico = estadoUi == 'critico';
       final resultado = {
-        'estado': estadoRaw == 'rojo' ? 'critico' : estadoRaw,
+        'estado': estadoUi,
         'mensaje': (assignmentData['mensaje'] ??
                 assignmentData['observaciones'] ??
                 evaluation['mensaje'] ??
                 'Tu resultado ha sido actualizado.')
             .toString(),
-        'botonTexto': estadoRaw == 'rojo' ? 'Buscar psicólogo' : 'Continuar',
+        'botonTexto': esCritico ? 'Buscar psicólogo' : 'Continuar',
         'rachaActivada': streak.activada,
       };
       // Navegar directo al semáforo emocional
@@ -257,6 +260,23 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
     final seed = today.year * 10000 + today.month * 100 + today.day;
     final shuffled = List<Map<String, dynamic>>.from(all)..shuffle(Random(seed));
     return shuffled.take(_dailyQuestionLimit).toList();
+  }
+
+  /// Traduce el estado devuelto por el backend (colores de semáforo:
+  /// `verde`/`amarillo`/`rojo`) a las claves que reconoce
+  /// [EmotionStateConfig]. Si ya viene en el formato de UI (por ejemplo en
+  /// pruebas manuales o respuestas legadas), se retorna sin cambios.
+  String _mapEstadoToUiKey(String estadoRaw) {
+    switch (estadoRaw) {
+      case 'verde':
+        return 'normal';
+      case 'amarillo':
+        return 'alerta-amarillo';
+      case 'rojo':
+        return 'critico';
+      default:
+        return estadoRaw;
+    }
   }
 
   String _normalizeQuestion(Object? value) {

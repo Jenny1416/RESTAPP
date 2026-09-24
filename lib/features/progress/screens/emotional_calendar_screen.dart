@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:rest/core/services/emotion_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 class EmotionalCalendarScreen extends StatefulWidget {
   const EmotionalCalendarScreen({super.key});
@@ -250,7 +251,7 @@ class _EmotionalCalendarScreenState extends State<EmotionalCalendarScreen> {
         children: [
           Text(
             'No se pudo cargar tu calendario',
-            style: TextStyle(color: Colors.red[700]),
+            style: TextStyle(color: context.appColors.dangerFg),
           ),
           SizedBox(height: 8.h),
           TextButton(onPressed: _loadCalendar, child: const Text('Reintentar')),
@@ -280,7 +281,10 @@ class _EmotionalCalendarScreenState extends State<EmotionalCalendarScreen> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF1E88E5), width: 1.5),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.primary,
+          width: 1.5,
+        ),
       ),
       child: Column(
         children: [
@@ -348,9 +352,9 @@ class _EmotionalCalendarScreenState extends State<EmotionalCalendarScreen> {
                       width: 28.w,
                       height: 28.h,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
+                      errorBuilder: (_, __, ___) => Icon(
                         Icons.emoji_emotions,
-                        color: Color(0xFF4FC3F7),
+                        color: context.appColors.brandSoft,
                       ),
                     ),
                   )

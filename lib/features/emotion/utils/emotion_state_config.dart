@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 /// Configuración centralizada para cada estado emocional
 class EmotionStateConfig {
@@ -26,7 +27,10 @@ class EmotionStateConfig {
     required this.recomendaciones,
   });
 
-  static EmotionStateConfig getConfig(String estado) {
+  static EmotionStateConfig getConfig(String estado, BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
+
     // Alias defensivos: si en algún punto llega el color crudo del semáforo
     // del backend ('verde'/'amarillo'/'rojo') en vez de la clave de UI,
     // se traduce aquí también para no caer en "ESTADO DESCONOCIDO".
@@ -52,9 +56,9 @@ class EmotionStateConfig {
           mensaje: '¡Qué bien te sientes hoy! Sigue así.',
           mensaje2: 'Tu energía es inspiradora.',
           imagenAsset: 'assets/images/goodrest.jpg',
-          colorPrincipal: const Color(0xFF08D557),
-          colorSecundario: const Color(0xFF41AC20),
-          colorTexto: const Color(0xFF08D557),
+          colorPrincipal: appColors.successFg,
+          colorSecundario: appColors.progressFillCool,
+          colorTexto: appColors.successFg,
           botonTexto: 'Continuar',
           recomendaciones: [
             '✨ Celebra este momento de bienestar',
@@ -70,9 +74,9 @@ class EmotionStateConfig {
           mensaje: 'Tu día va tranquilo y estable.',
           mensaje2: 'Es un buen momento para reflexionar.',
           imagenAsset: 'assets/images/normalrest.jpg',
-          colorPrincipal: const Color(0xFF2196F3),
-          colorSecundario: const Color(0xFF64B5F6),
-          colorTexto: const Color(0xFF1565C0),
+          colorPrincipal: colorScheme.primary,
+          colorSecundario: appColors.brandSoft,
+          colorTexto: appColors.infoBadgeFg,
           botonTexto: 'Continuar',
           recomendaciones: [
             '🎯 Fija metas pequeñas para hoy',
@@ -89,9 +93,9 @@ class EmotionStateConfig {
               'Parece que hoy no estás al 100%. Te invitamos a respirar y relajarte.',
           mensaje2: '¡Tenemos esto para ti!',
           imagenAsset: 'assets/images/yellowrest.jpg',
-          colorPrincipal: const Color(0xFFFF9800),
-          colorSecundario: const Color(0xFFFFB74D),
-          colorTexto: const Color(0xFFE65100),
+          colorPrincipal: appColors.goldEnd,
+          colorSecundario: appColors.goldStart,
+          colorTexto: appColors.warmSurfaceFg,
           botonTexto: 'Ver consejos',
           recomendaciones: [
             '🫁 Practica la técnica 4-7-8 de respiración',
@@ -110,9 +114,9 @@ class EmotionStateConfig {
               'Notamos que hoy te sientes mal. Estamos aquí para ayudarte.',
           mensaje2: '¡Tenemos esto para ti!',
           imagenAsset: 'assets/images/sadrest.jpg',
-          colorPrincipal: const Color(0xFFE91E63),
-          colorSecundario: const Color(0xFFF06292),
-          colorTexto: const Color(0xFFC2185B),
+          colorPrincipal: colorScheme.error,
+          colorSecundario: appColors.dangerFg,
+          colorTexto: appColors.dangerFg,
           botonTexto: 'Pedir ayuda',
           recomendaciones: [
             '📞 Contacta a un psicólogo',
@@ -130,9 +134,9 @@ class EmotionStateConfig {
           mensaje: 'No pudimos identificar tu estado emocional.',
           mensaje2: 'Por favor, intenta de nuevo.',
           imagenAsset: 'assets/images/normalrest.jpg',
-          colorPrincipal: const Color(0xFF9E9E9E),
-          colorSecundario: const Color(0xFFBDBDBD),
-          colorTexto: const Color(0xFF616161),
+          colorPrincipal: colorScheme.outline,
+          colorSecundario: colorScheme.outlineVariant,
+          colorTexto: colorScheme.onSurfaceVariant,
           botonTexto: 'Reintentar',
           recomendaciones: ['Recarga la página', 'Verifica tu conexión'],
         );

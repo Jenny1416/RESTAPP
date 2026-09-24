@@ -2,6 +2,8 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rest/core/services/auth_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
+import 'package:rest/core/widgets/primary_gradient_button.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -139,24 +141,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 obscure: true,
               ),
               SizedBox(height: 28.h),
-              SizedBox(
-                height: 52.h,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleRecoverPassword,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2F82C4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: Text(
-                    _isLoading ? 'ACTUALIZANDO...' : 'ACTUALIZAR CONTRASEÑA',
-                    style: GoogleFonts.fredoka(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+              GestureDetector(
+                onTap: _isLoading ? null : _handleRecoverPassword,
+                child: PrimaryGradientButton(
+                  label: _isLoading ? 'ACTUALIZANDO...' : 'ACTUALIZAR CONTRASEÑA',
+                  height: 52,
+                  fontSize: 20,
+                  isLoading: _isLoading,
                 ),
               ),
             ],
@@ -173,6 +164,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     bool obscure = false,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -187,17 +179,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.fredoka(color: colorScheme.onSurfaceVariant),
+            fillColor: colorScheme.surfaceContainerHighest,
+            filled: true,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide: const BorderSide(color: Color(0xFF6A5CFF), width: 2),
+              borderSide: BorderSide(color: appColors.accentPurple, width: 2),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide: const BorderSide(color: Color(0xFF6A5CFF), width: 2),
+              borderSide: BorderSide(color: appColors.accentPurple, width: 2),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide: const BorderSide(color: Color(0xFF00B8D4), width: 2),
+              borderSide: BorderSide(color: appColors.accentTeal, width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,

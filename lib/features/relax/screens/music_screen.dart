@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 class MusicScreen extends StatefulWidget {
   const MusicScreen({super.key});
@@ -29,14 +30,12 @@ class _MusicScreenState extends State<MusicScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appColors = context.appColors;
 
-    final cardColor = isDark ? const Color(0xFF1E3A4A) : const Color(0xFF87CEEB);
-    final shadowColor = isDark 
-        ? Colors.black.withValues(alpha: 0.3) 
-        : const Color(0xFF87CEEB).withValues(alpha: 0.4);
-    final onCardColor = isDark ? const Color(0xFF90CAF9) : Colors.white;
-    final secondaryTextColor = isDark ? const Color(0xFF64B5F6) : Colors.white70;
+    final cardColor = appColors.brandSoft;
+    final shadowColor = appColors.brandSoft.withValues(alpha: 0.4);
+    final onCardColor = appColors.overlayOnGradient;
+    final secondaryTextColor = appColors.overlayOnGradient.withValues(alpha: 0.7);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -108,11 +107,11 @@ class _MusicScreenState extends State<MusicScreen> {
                         height: 80.h,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: appColors.overlayOnGradient.withValues(alpha: 0.2),
                         ),
                         child: Icon(
                           _isPlaying ? Icons.pause : Icons.play_arrow,
-                          color: Colors.white,
+                          color: appColors.overlayOnGradient,
                           size: 40,
                         ),
                       ),

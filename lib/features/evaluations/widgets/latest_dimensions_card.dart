@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 import '../models/evaluation.dart';
 import '../services/evaluation_service.dart';
@@ -79,10 +80,11 @@ class _DimensionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     final color = switch (dimension.nivel.toLowerCase()) {
-      'rojo' => const Color(0xFFE53935),
-      'amarillo' => const Color(0xFFF9A825),
-      _ => const Color(0xFF20A779),
+      'rojo' => appColors.dangerFg,
+      'amarillo' => appColors.goldEnd,
+      _ => appColors.successFg,
     };
     return Row(
       children: [

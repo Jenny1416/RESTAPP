@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/features/professional_care/models/professional_care_models.dart';
 import 'package:rest/features/professional_care/screens/professional_chat_screen.dart';
 import 'package:rest/features/professional_care/services/professional_care_service.dart';
@@ -85,6 +86,7 @@ class _ProfessionalConversationsScreenState
   }
 
   Widget _content(ColorScheme colors) {
+    final appColors = context.appColors;
     if (_loading) return const Center(child: CircularProgressIndicator());
     if (_error != null) {
       return CareEmptyState(
@@ -182,7 +184,7 @@ class _ProfessionalConversationsScreenState
                                 writable ? Icons.circle : Icons.history_rounded,
                                 size: writable ? 9.sp : 15.sp,
                                 color: writable
-                                    ? const Color(0xFF219653)
+                                    ? appColors.successFg
                                     : colors.onSurfaceVariant,
                               ),
                               SizedBox(width: 5.w),
@@ -195,7 +197,7 @@ class _ProfessionalConversationsScreenState
                                   fontWeight: FontWeight.w600,
                                   fontSize: 12.sp,
                                   color: writable
-                                      ? const Color(0xFF219653)
+                                      ? appColors.successFg
                                       : colors.onSurfaceVariant,
                                 ),
                               ),

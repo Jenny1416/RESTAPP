@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/core/utils/app_toast.dart';
 import 'package:rest/features/professional_care/models/professional_care_models.dart';
 import 'package:rest/features/professional_care/services/professional_care_service.dart';
@@ -142,8 +143,8 @@ class _PsychologistDetailScreenState extends State<PsychologistDetailScreen> {
                       icon: const Icon(Icons.send_rounded),
                       label: const Text('Enviar solicitud'),
                       style: FilledButton.styleFrom(
-                        backgroundColor: careBlue,
-                        foregroundColor: Colors.white,
+                        backgroundColor: careAccent(context),
+                        foregroundColor: context.appColors.overlayOnGradient,
                         padding: EdgeInsets.symmetric(vertical: 15.h),
                         textStyle: const TextStyle(
                           fontFamily: 'Fredoka',
@@ -190,6 +191,7 @@ class _PsychologistDetailScreenState extends State<PsychologistDetailScreen> {
   Widget build(BuildContext context) {
     final psychologist = widget.psychologist;
     final colors = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     final approved = _approved;
     final pending = _pendingForThisPsychologist;
 
@@ -206,8 +208,8 @@ class _PsychologistDetailScreenState extends State<PsychologistDetailScreen> {
                   Container(
                     padding: EdgeInsets.all(22.w),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF51C9BE), Color(0xFF347FC8)],
+                      gradient: LinearGradient(
+                        colors: [appColors.accentTeal, appColors.brandBorder],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -224,7 +226,7 @@ class _PsychologistDetailScreenState extends State<PsychologistDetailScreen> {
                           psychologist.fullName,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white,
+                            color: appColors.overlayOnGradient,
                             fontFamily: 'Fredoka',
                             fontWeight: FontWeight.w800,
                             fontSize: 24.sp,
@@ -235,7 +237,7 @@ class _PsychologistDetailScreenState extends State<PsychologistDetailScreen> {
                           psychologist.specialty ?? 'Psicología y bienestar',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: appColors.overlayOnGradient.withValues(alpha: 0.9),
                             fontFamily: 'Fredoka',
                             fontSize: 15.sp,
                           ),
@@ -265,7 +267,7 @@ class _PsychologistDetailScreenState extends State<PsychologistDetailScreen> {
                   else if (approved != null)
                     _StatusNotice(
                       icon: Icons.verified_rounded,
-                      color: const Color(0xFF219653),
+                      color: appColors.successFg,
                       title: approved.psychologistId == psychologist.id
                           ? 'Es tu psicólogo asignado'
                           : 'Ya tienes un psicólogo asignado',
@@ -274,9 +276,9 @@ class _PsychologistDetailScreenState extends State<PsychologistDetailScreen> {
                           : 'Finaliza primero la relación activa si deseas solicitar otro profesional.',
                     )
                   else if (pending != null)
-                    const _StatusNotice(
+                    _StatusNotice(
                       icon: Icons.schedule_rounded,
-                      color: Color(0xFFF2A51A),
+                      color: appColors.warmBadgeFg,
                       title: 'Solicitud pendiente',
                       message:
                           'El chat se habilitará únicamente cuando el profesional acepte tu solicitud.',
@@ -290,9 +292,9 @@ class _PsychologistDetailScreenState extends State<PsychologistDetailScreen> {
                             ? SizedBox(
                                 width: 18.w,
                                 height: 18.w,
-                                child: const CircularProgressIndicator(
+                                child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: appColors.overlayOnGradient,
                                 ),
                               )
                             : const Icon(Icons.person_add_alt_1_rounded),
@@ -300,8 +302,8 @@ class _PsychologistDetailScreenState extends State<PsychologistDetailScreen> {
                           _sending ? 'Enviando...' : 'Solicitar atención',
                         ),
                         style: FilledButton.styleFrom(
-                          backgroundColor: careBlue,
-                          foregroundColor: Colors.white,
+                          backgroundColor: careAccent(context),
+                          foregroundColor: appColors.overlayOnGradient,
                           padding: EdgeInsets.symmetric(vertical: 16.h),
                           textStyle: const TextStyle(
                             fontFamily: 'Fredoka',
@@ -357,10 +359,10 @@ class _InfoTile extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(9.w),
             decoration: BoxDecoration(
-              color: careBlue.withValues(alpha: 0.12),
+              color: careAccent(context).withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: careBlue, size: 21.sp),
+            child: Icon(icon, color: careAccent(context), size: 21.sp),
           ),
           SizedBox(width: 13.w),
           Expanded(

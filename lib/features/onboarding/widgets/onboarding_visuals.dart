@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-const onboardingPurple = Color(0xFF3A5AFF);
-const onboardingViolet = Color(0xFF8C4EFF);
-const onboardingMint = Color(0xFF5CCFC0);
-const onboardingBlue = Color(0xFF2981C1);
+import 'package:rest/core/theme/app_colors.dart';
 
 class OnboardingBackdrop extends StatelessWidget {
   const OnboardingBackdrop({super.key, required this.child});
@@ -14,17 +10,17 @@ class OnboardingBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
+    final appColors = context.appColors;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: dark ? Theme.of(context).colorScheme.surface : null,
-        gradient: dark
-            ? null
-            : const LinearGradient(
-                colors: [Color(0xFFF3F7FF), Color(0xFFF4EEFF)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+        gradient: LinearGradient(
+          colors: [
+            appColors.heroGradientLavenderStart,
+            appColors.heroGradientLavenderEnd,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
       child: child,
     );
@@ -43,6 +39,7 @@ class OnboardingNoaBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     return Container(
       width: size.w,
       height: size.w,
@@ -51,12 +48,16 @@ class OnboardingNoaBadge extends StatelessWidget {
         shape: BoxShape.circle,
         gradient: LinearGradient(
           colors: completed
-              ? const [Color(0xFFFFECA8), Color(0xFFFFD9F1)]
-              : const [Color(0xFFDDFBF7), Color(0xFFDDE7FF)],
+              ? [appColors.goldStart, appColors.goldEnd]
+              : [
+                  appColors.heroGradientCoolEnd,
+                  appColors.heroGradientLavenderStart,
+                ],
         ),
         boxShadow: [
           BoxShadow(
-            color: (completed ? onboardingViolet : onboardingBlue).withValues(
+            color: (completed ? appColors.accentPurple : appColors.brandBorder)
+                .withValues(
               alpha: 0.18,
             ),
             blurRadius: 24,
@@ -91,6 +92,7 @@ class OnboardingPrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null && !loading;
+    final appColors = context.appColors;
     return AnimatedOpacity(
       opacity: enabled ? 1 : 0.55,
       duration: const Duration(milliseconds: 180),
@@ -102,13 +104,13 @@ class OnboardingPrimaryButton extends StatelessWidget {
           child: Ink(
             height: 58.h,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [onboardingMint, onboardingBlue],
+              gradient: LinearGradient(
+                colors: [appColors.accentTeal, appColors.brandBorder],
               ),
               borderRadius: BorderRadius.circular(18.r),
               boxShadow: [
                 BoxShadow(
-                  color: onboardingBlue.withValues(alpha: 0.28),
+                  color: appColors.brandBorder.withValues(alpha: 0.28),
                   blurRadius: 15,
                   offset: const Offset(0, 6),
                 ),
@@ -119,8 +121,8 @@ class OnboardingPrimaryButton extends StatelessWidget {
                   ? SizedBox(
                       width: 23.w,
                       height: 23.w,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
+                      child: CircularProgressIndicator(
+                        color: appColors.overlayOnGradient,
                         strokeWidth: 2.5,
                       ),
                     )
@@ -130,13 +132,17 @@ class OnboardingPrimaryButton extends StatelessWidget {
                         Text(
                           label,
                           style: GoogleFonts.fredoka(
-                            color: Colors.white,
+                            color: appColors.overlayOnGradient,
                             fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         SizedBox(width: 9.w),
-                        Icon(icon, color: Colors.white, size: 21.sp),
+                        Icon(
+                          icon,
+                          color: appColors.overlayOnGradient,
+                          size: 21.sp,
+                        ),
                       ],
                     ),
             ),

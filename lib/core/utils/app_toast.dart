@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 enum ToastType { success, error, warning, info }
 
@@ -112,12 +113,12 @@ class _ToastWidgetState extends State<_ToastWidget>
     super.dispose();
   }
 
-  _ToastConfig get _config {
+  _ToastConfig _configFor(AppColors appColors) {
     switch (widget.type) {
       case ToastType.success:
         return _ToastConfig(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF00C853), Color(0xFF00897B)],
+          gradient: LinearGradient(
+            colors: [appColors.successFg, appColors.accentTeal],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
@@ -126,8 +127,8 @@ class _ToastWidgetState extends State<_ToastWidget>
         );
       case ToastType.error:
         return _ToastConfig(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFE53935), Color(0xFFAD1457)],
+          gradient: LinearGradient(
+            colors: [appColors.dangerFg, appColors.warmBadgeFg],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
@@ -136,8 +137,8 @@ class _ToastWidgetState extends State<_ToastWidget>
         );
       case ToastType.warning:
         return _ToastConfig(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFF8F00), Color(0xFFF57F17)],
+          gradient: LinearGradient(
+            colors: [appColors.goldEnd, appColors.goldStart],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
@@ -146,8 +147,8 @@ class _ToastWidgetState extends State<_ToastWidget>
         );
       case ToastType.info:
         return _ToastConfig(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF3A5AFF), Color(0xFF8C4EFF)],
+          gradient: LinearGradient(
+            colors: [appColors.accentBlue, appColors.accentPurple],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
@@ -159,7 +160,8 @@ class _ToastWidgetState extends State<_ToastWidget>
 
   @override
   Widget build(BuildContext context) {
-    final cfg = _config;
+    final appColors = context.appColors;
+    final cfg = _configFor(appColors);
     return Positioned(
       top: MediaQuery.of(context).padding.top + 16,
       left: 20,
@@ -180,7 +182,7 @@ class _ToastWidgetState extends State<_ToastWidget>
                     borderRadius: BorderRadius.circular(18),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.18),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.18),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -196,10 +198,10 @@ class _ToastWidgetState extends State<_ToastWidget>
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: appColors.overlayOnGradient.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(cfg.icon, color: Colors.white, size: 22),
+                        child: Icon(cfg.icon, color: appColors.overlayOnGradient, size: 22),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -210,7 +212,7 @@ class _ToastWidgetState extends State<_ToastWidget>
                             Text(
                               cfg.label,
                               style: GoogleFonts.fredoka(
-                                color: Colors.white.withValues(alpha: 0.85),
+                                color: appColors.overlayOnGradient.withValues(alpha: 0.85),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0.8,
@@ -220,7 +222,7 @@ class _ToastWidgetState extends State<_ToastWidget>
                             Text(
                               widget.message,
                               style: GoogleFonts.fredoka(
-                                color: Colors.white,
+                                color: appColors.overlayOnGradient,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 height: 1.25,
@@ -234,7 +236,7 @@ class _ToastWidgetState extends State<_ToastWidget>
                         onTap: _dismiss,
                         child: Icon(
                           Icons.close_rounded,
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: appColors.overlayOnGradient.withValues(alpha: 0.7),
                           size: 18,
                         ),
                       ),

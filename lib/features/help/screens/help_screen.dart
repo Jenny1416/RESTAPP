@@ -8,6 +8,7 @@ import 'package:rest/features/professional_care/screens/professional_chat_screen
 import 'package:rest/features/professional_care/screens/psychologist_directory_screen.dart';
 import 'package:rest/features/professional_care/services/professional_care_service.dart';
 import 'package:rest/features/professional_care/widgets/professional_widgets.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HelpScreen extends StatefulWidget {
@@ -101,6 +102,7 @@ class _HelpScreenState extends State<HelpScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       backgroundColor: colors.surface,
       body: SafeArea(
@@ -111,7 +113,7 @@ class _HelpScreenState extends State<HelpScreen> {
               subtitle: 'No tienes que pasar por esto a solas',
               action: Icon(
                 Icons.favorite_rounded,
-                color: Colors.redAccent,
+                color: appColors.dangerFg,
                 size: 28.sp,
               ),
             ),
@@ -123,6 +125,7 @@ class _HelpScreenState extends State<HelpScreen> {
   }
 
   Widget _content(ColorScheme colors) {
+    final appColors = context.appColors;
     if (_loading) return const Center(child: CircularProgressIndicator());
     if (_error != null) {
       return CareEmptyState(
@@ -145,8 +148,8 @@ class _HelpScreenState extends State<HelpScreen> {
         Container(
           padding: EdgeInsets.all(22.w),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFF7A59), Color(0xFFE53955)],
+            gradient: LinearGradient(
+              colors: [appColors.warmBadgeFg, appColors.dangerFg],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -158,12 +161,12 @@ class _HelpScreenState extends State<HelpScreen> {
                 width: 76.w,
                 height: 76.w,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: appColors.overlayOnGradient.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.volunteer_activism_rounded,
-                  color: Colors.white,
+                  color: appColors.overlayOnGradient,
                   size: 40.sp,
                 ),
               ),
@@ -172,7 +175,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 'Estamos contigo, ${UserSession.displayName}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: appColors.overlayOnGradient,
                   fontFamily: 'Fredoka',
                   fontWeight: FontWeight.w800,
                   fontSize: 23.sp,
@@ -183,7 +186,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 'Puedes solicitar acompañamiento profesional. La conversación privada se habilita solo después de la aprobación.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.92),
+                  color: appColors.overlayOnGradient.withValues(alpha: 0.92),
                   fontFamily: 'Fredoka',
                   height: 1.35,
                 ),
@@ -218,13 +221,13 @@ class _HelpScreenState extends State<HelpScreen> {
           decoration: BoxDecoration(
             color: colors.surfaceContainerLow,
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: Colors.redAccent.withValues(alpha: 0.35)),
+            border: Border.all(color: appColors.dangerFg.withValues(alpha: 0.35)),
           ),
           child: Column(
             children: [
               Row(
                 children: [
-                  const Icon(Icons.emergency_rounded, color: Colors.redAccent),
+                  Icon(Icons.emergency_rounded, color: appColors.dangerFg),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
@@ -256,8 +259,8 @@ class _HelpScreenState extends State<HelpScreen> {
                   icon: const Icon(Icons.phone_in_talk_rounded),
                   label: const Text('Contactar ayuda urgente'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.redAccent,
-                    side: const BorderSide(color: Colors.redAccent),
+                    foregroundColor: appColors.dangerFg,
+                    side: BorderSide(color: appColors.dangerFg),
                     padding: EdgeInsets.symmetric(vertical: 13.h),
                     textStyle: const TextStyle(
                       fontFamily: 'Fredoka',
@@ -282,13 +285,14 @@ class _ApprovedHelp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     return Container(
       padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF219653).withValues(alpha: 0.1),
+        color: appColors.successBg,
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
-          color: const Color(0xFF219653).withValues(alpha: 0.4),
+          color: appColors.successFg.withValues(alpha: 0.4),
         ),
       ),
       child: Column(
@@ -301,10 +305,10 @@ class _ApprovedHelp extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Solicitud aprobada',
                       style: TextStyle(
-                        color: Color(0xFF219653),
+                        color: appColors.successFg,
                         fontFamily: 'Fredoka',
                         fontWeight: FontWeight.w700,
                       ),
@@ -320,7 +324,7 @@ class _ApprovedHelp extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.verified_rounded, color: Color(0xFF219653)),
+              Icon(Icons.verified_rounded, color: appColors.successFg),
             ],
           ),
           SizedBox(height: 14.h),
@@ -331,8 +335,8 @@ class _ApprovedHelp extends StatelessWidget {
               icon: const Icon(Icons.chat_bubble_rounded),
               label: const Text('Hablar con mi psicólogo'),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF219653),
-                foregroundColor: Colors.white,
+                backgroundColor: appColors.successFg,
+                foregroundColor: appColors.overlayOnGradient,
               ),
             ),
           ),
@@ -350,20 +354,21 @@ class _PendingHelp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     return Container(
       padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2A51A).withValues(alpha: 0.1),
+        color: appColors.warmBadgeBg,
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
-          color: const Color(0xFFF2A51A).withValues(alpha: 0.45),
+          color: appColors.warmBadgeFg.withValues(alpha: 0.45),
         ),
       ),
       child: Column(
         children: [
           Icon(
             Icons.hourglass_top_rounded,
-            color: const Color(0xFFF2A51A),
+            color: appColors.warmBadgeFg,
             size: 38.sp,
           ),
           SizedBox(height: 9.h),
@@ -401,6 +406,7 @@ class _NoRequestHelp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     return Container(
       padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
@@ -410,7 +416,7 @@ class _NoRequestHelp extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(Icons.person_search_rounded, color: careBlue, size: 42.sp),
+          Icon(Icons.person_search_rounded, color: appColors.brandBorder, size: 42.sp),
           SizedBox(height: 10.h),
           Text(
             'Solicita acompañamiento',
@@ -434,8 +440,8 @@ class _NoRequestHelp extends StatelessWidget {
               icon: const Icon(Icons.manage_search_rounded),
               label: const Text('Buscar psicólogo'),
               style: FilledButton.styleFrom(
-                backgroundColor: careBlue,
-                foregroundColor: Colors.white,
+                backgroundColor: appColors.brandBorder,
+                foregroundColor: appColors.overlayOnGradient,
               ),
             ),
           ),

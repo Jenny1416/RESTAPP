@@ -27,6 +27,23 @@ class EmotionStateConfig {
   });
 
   static EmotionStateConfig getConfig(String estado) {
+    // Alias defensivos: si en algún punto llega el color crudo del semáforo
+    // del backend ('verde'/'amarillo'/'rojo') en vez de la clave de UI,
+    // se traduce aquí también para no caer en "ESTADO DESCONOCIDO".
+    switch (estado.toLowerCase().trim()) {
+      case 'verde':
+        estado = 'normal';
+        break;
+      case 'amarillo':
+        estado = 'alerta-amarillo';
+        break;
+      case 'rojo':
+        estado = 'critico';
+        break;
+      default:
+        estado = estado.toLowerCase().trim();
+    }
+
     switch (estado) {
       case 'excelente':
         return EmotionStateConfig(

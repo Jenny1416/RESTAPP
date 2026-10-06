@@ -9,6 +9,7 @@ import 'package:rest/core/services/personal_progress_service.dart';
 import 'package:rest/core/services/user_session.dart';
 import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/features/evaluations/services/evaluation_service.dart';
+import 'package:rest/features/emotion/utils/emotion_calculator.dart';
 
 class EmotionRegisterScreen extends StatefulWidget {
   const EmotionRegisterScreen({super.key});
@@ -78,16 +79,22 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
       );
       final evaluationByText = <String, Map<String, dynamic>>{
         for (final question in evaluationQuestions)
-          _normalizeQuestion(question['texto'] ?? question['pregunta']): question,
+          _normalizeQuestion(question['texto'] ?? question['pregunta']):
+              question,
       };
       // El registro emocional selecciona las preguntas adaptativas del día.
       // Se conserva esa selección y se encuentra su equivalente para el
       // endpoint de evaluaciones.
       final questions = emotionalQuestions
           .map((emotional) {
-            final evaluation = evaluationByText[
-                _normalizeQuestion(emotional['texto'] ?? emotional['pregunta'])];
-            if (evaluation == null || evaluation['id'] is! int || emotional['id'] is! int || emotional['opciones'] is! List) {
+            final evaluation =
+                evaluationByText[_normalizeQuestion(
+                  emotional['texto'] ?? emotional['pregunta'],
+                )];
+            if (evaluation == null ||
+                evaluation['id'] is! int ||
+                emotional['id'] is! int ||
+                emotional['opciones'] is! List) {
               return <String, dynamic>{};
             }
             return <String, dynamic>{
@@ -100,7 +107,9 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
           .where((question) => question.isNotEmpty)
           .toList();
       if (questions.isEmpty) {
-        throw Exception('No hay preguntas compatibles para el registro diario.');
+        throw Exception(
+          'No hay preguntas compatibles para el registro diario.',
+        );
       }
       setState(() {
         _preguntas = _dailyQuestions(questions);
@@ -160,75 +169,57 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
         throw Exception('Responde todas las preguntas para continuar.');
       }
       if (registroRespuestas.length != _preguntas.length) {
-        throw Exception('No se pudieron preparar las respuestas del registro diario.');
-      }
-      final evaluation = await _evaluationService.submitEvaluation(respuestas);
-      await _emotionService.enviarRegistroEmocional(
-        respuestas: registroRespuestas,
-      );
-      final assignment = await _evaluationService.assignTrafficLight();
-      final streak = await _personalProgressService.activarRachaDiaria();
-
-      // Actualizar fecha del último test completado
-      UserSession.lastTestDate = DateTime.now();
-      await UserSession.persist();
-
-      if (!mounted) return;
-      final assignmentData = assignment['data'] is Map
-          ? Map<String, dynamic>.from(assignment['data'] as Map)
-          : assignment;
-      final evaluationData = evaluation['evaluacion'] is Map
-          ? Map<String, dynamic>.from(evaluation['evaluacion'] as Map)
-          : evaluation;
-      final estadoRaw = (assignmentData['estado_semaforo'] ??
-              assignmentData['estado'] ??
-              evaluationData['estado_semaforo'] ??
-              evaluation['estado'] ??
-              evaluation['semaforo'] ??
-              'normal')
-          .toString()
-          .toLowerCase()
-          .trim();
-      final estadoUi = _mapEstadoToUiKey(estadoRaw);
-      final esCritico = estadoUi == 'critico';
-      final resultado = {
-        'estado': estadoUi,
-        'mensaje': (assignmentData['mensaje'] ??
-                assignmentData['observaciones'] ??
-                evaluation['mensaje'] ??
-                'Tu resultado ha sido actualizado.')
-            .toString(),
-        'botonTexto': esCritico ? 'Buscar psicólogo' : 'Continuar',
-        'rachaActivada': streak.activada,
-      };
-      // Navegar directo al semáforo emocional
-      Navigator.pushReplacementNamed(
-        context,
-        AppRoutes.trafficLight,
-        arguments: resultado,
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      if (e.toString().contains('CONFLICT_ERROR')) {
-        // El test de hoy ya fue completado
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Ya has completado el test emocional de hoy.'),
-          ),
+        throw Exception(
+          'No se pudieron preparar las respuestas del registro diario.',
         );
-        UserSession.lastTestDate = DateTime.now();
-        await UserSession.persist();
-
-        // Redirigir a MainApp
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, AppRoutes.mainApp);
-        }
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
+      final resultadoLocal = EmotionCalculator.calcularEstado(
+        preguntas: _preguntas,
+        opcionSeleccionadaPorPregunta: _opcionSeleccionadaPorPregunta,
+      );
+
+      // El guardado continúa aunque a los cinco segundos mostremos el
+      // resultado local. Este wrapper también captura cualquier error tardío.
+      final backendOutcome = () async {
+        try {
+          final result = await _guardarEnBackend(
+            respuestas: respuestas,
+            registroRespuestas: registroRespuestas,
+          );
+          return _SaveOutcome.success(result);
+        } catch (error, stackTrace) {
+          debugPrint('Error guardando el semáforo en segundo plano: $error');
+          debugPrintStack(stackTrace: stackTrace);
+          return _SaveOutcome.failure(error);
+        }
+      }();
+
+      final outcome = await Future.any<_SaveOutcome>([
+        backendOutcome,
+        Future<_SaveOutcome>.delayed(
+          const Duration(seconds: 5),
+          _SaveOutcome.timeout,
+        ),
+      ]);
+
+      if (!mounted) return;
+      if (outcome.isTimeout) {
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.trafficLight,
+          arguments: resultadoLocal,
+        );
+      } else if (outcome.error != null) {
+        await _handleSaveError(outcome.error!);
+      } else {
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.trafficLight,
+          arguments: outcome.result!,
+        );
+      }
+    } catch (e) {
+      if (mounted) await _handleSaveError(e);
     } finally {
       if (mounted) {
         setState(() {
@@ -238,12 +229,99 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
     }
   }
 
+  Future<Map<String, dynamic>> _guardarEnBackend({
+    required List<Map<String, int>> respuestas,
+    required List<Map<String, int>> registroRespuestas,
+  }) async {
+    final evaluation = await _evaluationService.submitEvaluation(respuestas);
+    await _emotionService.enviarRegistroEmocional(
+      respuestas: registroRespuestas,
+    );
+    final assignment = await _evaluationService.assignTrafficLight();
+    final streak = await _personalProgressService.activarRachaDiaria();
+
+    UserSession.lastTestDate = DateTime.now();
+    await UserSession.persist();
+
+    final assignmentData = assignment['data'] is Map
+        ? Map<String, dynamic>.from(assignment['data'] as Map)
+        : assignment;
+    final evaluationData = evaluation['evaluacion'] is Map
+        ? Map<String, dynamic>.from(evaluation['evaluacion'] as Map)
+        : evaluation;
+    final estadoRaw =
+        (assignmentData['estado_semaforo'] ??
+                assignmentData['estado'] ??
+                evaluationData['estado_semaforo'] ??
+                evaluation['estado'] ??
+                evaluation['semaforo'] ??
+                'normal')
+            .toString()
+            .toLowerCase()
+            .trim();
+    final estadoUi = _mapEstadoToUiKey(estadoRaw);
+    final dimensiones =
+        assignmentData['dimensiones'] ??
+        evaluation['dimensiones'] ??
+        evaluationData['dimensiones'] ??
+        const <dynamic>[];
+
+    return <String, dynamic>{
+      'estado': estadoUi,
+      'mensaje':
+          (assignmentData['mensaje'] ??
+                  assignmentData['observaciones'] ??
+                  evaluation['mensaje'] ??
+                  'Tu resultado ha sido actualizado.')
+              .toString(),
+      'botonTexto': estadoUi == 'critico' ? 'Buscar psicólogo' : 'Continuar',
+      'rachaActivada': streak.activada,
+      'promedio': _promedioSeleccionado(),
+      'dimensiones': dimensiones,
+      'subcategoria_principal':
+          assignmentData['subcategoria_principal'] ??
+          evaluation['subcategoria_principal'] ??
+          evaluationData['subcategoria_principal'],
+    };
+  }
+
+  double? _promedioSeleccionado() {
+    if (_opcionSeleccionadaPorPregunta.isEmpty) return null;
+    final total = _opcionSeleccionadaPorPregunta.values.fold<int>(
+      0,
+      (sum, value) => sum + value,
+    );
+    return total / _opcionSeleccionadaPorPregunta.length;
+  }
+
+  Future<void> _handleSaveError(Object error) async {
+    if (!mounted) return;
+    if (error.toString().contains('CONFLICT_ERROR')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Ya has completado el test emocional de hoy.'),
+        ),
+      );
+      UserSession.lastTestDate = DateTime.now();
+      await UserSession.persist();
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, AppRoutes.mainApp);
+      }
+      return;
+    }
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(error.toString())));
+  }
+
   Future<void> _nextQuestion() async {
     if (_preguntas.isEmpty) return;
     final id = _preguntas[_currentQuestion]['id'] as int?;
     if (id == null || !_opcionSeleccionadaPorPregunta.containsKey(id)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecciona una respuesta para continuar.')),
+        const SnackBar(
+          content: Text('Selecciona una respuesta para continuar.'),
+        ),
       );
       return;
     }
@@ -259,7 +337,8 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
 
     final today = DateTime.now();
     final seed = today.year * 10000 + today.month * 100 + today.day;
-    final shuffled = List<Map<String, dynamic>>.from(all)..shuffle(Random(seed));
+    final shuffled = List<Map<String, dynamic>>.from(all)
+      ..shuffle(Random(seed));
     return shuffled.take(_dailyQuestionLimit).toList();
   }
 
@@ -377,10 +456,7 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                   padding: EdgeInsets.symmetric(horizontal: 32, vertical: 8),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        appColors.brandBorder,
-                        appColors.accentBlue,
-                      ],
+                      colors: [appColors.brandBorder, appColors.accentBlue],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),
@@ -398,7 +474,9 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                       ),
                     ),
                     child: Text(
-                      _currentQuestion < _preguntas.length - 1 ? 'CONTINUAR' : 'VER MI RESULTADO',
+                      _currentQuestion < _preguntas.length - 1
+                          ? 'CONTINUAR'
+                          : 'VER MI RESULTADO',
                       style: TextStyle(
                         fontFamily: 'Fredoka',
                         fontSize: 21.sp,
@@ -433,7 +511,10 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
               child: Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12.sp, color: context.appColors.dangerFg),
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: context.appColors.dangerFg,
+                ),
               ),
             ),
           SizedBox(height: 12.h),
@@ -459,28 +540,34 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
               color: appColors.infoBadgeBg,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Row(children: [
-              Text(
-                'Pregunta ${_currentQuestion + 1} de ${_preguntas.length}',
-                style: TextStyle(
-                  color: appColors.infoBadgeFg,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14.sp,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: _preguntas.isEmpty ? 0 : (_currentQuestion + 1) / _preguntas.length,
-                    minHeight: 7.h,
-                    backgroundColor: appColors.progressTrackCool,
-                    valueColor: AlwaysStoppedAnimation(appColors.progressFillCool),
+            child: Row(
+              children: [
+                Text(
+                  'Pregunta ${_currentQuestion + 1} de ${_preguntas.length}',
+                  style: TextStyle(
+                    color: appColors.infoBadgeFg,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14.sp,
                   ),
                 ),
-              ),
-            ]),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: LinearProgressIndicator(
+                      value: _preguntas.isEmpty
+                          ? 0
+                          : (_currentQuestion + 1) / _preguntas.length,
+                      minHeight: 7.h,
+                      backgroundColor: appColors.progressTrackCool,
+                      valueColor: AlwaysStoppedAnimation(
+                        appColors.progressFillCool,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         Container(
@@ -501,7 +588,10 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
               SizedBox(height: 4.h),
               Text(
                 'Te tomará menos de un minuto.',
-                style: TextStyle(fontSize: 14.sp, color: colorScheme.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -511,167 +601,183 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
             padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: _preguntas.where((q) => _preguntas.indexOf(q) == _currentQuestion).map((q) {
-                final int? id = (q['id'] as int?);
-                if (id == null) return const SizedBox.shrink();
-                final String textoPregunta = (q['texto'] ?? q['pregunta'] ?? '')
-                    .toString();
-                final String categoria = (q['categoria'] ?? '').toString();
-                final List<dynamic> opciones = (q['opciones'] is List)
-                    ? q['opciones'] as List
-                    : List.generate(5, (index) => {'id': index, 'nombre': _emotionLabels[index]});
+              children: _preguntas
+                  .where((q) => _preguntas.indexOf(q) == _currentQuestion)
+                  .map((q) {
+                    final int? id = (q['id'] as int?);
+                    if (id == null) return const SizedBox.shrink();
+                    final String textoPregunta =
+                        (q['texto'] ?? q['pregunta'] ?? '').toString();
+                    final String categoria = (q['categoria'] ?? '').toString();
+                    final List<dynamic> opciones = (q['opciones'] is List)
+                        ? q['opciones'] as List
+                        : List.generate(
+                            5,
+                            (index) => {
+                              'id': index,
+                              'nombre': _emotionLabels[index],
+                            },
+                          );
 
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (categoria.isNotEmpty) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: appColors.accentTeal.withValues(alpha: 0.16),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            _dimensionLabel(categoria),
-                            style: TextStyle(
-                              color: appColors.progressFillCool,
-                              fontWeight: FontWeight.bold,
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (categoria.isNotEmpty) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: appColors.accentTeal.withValues(
+                                  alpha: 0.16,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                _dimensionLabel(categoria),
+                                style: TextStyle(
+                                  color: appColors.progressFillCool,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                          ],
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.all(18.w),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primaryContainer,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: appColors.cardBorderTeal,
+                              ),
+                            ),
+                            child: Text(
+                              textoPregunta,
+                              style: TextStyle(
+                                fontSize: 17.sp,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.onPrimaryContainer,
+                                fontFamily: 'Freeman',
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 8.h),
-                      ],
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.all(18.w),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: appColors.cardBorderTeal),
-                        ),
-                        child: Text(
-                          textoPregunta,
-                          style: TextStyle(
-                            fontSize: 17.sp,
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onPrimaryContainer,
-                            fontFamily: 'Freeman',
+                          SizedBox(height: 12.h),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final int count = opciones.length.clamp(
+                                0,
+                                _facesAssets.length,
+                              );
+                              final double maxFaceSize = 48;
+                              final double spacing = 8;
+                              final double borderWidth = 3 * 2;
+                              final double paddingSize = 4 * 2;
+                              final double available = constraints.maxWidth;
+                              final double idealTotal =
+                                  count *
+                                      (maxFaceSize +
+                                          borderWidth +
+                                          paddingSize) +
+                                  (count - 1) * spacing;
+                              final double faceSize = idealTotal > available
+                                  ? ((available - (count - 1) * spacing) /
+                                                count -
+                                            borderWidth -
+                                            paddingSize)
+                                        .clamp(24, maxFaceSize)
+                                  : maxFaceSize;
+
+                              return Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: List.generate(count, (index) {
+                                      final dynamic opcion = opciones[index];
+                                      final int opcionId = index;
+                                      final bool seleccionado =
+                                          _opcionSeleccionadaPorPregunta[id] ==
+                                          opcionId;
+
+                                      return GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            _opcionSeleccionadaPorPregunta[id] =
+                                                opcionId;
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: seleccionado
+                                                  ? appColors.goldStart
+                                                  : Colors.transparent,
+                                              width: 3,
+                                            ),
+                                          ),
+                                          child: ClipOval(
+                                            child: Image.asset(
+                                              _facesAssets[index.clamp(
+                                                0,
+                                                _facesAssets.length - 1,
+                                              )],
+                                              width: faceSize,
+                                              height: faceSize,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                  SizedBox(height: 8.h),
+                                  // Agregar etiquetas de emociones
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: List.generate(count, (index) {
+                                      final dynamic opcion = opciones[index];
+                                      final String nombreOpcion =
+                                          (opcion is Map &&
+                                              opcion['nombre'] is String)
+                                          ? opcion['nombre'] as String
+                                          : _emotionLabels[index.clamp(
+                                              0,
+                                              _emotionLabels.length - 1,
+                                            )];
+                                      return SizedBox(
+                                        width: faceSize + 8,
+                                        child: Text(
+                                          nombreOpcion,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: colorScheme.onSurfaceVariant,
+                                            fontFamily: 'Freeman',
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
-                        ),
+                        ],
                       ),
-                      SizedBox(height: 12.h),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final int count = opciones.length.clamp(
-                            0,
-                            _facesAssets.length,
-                          );
-                          final double maxFaceSize = 48;
-                          final double spacing = 8;
-                          final double borderWidth = 3 * 2;
-                          final double paddingSize = 4 * 2;
-                          final double available = constraints.maxWidth;
-                          final double idealTotal =
-                              count *
-                                  (maxFaceSize + borderWidth + paddingSize) +
-                              (count - 1) * spacing;
-                          final double faceSize = idealTotal > available
-                              ? ((available - (count - 1) * spacing) / count -
-                                        borderWidth -
-                                        paddingSize)
-                                    .clamp(24, maxFaceSize)
-                              : maxFaceSize;
-
-                          return Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: List.generate(count, (index) {
-                                  final dynamic opcion = opciones[index];
-                                  final int opcionId = index;
-                                  final bool seleccionado =
-                                      _opcionSeleccionadaPorPregunta[id] ==
-                                      opcionId;
-
-                                  return GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        _opcionSeleccionadaPorPregunta[id] =
-                                            opcionId;
-                                      });
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: seleccionado
-                                              ? appColors.goldStart
-                                              : Colors.transparent,
-                                          width: 3,
-                                        ),
-                                      ),
-                                      child: ClipOval(
-                                        child: Image.asset(
-                                          _facesAssets[index.clamp(
-                                            0,
-                                            _facesAssets.length - 1,
-                                          )],
-                                          width: faceSize,
-                                          height: faceSize,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }),
-                              ),
-                              SizedBox(height: 8.h),
-                              // Agregar etiquetas de emociones
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: List.generate(count, (index) {
-                                  final dynamic opcion = opciones[index];
-                                  final String nombreOpcion =
-                                      (opcion is Map &&
-                                          opcion['nombre'] is String)
-                                      ? opcion['nombre'] as String
-                                      : _emotionLabels[index.clamp(
-                                          0,
-                                          _emotionLabels.length - 1,
-                                        )];
-                                  return SizedBox(
-                                    width: faceSize + 8,
-                                    child: Text(
-                                      nombreOpcion,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 10.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: colorScheme.onSurfaceVariant,
-                                        fontFamily: 'Freeman',
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  );
-                                }),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+                    );
+                  })
+                  .toList(),
             ),
           ),
         ),
@@ -691,4 +797,19 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
     };
     return labels[value] ?? value.replaceAll('_', ' ');
   }
+}
+
+class _SaveOutcome {
+  final Map<String, dynamic>? result;
+  final Object? error;
+  final bool isTimeout;
+
+  const _SaveOutcome._({this.result, this.error, this.isTimeout = false});
+
+  factory _SaveOutcome.success(Map<String, dynamic> result) =>
+      _SaveOutcome._(result: result);
+
+  factory _SaveOutcome.failure(Object error) => _SaveOutcome._(error: error);
+
+  factory _SaveOutcome.timeout() => const _SaveOutcome._(isTimeout: true);
 }

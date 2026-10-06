@@ -85,6 +85,14 @@ class MyApp extends StatelessWidget {
                     promedioHoy: (args?["promedio"] is num)
                         ? (args!["promedio"] as num).toDouble()
                         : null,
+                    dimensiones: (args?["dimensiones"] is List)
+                        ? (args!["dimensiones"] as List)
+                              .whereType<Map>()
+                              .map((item) => Map<String, dynamic>.from(item))
+                              .toList()
+                        : const [],
+                    subcategoriaPrincipal: args?["subcategoria_principal"]
+                        ?.toString(),
                   );
                 },
 

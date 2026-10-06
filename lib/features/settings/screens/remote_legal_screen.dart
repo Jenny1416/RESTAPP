@@ -9,6 +9,7 @@ class RemoteLegalScreen extends StatefulWidget {
     required this.path,
     required this.fallbackBuilder,
   });
+
   final String title;
   final String path;
   final WidgetBuilder fallbackBuilder;
@@ -18,84 +19,60 @@ class RemoteLegalScreen extends StatefulWidget {
 }
 
 class _RemoteLegalScreenState extends State<RemoteLegalScreen> {
-  late Future<String> _future;
+  late final Future<String> _future;
+
   @override
   void initState() {
     super.initState();
-    _future = SettingsService().document(widget.path);
+    _future = SettingsService()
+        .document(widget.path)
+        .timeout(const Duration(seconds: 5));
   }
-
-  void _retry() =>
-      setState(() => _future = SettingsService().document(widget.path));
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-        title: Text(
-          widget.title,
-          style: GoogleFonts.fredoka(
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurface,
-          ),
-        ),
-      ),
-      body: FutureBuilder<String>(
-        future: _future,
-        builder: (context, state) {
-          if (state.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'No fue posible cargar la versión del servidor.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.fredoka(
-                        fontSize: 16,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    FilledButton(
-                      onPressed: _retry,
-                      child: const Text('Reintentar'),
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: widget.fallbackBuilder),
-                      ),
-                      child: const Text('Ver versión incluida en la app'),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Text(
-              state.data ?? '',
+
+    return FutureBuilder<String>(
+      future: _future,
+      builder: (context, state) {
+        final remoteContent = state.data?.trim() ?? '';
+
+        // Ante error, timeout o contenido vacío se muestra directamente la
+        // versión incluida en la app, sin pedir otra acción al usuario.
+        if (state.connectionState == ConnectionState.done &&
+            (state.hasError || remoteContent.isEmpty)) {
+          return widget.fallbackBuilder(context);
+        }
+
+        return Scaffold(
+          backgroundColor: colorScheme.surface,
+          appBar: AppBar(
+            backgroundColor: colorScheme.surface,
+            foregroundColor: colorScheme.onSurface,
+            title: Text(
+              widget.title,
               style: GoogleFonts.fredoka(
-                fontSize: 15,
-                height: 1.45,
+                fontWeight: FontWeight.w600,
                 color: colorScheme.onSurface,
               ),
             ),
-          );
-        },
-      ),
+          ),
+          body: state.connectionState != ConnectionState.done
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    remoteContent,
+                    style: GoogleFonts.fredoka(
+                      fontSize: 15,
+                      height: 1.45,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+        );
+      },
     );
   }
 }

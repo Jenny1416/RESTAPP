@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 class JokesScreen extends StatefulWidget {
   const JokesScreen({super.key});
@@ -61,19 +62,12 @@ class _JokesScreenState extends State<JokesScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appColors = context.appColors;
 
-    // Colores basados en HomeScreen
-    final cardColor = isDark
-        ? const Color(0xFF1E3A4A)
-        : const Color(0xFF87CEEB);
-    final shadowColor = isDark
-        ? Colors.black.withValues(alpha: 0.3)
-        : const Color(0xFF87CEEB).withValues(alpha: 0.4);
-    final onCardColor = isDark ? const Color(0xFF90CAF9) : Colors.white;
-    final secondaryTextColor = isDark
-        ? const Color(0xFF64B5F6)
-        : Colors.white70;
+    final cardColor = appColors.brandSoft;
+    final shadowColor = appColors.brandSoft.withValues(alpha: 0.4);
+    final onCardColor = appColors.overlayOnGradient;
+    final secondaryTextColor = appColors.overlayOnGradient.withValues(alpha: 0.7);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -149,7 +143,7 @@ class _JokesScreenState extends State<JokesScreen> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: appColors.overlayOnGradient.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(15),
                           ),
                           child: Text(

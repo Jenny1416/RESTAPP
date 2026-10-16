@@ -2,6 +2,7 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/routes/app_routes.dart';
 import 'package:rest/core/services/user_session.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import '../utils/emotion_state_config.dart';
 
 class AdviceScreen extends StatelessWidget {
@@ -23,16 +24,21 @@ class AdviceScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final config = EmotionStateConfig.getConfig(estado);
+    final appColors = context.appColors;
+    final config = EmotionStateConfig.getConfig(estado, context);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
         backgroundColor: config.colorPrincipal,
+        foregroundColor: appColors.overlayOnGradient,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Cuidado Personal',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: appColors.overlayOnGradient,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         centerTitle: true,
         shape: const RoundedRectangleBorder(
@@ -52,14 +58,7 @@ class AdviceScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      config.colorPrincipal.withValues(alpha: 0.15),
-                      config.colorSecundario.withValues(alpha: 0.15),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: colorScheme.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: config.colorPrincipal.withValues(alpha: 0.3),
@@ -147,7 +146,7 @@ class AdviceScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: config.colorPrincipal.withValues(alpha: 0.08),
+                  color: colorScheme.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: config.colorPrincipal.withValues(alpha: 0.2),
@@ -245,29 +244,34 @@ class AdviceScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.05),
+                    color: appColors.dangerBg,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: Colors.red.withValues(alpha: 0.2),
+                      color: appColors.dangerFg.withValues(alpha: 0.2),
                       width: 1.5,
                     ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildResourceItem('PAS Colombia', '123', Colors.red, context),
+                      _buildResourceItem(
+                        'PAS Colombia',
+                        '123',
+                        appColors.dangerFg,
+                        context,
+                      ),
                       SizedBox(height: 10.h),
                       _buildResourceItem(
                         'Línea de Emergencia Mental',
                         '+57 1 2288019',
-                        Colors.orange,
+                        appColors.goldEnd,
                         context,
                       ),
                       SizedBox(height: 10.h),
                       _buildResourceItem(
                         'Chat con Psicólogo (24h)',
                         'Disponible en la app',
-                        Colors.blue,
+                        appColors.brandBorder,
                         context,
                       ),
                     ],
@@ -283,7 +287,7 @@ class AdviceScreen extends StatelessWidget {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: config.colorPrincipal,
-                    foregroundColor: Colors.white,
+                    foregroundColor: appColors.overlayOnGradient,
                     elevation: 4,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),

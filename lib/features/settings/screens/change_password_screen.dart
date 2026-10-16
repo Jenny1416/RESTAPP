@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rest/core/services/password_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/core/utils/app_toast.dart';
+import 'package:rest/core/widgets/primary_gradient_button.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -58,6 +60,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       backgroundColor: colors.surfaceContainerLow,
       appBar: AppBar(
@@ -96,13 +99,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           Container(
                             width: 42.w,
                             height: 42.w,
-                            decoration: const BoxDecoration(
-                              color: Color(0x1A4FC3F7),
+                            decoration: BoxDecoration(
+                              color: appColors.brandSoft.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.lock_reset_rounded,
-                              color: Color(0xFF326FB6),
+                              color: appColors.brandBorder,
                             ),
                           ),
                           SizedBox(width: 12.w),
@@ -182,30 +185,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   ),
                 ),
                 SizedBox(height: 24.h),
-                SizedBox(
-                  height: 52.h,
-                  child: FilledButton.icon(
-                    onPressed: _isSaving ? null : _changePassword,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF326FB6),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(17.r),
-                      ),
-                    ),
-                    icon: _isSaving
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.lock_reset_rounded),
-                    label: Text(
-                      _isSaving ? 'Actualizando...' : 'Actualizar contraseña',
-                      style: GoogleFonts.fredoka(fontWeight: FontWeight.bold),
-                    ),
+                GestureDetector(
+                  onTap: _isSaving ? null : _changePassword,
+                  child: PrimaryGradientButton(
+                    label: _isSaving ? 'Actualizando...' : 'Actualizar contraseña',
+                    height: 52,
+                    fontSize: 16,
+                    isLoading: _isSaving,
                   ),
                 ),
               ],
@@ -228,6 +214,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     ValueChanged<String>? onFieldSubmitted,
   }) {
     final colors = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return TextFormField(
       controller: controller,
       obscureText: !visible,
@@ -241,7 +228,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       decoration: InputDecoration(
         labelText: label,
         helperText: helperText,
-        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF326FB6)),
+        prefixIcon: Icon(Icons.lock_outline, color: appColors.brandBorder),
         suffixIcon: IconButton(
           tooltip: visible ? 'Ocultar contraseña' : 'Mostrar contraseña',
           onPressed: onVisibilityChanged,
@@ -262,7 +249,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF326FB6), width: 2),
+          borderSide: BorderSide(color: appColors.brandBorder, width: 2),
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/core/utils/app_toast.dart';
 
 import '../models/onboarding_models.dart';
@@ -129,6 +130,7 @@ class _OnboardingSurveyScreenState extends State<OnboardingSurveyScreen> {
     final progress = (_index + 1) / survey.preguntas.length;
     final percentage = (progress * 100).round();
     final colors = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -162,9 +164,9 @@ class _OnboardingSurveyScreenState extends State<OnboardingSurveyScreen> {
                               child: LinearProgressIndicator(
                                 value: progress,
                                 minHeight: 7.h,
-                                backgroundColor: const Color(0xFFDDE5FA),
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  onboardingPurple,
+                                backgroundColor: appColors.progressTrackCool,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  appColors.accentBlue,
                                 ),
                               ),
                             ),
@@ -178,13 +180,13 @@ class _OnboardingSurveyScreenState extends State<OnboardingSurveyScreen> {
                           vertical: 7.h,
                         ),
                         decoration: BoxDecoration(
-                          color: onboardingPurple.withValues(alpha: 0.1),
+                          color: appColors.accentBlue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
                           '$percentage%',
                           style: GoogleFonts.fredoka(
-                            color: onboardingPurple,
+                            color: appColors.accentBlue,
                             fontWeight: FontWeight.bold,
                             fontSize: 12.sp,
                           ),
@@ -221,11 +223,11 @@ class _OnboardingSurveyScreenState extends State<OnboardingSurveyScreen> {
                             color: colors.surface,
                             borderRadius: BorderRadius.circular(26.r),
                             border: Border.all(
-                              color: onboardingPurple.withValues(alpha: 0.12),
+                              color: appColors.accentBlue.withValues(alpha: 0.12),
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: onboardingPurple.withValues(alpha: 0.08),
+                                color: appColors.accentBlue.withValues(alpha: 0.08),
                                 blurRadius: 24,
                                 offset: const Offset(0, 10),
                               ),
@@ -338,11 +340,13 @@ class _SurveyBackButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(13.r),
-          border: Border.all(color: onboardingPurple.withValues(alpha: 0.14)),
+          border: Border.all(
+            color: context.appColors.accentBlue.withValues(alpha: 0.14),
+          ),
         ),
-        child: const Icon(
+        child: Icon(
           Icons.arrow_back_ios_new_rounded,
-          color: onboardingPurple,
+          color: context.appColors.accentBlue,
           size: 18,
         ),
       ),
@@ -368,7 +372,7 @@ class _ScoreOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final scoreColor = _scoreColor(score);
+    final scoreColor = _scoreColor(context, score);
 
     return InkWell(
       onTap: onTap,
@@ -411,7 +415,9 @@ class _ScoreOption extends StatelessWidget {
               child: Text(
                 '$score',
                 style: GoogleFonts.fredoka(
-                  color: selected ? Colors.white : colors.onSurfaceVariant,
+                  color: selected
+                      ? context.appColors.overlayOnGradient
+                      : colors.onSurfaceVariant,
                   fontWeight: FontWeight.bold,
                   fontSize: 12.sp,
                 ),
@@ -450,24 +456,27 @@ class _CategoryChip extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 11.w, vertical: 7.h),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFE0FAF7), Color(0xFFE5ECFF)],
+        gradient: LinearGradient(
+          colors: [
+            context.appColors.infoBadgeBg,
+            context.appColors.heroGradientLavenderStart,
+          ],
         ),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.psychology_alt_outlined,
             size: 18,
-            color: onboardingBlue,
+            color: context.appColors.brandBorder,
           ),
           SizedBox(width: 6.w),
           Text(
             _dimensionLabel(category),
             style: GoogleFonts.fredoka(
-              color: onboardingBlue,
+              color: context.appColors.brandBorder,
               fontWeight: FontWeight.w700,
               fontSize: 12.sp,
             ),
@@ -486,6 +495,7 @@ class _CompletedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       backgroundColor: colors.surface,
       body: OnboardingBackdrop(
@@ -502,11 +512,11 @@ class _CompletedView extends StatelessWidget {
                     color: colors.surface,
                     borderRadius: BorderRadius.circular(30.r),
                     border: Border.all(
-                      color: onboardingViolet.withValues(alpha: 0.12),
+                      color: appColors.accentPurple.withValues(alpha: 0.12),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: onboardingViolet.withValues(alpha: 0.12),
+                        color: appColors.accentPurple.withValues(alpha: 0.12),
                         blurRadius: 28,
                         offset: const Offset(0, 12),
                       ),
@@ -517,8 +527,8 @@ class _CompletedView extends StatelessWidget {
                       const OnboardingNoaBadge(completed: true, size: 150),
                       SizedBox(height: 24.h),
                       ShaderMask(
-                        shaderCallback: (bounds) => const LinearGradient(
-                          colors: [onboardingPurple, onboardingViolet],
+                        shaderCallback: (bounds) => LinearGradient(
+                          colors: [appColors.accentBlue, appColors.accentPurple],
                         ).createShader(bounds),
                         child: Text(
                           '¡Excelente trabajo!',
@@ -526,7 +536,7 @@ class _CompletedView extends StatelessWidget {
                           style: GoogleFonts.fredoka(
                             fontSize: 29.sp,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: appColors.overlayOnGradient,
                           ),
                         ),
                       ),
@@ -545,14 +555,14 @@ class _CompletedView extends StatelessWidget {
                         width: double.infinity,
                         padding: EdgeInsets.all(15.w),
                         decoration: BoxDecoration(
-                          color: onboardingMint.withValues(alpha: 0.1),
+                          color: appColors.successBg,
                           borderRadius: BorderRadius.circular(18.r),
                         ),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.lock_outline_rounded,
-                              color: Color(0xFF198978),
+                              color: appColors.successFg,
                             ),
                             SizedBox(width: 11.w),
                             Expanded(
@@ -561,7 +571,7 @@ class _CompletedView extends StatelessWidget {
                                 style: GoogleFonts.fredoka(
                                   fontSize: 12.sp,
                                   height: 1.35,
-                                  color: const Color(0xFF28645B),
+                                  color: appColors.successFg,
                                 ),
                               ),
                             ),
@@ -642,13 +652,14 @@ class _SurveyError extends StatelessWidget {
   }
 }
 
-Color _scoreColor(int score) {
+Color _scoreColor(BuildContext context, int score) {
+  final appColors = context.appColors;
   return switch (score) {
-    0 => const Color(0xFFE45B68),
-    1 => const Color(0xFFE88749),
-    2 => const Color(0xFFD5A521),
-    3 => const Color(0xFF3BAF91),
-    _ => const Color(0xFF278BC4),
+    0 => appColors.dangerFg,
+    1 => appColors.goldEnd,
+    2 => appColors.goldStart,
+    3 => appColors.successFg,
+    _ => appColors.brandBorder,
   };
 }
 

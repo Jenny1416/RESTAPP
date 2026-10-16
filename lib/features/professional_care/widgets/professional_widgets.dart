@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/features/professional_care/models/professional_care_models.dart';
 
-const careBlue = Color(0xFF2878C8);
-const careTeal = Color(0xFF43C6B9);
-const careNavy = Color(0xFF173F72);
+Color careAccent(BuildContext context) => context.appColors.brandBorder;
 
 class CarePageHeader extends StatelessWidget {
   const CarePageHeader({
@@ -29,7 +28,7 @@ class CarePageHeader extends StatelessWidget {
         children: [
           if (showBack) ...[
             Material(
-              color: careBlue,
+              color: context.appColors.accentBlue,
               shape: const CircleBorder(),
               child: InkWell(
                 customBorder: const CircleBorder(),
@@ -38,7 +37,7 @@ class CarePageHeader extends StatelessWidget {
                   padding: EdgeInsets.all(9.w),
                   child: Icon(
                     Icons.arrow_back_rounded,
-                    color: Colors.white,
+                    color: context.appColors.overlayOnGradient,
                     size: 22.sp,
                   ),
                 ),
@@ -92,20 +91,21 @@ class PsychologistAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     return Container(
       width: size.w,
       height: size.w,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [careTeal, careBlue],
+        gradient: LinearGradient(
+          colors: [appColors.accentTeal, appColors.accentBlue],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: careBlue.withValues(alpha: 0.2),
+            color: appColors.accentBlue.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 5),
           ),
@@ -114,7 +114,7 @@ class PsychologistAvatar extends StatelessWidget {
       child: Text(
         psychologist.initials,
         style: TextStyle(
-          color: Colors.white,
+          color: appColors.overlayOnGradient,
           fontFamily: 'Fredoka',
           fontWeight: FontWeight.w800,
           fontSize: (size * 0.34).sp,
@@ -143,6 +143,7 @@ class CareEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Center(
       child: Padding(
         padding: EdgeInsets.all(28.w),
@@ -153,10 +154,10 @@ class CareEmptyState extends StatelessWidget {
               width: 88.w,
               height: 88.w,
               decoration: BoxDecoration(
-                color: careBlue.withValues(alpha: 0.12),
+                color: appColors.accentBlue.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: careBlue, size: 42.sp),
+              child: Icon(icon, color: appColors.accentBlue, size: 42.sp),
             ),
             SizedBox(height: 20.h),
             Text(
@@ -187,8 +188,8 @@ class CareEmptyState extends StatelessWidget {
                 icon: const Icon(Icons.arrow_forward_rounded),
                 label: Text(actionLabel!),
                 style: FilledButton.styleFrom(
-                  backgroundColor: careBlue,
-                  foregroundColor: Colors.white,
+                  backgroundColor: appColors.accentBlue,
+                  foregroundColor: appColors.overlayOnGradient,
                   padding: EdgeInsets.symmetric(
                     horizontal: 22.w,
                     vertical: 14.h,
@@ -222,17 +223,18 @@ String assignmentStatusLabel(AssignmentStatus status) {
   }
 }
 
-Color assignmentStatusColor(AssignmentStatus status) {
+Color assignmentStatusColor(BuildContext context, AssignmentStatus status) {
+  final appColors = context.appColors;
   switch (status) {
     case AssignmentStatus.pending:
-      return const Color(0xFFF2A51A);
+      return appColors.goldEnd;
     case AssignmentStatus.approved:
-      return const Color(0xFF219653);
+      return appColors.successFg;
     case AssignmentStatus.rejected:
-      return const Color(0xFFD64545);
+      return appColors.dangerFg;
     case AssignmentStatus.finished:
-      return const Color(0xFF667085);
+      return appColors.neutralMutedText;
     case AssignmentStatus.unknown:
-      return const Color(0xFF667085);
+      return appColors.neutralMutedText;
   }
 }

@@ -12,6 +12,7 @@ import 'package:rest/features/emotion/screens/emotionregister_screen.dart';
 import 'package:rest/features/navigation/main_app.dart';
 import 'package:rest/features/onboarding/screens/onboarding_status_screen.dart';
 import 'package:rest/features/onboarding/services/onboarding_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/core/widgets/primary_gradient_button.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -333,6 +334,7 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
 
     return AnimatedBuilder(
       animation: Listenable.merge([_entryCtrl, _shimmerCtrl, _arrowCtrl]),
@@ -428,9 +430,9 @@ class _LoginScreenState extends State<LoginScreen>
                                     color: colorScheme.onSurfaceVariant,
                                   ),
                                 ),
-                                const TextSpan(
+                                TextSpan(
                                   text: 'Recuperar →',
-                                  style: TextStyle(color: Color(0xFF2B13B2)),
+                                  style: TextStyle(color: appColors.accentPurple),
                                 ),
                               ],
                             ),
@@ -503,8 +505,8 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                             ),
                             ShaderMask(
-                              shaderCallback: (bounds) => const LinearGradient(
-                                colors: [Color(0xFFAB07D8), Color(0xFF1579EC)],
+                              shaderCallback: (bounds) => LinearGradient(
+                                colors: [appColors.accentPurple, appColors.accentBlue],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ).createShader(bounds),
@@ -513,7 +515,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 style: GoogleFonts.fredoka(
                                   fontSize: 22.sp,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: appColors.overlayOnGradient,
                                 ),
                               ),
                             ),
@@ -556,6 +558,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildNoaCard(ColorScheme colorScheme) {
+    final appColors = context.appColors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -563,14 +566,14 @@ class _LoginScreenState extends State<LoginScreen>
         borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF3A5AFF).withValues(alpha: 0.08),
-            const Color(0xFF8C4EFF).withValues(alpha: 0.08),
+            appColors.accentBlue.withValues(alpha: 0.08),
+            appColors.accentPurple.withValues(alpha: 0.08),
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
         border: Border.all(
-          color: const Color(0xFF3A5AFF).withValues(alpha: 0.18),
+          color: appColors.accentBlue.withValues(alpha: 0.18),
           width: 1.5.w,
         ),
       ),
@@ -593,7 +596,7 @@ class _LoginScreenState extends State<LoginScreen>
                   style: GoogleFonts.fredoka(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF2B13B2),
+                    color: appColors.accentPurple,
                   ),
                 ),
                 SizedBox(height: 3.h),
@@ -624,6 +627,7 @@ class _LoginScreenState extends State<LoginScreen>
     bool isPassword = false,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     final isFocused = focusNode.hasFocus;
     final hasText = controller.text.isNotEmpty;
 
@@ -635,7 +639,7 @@ class _LoginScreenState extends State<LoginScreen>
         boxShadow: isFocused
             ? [
                 BoxShadow(
-                  color: const Color(0xFF3A5AFF).withValues(alpha: 0.22),
+                  color: appColors.accentBlue.withValues(alpha: 0.22),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -651,7 +655,7 @@ class _LoginScreenState extends State<LoginScreen>
               fontSize: isFocused || hasText ? 13 : 15,
               fontWeight: FontWeight.bold,
               color: isFocused
-                  ? const Color(0xFF3A5AFF)
+                  ? appColors.accentBlue
                   : colorScheme.onSurfaceVariant,
             ),
             child: Padding(
@@ -663,13 +667,16 @@ class _LoginScreenState extends State<LoginScreen>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
               gradient: isFocused
-                  ? const LinearGradient(
-                      colors: [Color(0xFF3A5AFF), Color(0xFF8C4EFF)],
+                  ? LinearGradient(
+                      colors: [appColors.accentBlue, appColors.accentPurple],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     )
-                  : const LinearGradient(
-                      colors: [Color(0xFFCDD8FF), Color(0xFFD8C8FF)],
+                  : LinearGradient(
+                      colors: [
+                        appColors.goalCardUnselectedBorder,
+                        appColors.accentPurple.withValues(alpha: 0.35),
+                      ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),
@@ -700,7 +707,7 @@ class _LoginScreenState extends State<LoginScreen>
                     child: Icon(
                       icon,
                       color: isFocused
-                          ? const Color(0xFF3A5AFF)
+                          ? appColors.accentBlue
                           : colorScheme.onSurfaceVariant,
                       size: 20,
                     ),
@@ -718,13 +725,13 @@ class _LoginScreenState extends State<LoginScreen>
                             child: Container(
                               width: 24.w,
                               height: 24.h,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF3709EC),
+                              decoration: BoxDecoration(
+                                color: appColors.accentBlue,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.check,
-                                color: Colors.white,
+                                color: appColors.overlayOnGradient,
                                 size: 15,
                               ),
                             ),
@@ -745,7 +752,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     : Icons.visibility_off_rounded,
                                 key: ValueKey(_passwordVisible),
                                 color: isFocused
-                                    ? const Color(0xFF3A5AFF)
+                                    ? appColors.accentBlue
                                     : colorScheme.onSurfaceVariant,
                                 size: 20,
                               ),
@@ -816,7 +823,7 @@ class _LoginScreenState extends State<LoginScreen>
           offset: Offset(_arrowOffset.value, 0),
           child: Icon(
             Icons.arrow_forward_rounded,
-            color: Colors.white,
+            color: context.appColors.overlayOnGradient,
             size: 22.sp,
           ),
         ),

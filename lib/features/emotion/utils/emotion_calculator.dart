@@ -1,115 +1,151 @@
-/// Utilidad para calcular el estado emocional (4 niveles semáforo) a partir de las respuestas.
-/// Las opciones van de 0 (más triste) a 4 (excelente) según el índice en la lista.
+/// Calcula localmente el mismo fallback determinista que usa el backend.
+/// Las respuestas van de 0 (muy mal) a 4 (excelente).
 class EmotionCalculator {
-  /// Estados disponibles (4 niveles)
-  static const String CRITICO = 'critico';
-  static const String ALERTA_AMARILLO = 'alerta-amarillo';
-  static const String NORMAL = 'normal';
+  static const String critico = 'critico';
+  static const String alertaAmarillo = 'alerta-amarillo';
+  static const String normal = 'normal';
+
+  // Compatibilidad con las pantallas que clasifican el historial semanal.
+  static const String CRITICO = critico;
+  static const String ALERTA_AMARILLO = alertaAmarillo;
+  static const String NORMAL = normal;
   static const String EXCELENTE = 'excelente';
 
-  /// Calcula el estado emocional basado en las respuestas (4 niveles).
+  /// El backend invierte la escala a gravedad 1-5 y clasifica el resultado
+  /// normalizado así: verde < 40, amarillo 40-69 y rojo >= 70. También eleva
+  /// el nivel cuando hay suficientes respuestas graves.
   static Map<String, dynamic> calcularEstado({
     required List<dynamic> preguntas,
     required Map<int, int> opcionSeleccionadaPorPregunta,
   }) {
-    if (preguntas.isEmpty) {
-      return _defaultExcelente();
-    }
+    if (preguntas.isEmpty) return _defaultNormal();
 
-    double sumaValores = 0;
+    double puntajePonderado = 0;
+    double sumaBienestar = 0;
     int cantidad = 0;
+    int respuestasGraves = 0;
+    final puntajesPorDimension = <String, List<double>>{};
 
-    for (final q in preguntas) {
-      if (q is! Map) continue;
-      final int? preguntaId = (q['id'] is int) ? q['id'] as int : null;
-      if (preguntaId == null) continue;
+    for (final pregunta in preguntas) {
+      if (pregunta is! Map) continue;
+      final preguntaId = pregunta['id'];
+      if (preguntaId is! int) continue;
 
-      final int? opcionId = opcionSeleccionadaPorPregunta[preguntaId];
-      if (opcionId == null) continue;
+      final respuesta = opcionSeleccionadaPorPregunta[preguntaId];
+      if (respuesta == null) continue;
 
-      final List<dynamic> opciones = (q['opciones'] is List)
-          ? q['opciones'] as List
-          : [];
-      final int indice = _indiceDeOpcion(opciones, opcionId);
-      if (indice >= 0) {
-        sumaValores += indice;
-        cantidad++;
-      }
+      final valorBienestar = respuesta.clamp(0, 4);
+      final gravedad = 5 - valorBienestar;
+      final peso = pregunta['peso'] is num
+          ? (pregunta['peso'] as num).toDouble()
+          : 1.0;
+      puntajePonderado += gravedad * peso;
+      sumaBienestar += valorBienestar;
+      cantidad++;
+      if (gravedad >= 4) respuestasGraves++;
+
+      final dimension = (pregunta['categoria'] ?? 'general').toString();
+      final puntajeDimension = ((gravedad - 1) / 4 * 100)
+          .clamp(0, 100)
+          .toDouble();
+      puntajesPorDimension
+          .putIfAbsent(dimension, () => <double>[])
+          .add(puntajeDimension);
     }
 
-    if (cantidad == 0) {
-      return _defaultExcelente();
-    }
+    if (cantidad == 0) return _defaultNormal();
 
-    final promedio = sumaValores / cantidad;
+    final minScore = cantidad;
+    final maxScore = cantidad * 5;
+    final puntaje =
+        (((puntajePonderado - minScore) / (maxScore - minScore)) * 100)
+            .clamp(0, 100)
+            .round();
+    final porcentajeGraves = respuestasGraves / cantidad * 100;
 
-    // 4 Niveles semáforo: Crítico (Rojo) < 1.0, Amarillo 1.0-2.2, Normal (Azul) 2.2-3.3, Excelente (Verde) >= 3.3
     final Map<String, dynamic> resultado;
-    if (promedio >= 3.3) {
-      resultado = Map<String, dynamic>.from(_estadoExcelente());
-    } else if (promedio >= 2.2) {
-      resultado = Map<String, dynamic>.from(_estadoNormal());
-    } else if (promedio >= 1.0) {
+    if (puntaje >= 70 || porcentajeGraves >= 60) {
+      resultado = Map<String, dynamic>.from(_estadoCritico());
+    } else if (puntaje >= 40 || porcentajeGraves >= 30) {
       resultado = Map<String, dynamic>.from(_estadoAlertaAmarillo());
     } else {
-      resultado = Map<String, dynamic>.from(_estadoCritico());
+      resultado = Map<String, dynamic>.from(_estadoNormal());
     }
-    resultado['promedio'] = promedio;
+
+    final dimensiones = puntajesPorDimension.entries.map((entry) {
+      final promedio =
+          (entry.value.reduce((a, b) => a + b) / entry.value.length).round();
+      return <String, dynamic>{
+        'dimension': entry.key,
+        'puntaje': promedio,
+        'nivel': _nivelBackend(promedio),
+      };
+    }).toList();
+    dimensiones.sort((a, b) {
+      final nivel =
+          _rangoNivel(b['nivel'] as String) - _rangoNivel(a['nivel'] as String);
+      if (nivel != 0) return nivel;
+      final puntajeDiff = (b['puntaje'] as int) - (a['puntaje'] as int);
+      if (puntajeDiff != 0) return puntajeDiff;
+      return (a['dimension'] as String).compareTo(b['dimension'] as String);
+    });
+
+    resultado['promedio'] = sumaBienestar / cantidad;
+    resultado['puntaje'] = puntaje;
+    resultado['dimensiones'] = dimensiones;
+    if (dimensiones.isNotEmpty) {
+      final color = resultado['estado'] == critico
+          ? 'rojo'
+          : resultado['estado'] == alertaAmarillo
+          ? 'amarillo'
+          : 'verde';
+      resultado['subcategoria_principal'] =
+          '${color}_${dimensiones.first['dimension']}';
+    }
     return resultado;
   }
 
-  static int _indiceDeOpcion(List<dynamic> opciones, int opcionId) {
-    for (int i = 0; i < opciones.length; i++) {
-      final op = opciones[i];
-      if (op is Map && op['id'] == opcionId) return i;
-    }
-    return -1;
+  static String _nivelBackend(int puntaje) {
+    if (puntaje >= 70) return 'rojo';
+    if (puntaje >= 40) return 'amarillo';
+    return 'verde';
   }
 
-  static Map<String, String> _estadoExcelente() {
-    return {
-      'estado': EXCELENTE,
-      'titulo': '¡Excelente!',
-      'mensaje': '¡Qué bien te sientes hoy! Sigue así.',
-      'mensaje2': 'Tu energía es inspiradora.',
-      'botonTexto': 'Continuar',
-    };
+  static int _rangoNivel(String nivel) {
+    if (nivel == 'rojo') return 2;
+    if (nivel == 'amarillo') return 1;
+    return 0;
   }
 
-  static Map<String, String> _estadoNormal() {
-    return {
-      'estado': NORMAL,
-      'titulo': 'Normal',
-      'mensaje': 'Tu día va tranquilo y estable.',
-      'mensaje2': 'Es un buen momento para reflexionar.',
-      'botonTexto': 'Continuar',
-    };
-  }
+  static Map<String, String> _estadoNormal() => const {
+    'estado': normal,
+    'titulo': 'Normal',
+    'mensaje': 'Tu día va tranquilo y estable.',
+    'mensaje2': 'Es un buen momento para reflexionar.',
+    'botonTexto': 'Continuar',
+  };
 
-  static Map<String, String> _estadoAlertaAmarillo() {
-    return {
-      'estado': ALERTA_AMARILLO,
-      'titulo': '¡Alerta!',
-      'mensaje':
-          'Parece que hoy no estás al 100%. Te invitamos a respirar y relajarte.',
-      'mensaje2': '¡Tenemos esto para ti!',
-      'botonTexto': 'Ver consejos',
-    };
-  }
+  static Map<String, String> _estadoAlertaAmarillo() => const {
+    'estado': alertaAmarillo,
+    'titulo': '¡Alerta!',
+    'mensaje':
+        'Parece que hoy no estás al 100%. Te invitamos a respirar y relajarte.',
+    'mensaje2': '¡Tenemos esto para ti!',
+    'botonTexto': 'Ver consejos',
+  };
 
-  static Map<String, String> _estadoCritico() {
-    return {
-      'estado': CRITICO,
-      'titulo': '¡Alerta!',
-      'mensaje': 'Notamos que hoy te sientes mal. Estamos aquí para ayudarte.',
-      'mensaje2': '¡Tenemos esto para ti!',
-      'botonTexto': 'Pedir ayuda',
-    };
-  }
+  static Map<String, String> _estadoCritico() => const {
+    'estado': critico,
+    'titulo': '¡Alerta!',
+    'mensaje': 'Notamos que hoy te sientes mal. Estamos aquí para ayudarte.',
+    'mensaje2': '¡Tenemos esto para ti!',
+    'botonTexto': 'Pedir ayuda',
+  };
 
-  static Map<String, dynamic> _defaultExcelente() {
-    final r = Map<String, dynamic>.from(_estadoExcelente());
-    r['promedio'] = 4.0;
-    return r;
-  }
+  static Map<String, dynamic> _defaultNormal() => <String, dynamic>{
+    ..._estadoNormal(),
+    'promedio': 2.0,
+    'puntaje': 50,
+    'dimensiones': <Map<String, dynamic>>[],
+  };
 }

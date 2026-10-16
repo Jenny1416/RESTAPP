@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 class GamesScreen extends StatefulWidget {
   const GamesScreen({super.key});
@@ -84,17 +85,21 @@ class _GamesScreenState extends State<GamesScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: appColors.brandBorder,
         title: Text(
           '🎮 Juegos',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: appColors.overlayOnGradient,
+          ),
         ),
         centerTitle: true,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back, color: Colors.white),
+          child: Icon(Icons.arrow_back, color: appColors.overlayOnGradient),
         ),
       ),
       body: Padding(
@@ -105,8 +110,8 @@ class _GamesScreenState extends State<GamesScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
+                gradient: LinearGradient(
+                  colors: [appColors.brandBorder, appColors.brandSoft],
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -115,7 +120,7 @@ class _GamesScreenState extends State<GamesScreen> {
                 style: TextStyle(
                   fontSize: 20.sp,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: appColors.overlayOnGradient,
                 ),
               ),
             ),
@@ -132,8 +137,11 @@ class _GamesScreenState extends State<GamesScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: _revealed[index]
-                            ? const LinearGradient(
-                                colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
+                            ? LinearGradient(
+                                colors: [
+                                  appColors.brandBorder,
+                                  appColors.brandSoft,
+                                ],
                               )
                             : LinearGradient(
                                 colors: [colorScheme.surfaceContainerLow, colorScheme.outlineVariant],
@@ -147,7 +155,7 @@ class _GamesScreenState extends State<GamesScreen> {
                                 style: TextStyle(
                                   fontSize: 24.sp,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: appColors.overlayOnGradient,
                                 ),
                               )
                             : Icon(
@@ -165,7 +173,7 @@ class _GamesScreenState extends State<GamesScreen> {
             ElevatedButton(
               onPressed: () => setState(() => _initializeGame()),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2196F3),
+                backgroundColor: appColors.brandBorder,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -173,7 +181,10 @@ class _GamesScreenState extends State<GamesScreen> {
               ),
               child: Text(
                 'Reiniciar',
-                style: TextStyle(fontSize: 16.sp, color: Colors.white),
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: appColors.overlayOnGradient,
+                ),
               ),
             ),
           ],

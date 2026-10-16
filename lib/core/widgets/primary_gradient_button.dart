@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 /// Boton primario con degradado, shimmer opcional y trailing opcional.
 /// Reemplaza los botones _buildIngresarButton/_buildUnirmeButton que estaban
@@ -21,7 +22,7 @@ class PrimaryGradientButton extends StatelessWidget {
     this.shimmerValue,
     this.widthFraction,
     this.trailing,
-    this.gradientColors = const [Color(0xFF5CCFC0), Color(0xFF2981C1)],
+    this.gradientColors,
     this.height = 60,
     this.fontSize = 24,
   });
@@ -32,12 +33,15 @@ class PrimaryGradientButton extends StatelessWidget {
   final double? shimmerValue;
   final double? widthFraction;
   final Widget? trailing;
-  final List<Color> gradientColors;
+  final List<Color>? gradientColors;
   final double height;
   final double fontSize;
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
+    final colors = gradientColors ??
+        [appColors.accentTeal, appColors.accentBlue];
     final width = widthFraction != null
         ? MediaQuery.of(context).size.width * widthFraction!
         : double.infinity;
@@ -53,13 +57,13 @@ class PrimaryGradientButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16.r),
             gradient: LinearGradient(
-              colors: gradientColors,
+              colors: colors,
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: gradientColors.last.withValues(alpha: 0.35),
+                color: colors.last.withValues(alpha: 0.35),
                 blurRadius: 18,
                 offset: const Offset(0, 6),
               ),
@@ -78,9 +82,9 @@ class PrimaryGradientButton extends StatelessWidget {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Colors.white.withValues(alpha: 0.0),
-                                Colors.white.withValues(alpha: 0.18),
-                                Colors.white.withValues(alpha: 0.0),
+                                appColors.overlayOnGradient.withValues(alpha: 0.0),
+                                appColors.overlayOnGradient.withValues(alpha: 0.18),
+                                appColors.overlayOnGradient.withValues(alpha: 0.0),
                               ],
                               stops: const [0.0, 0.5, 1.0],
                             ),
@@ -94,8 +98,8 @@ class PrimaryGradientButton extends StatelessWidget {
                       ? SizedBox(
                           width: 24.w,
                           height: 24.w,
-                          child: const CircularProgressIndicator(
-                            color: Colors.white,
+                          child: CircularProgressIndicator(
+                            color: appColors.overlayOnGradient,
                             strokeWidth: 2.5,
                           ),
                         )
@@ -108,7 +112,7 @@ class PrimaryGradientButton extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.fredoka(
-                                  color: Colors.white,
+                                  color: appColors.overlayOnGradient,
                                   fontWeight: FontWeight.bold,
                                   fontSize: fontSize.sp,
                                   letterSpacing: 1.2,

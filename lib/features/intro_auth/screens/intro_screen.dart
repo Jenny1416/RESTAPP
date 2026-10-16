@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:video_player/video_player.dart';
+import 'package:rest/core/theme/app_colors.dart';
+import 'package:rest/core/widgets/primary_gradient_button.dart';
 import 'login_screen.dart';
 import 'noa_video_stub.dart'
     if (dart.library.html) 'noa_video_web.dart';
@@ -254,9 +256,11 @@ class _IntroScreenState extends State<IntroScreen> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: AnimatedBuilder(
         animation: Listenable.merge([
           _logoFadeCtrl,
@@ -276,9 +280,8 @@ class _IntroScreenState extends State<IntroScreen> with TickerProviderStateMixin
 
           return Stack(
             children: [
-              // ── FONDO: blanco puro para que coincida con el video ──
               Positioned.fill(
-                child: Container(color: Colors.white),
+                child: Container(color: colorScheme.surface),
               ),
 
               // ── LOGO REST: arranca en el centro y sube ──
@@ -328,8 +331,8 @@ class _IntroScreenState extends State<IntroScreen> with TickerProviderStateMixin
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Color(0xFF1565C0), Color(0xFF00ACC1)],
+                            shaderCallback: (bounds) => LinearGradient(
+                              colors: [appColors.infoBadgeFg, appColors.accentTeal],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ).createShader(bounds),
@@ -340,7 +343,7 @@ class _IntroScreenState extends State<IntroScreen> with TickerProviderStateMixin
                                 fontFamily: 'Fredoka',
                                 fontSize: 42.sp,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: appColors.overlayOnGradient,
                                 height: 1.05,
                               ),
                             ),
@@ -417,61 +420,11 @@ class _IntroScreenState extends State<IntroScreen> with TickerProviderStateMixin
   Widget _buildShimmerButton() {
     return GestureDetector(
       onTap: _navigateToLogin,
-      child: Container(
-        width: double.infinity,
-        height: 62.h,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(31),
-          gradient: const LinearGradient(
-            colors: [Color(0xFF22AF95), Color(0xFF207DC3)],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF22AF95).withValues(alpha: 0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(31),
-          child: Stack(
-            children: [
-              // Shimmer deslizante
-              Positioned.fill(
-                child: Transform.translate(
-                  offset: Offset(_shimmer.value * 220.w, 0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.white.withValues(alpha: 0.0),
-                          Colors.white.withValues(alpha: 0.20),
-                          Colors.white.withValues(alpha: 0.0),
-                        ],
-                        stops: const [0.0, 0.5, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Center(
-                child: Text(
-                  'COMENZAR',
-                  style: TextStyle(
-                    fontFamily: 'Fredoka',
-                    fontSize: 26.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+      child: PrimaryGradientButton(
+        label: 'COMENZAR',
+        height: 62,
+        fontSize: 26,
+        shimmerValue: _shimmer.value,
       ),
     );
   }

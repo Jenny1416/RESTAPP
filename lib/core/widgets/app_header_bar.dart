@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'circle_icon_button.dart';
 
 /// Header reutilizable: avatar + titulo + boton circular de accion.
@@ -32,7 +33,7 @@ class AppHeaderBar extends StatelessWidget {
             width: 56.w,
             height: 56.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF87CEEB),
+              color: context.appColors.brandSoft,
               shape: BoxShape.circle,
               image: DecorationImage(
                 image: AssetImage(avatarAssetPath),

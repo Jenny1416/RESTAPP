@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/routes/app_routes.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import '../../../core/services/user_session.dart';
 import '../../evaluations/widgets/latest_dimensions_card.dart';
 import '../utils/emotion_state_config.dart';
@@ -10,6 +11,8 @@ class TrafficLightScreen extends StatelessWidget {
   final String estado;
   final String mensaje;
   final String botonTexto;
+  final List<Map<String, dynamic>> dimensiones;
+  final String? subcategoriaPrincipal;
   final double?
   promedioHoy; // Para pasar a CheckScreen y mostrar la carita del día
   const TrafficLightScreen({
@@ -18,16 +21,67 @@ class TrafficLightScreen extends StatelessWidget {
     required this.mensaje,
     required this.botonTexto,
     this.promedioHoy,
+    this.dimensiones = const [],
+    this.subcategoriaPrincipal,
   });
 
   @override
   Widget build(BuildContext context) {
-    final config = EmotionStateConfig.getConfig(estado);
+    final config = EmotionStateConfig.getConfig(estado, context);
     final recomendaciones = config.getRandomRecommendations(count: 3);
 
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       backgroundColor: colorScheme.surface,
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          child: Center(
+            heightFactor: 1,
+            child: Container(
+              width: 220.w,
+              height: 55.h,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(28),
+                gradient: LinearGradient(
+                  colors: [config.colorPrincipal, config.colorSecundario],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: config.colorPrincipal.withValues(alpha: 0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                ),
+                onPressed: () => _continue(context),
+                child: Text(
+                  config.botonTexto,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: appColors.overlayOnGradient,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Container(
           width: double.infinity,
@@ -106,7 +160,7 @@ class TrafficLightScreen extends StatelessWidget {
                       vertical: 14,
                     ),
                     decoration: BoxDecoration(
-                      color: config.colorPrincipal.withValues(alpha: 0.1),
+                      color: colorScheme.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: config.colorPrincipal.withValues(alpha: 0.3),
@@ -170,7 +224,7 @@ class TrafficLightScreen extends StatelessWidget {
                                   rec,
                                   style: TextStyle(
                                     fontSize: 12.sp,
-                                    color: Colors.black87,
+                                    color: colorScheme.onSurface,
                                     height: 1.3,
                                   ),
                                 ),
@@ -182,70 +236,11 @@ class TrafficLightScreen extends StatelessWidget {
                     SizedBox(height: 24.h),
                   ],
 
-                  const LatestDimensionsCard(),
-                  SizedBox(height: 24.h),
-
-                  // Botón de acción
-                  Container(
-                    width: 220.w,
-                    height: 55.h,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
-                      gradient: LinearGradient(
-                        colors: [config.colorPrincipal, config.colorSecundario],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: config.colorPrincipal.withValues(alpha: 0.4),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
-                        ),
-                      ),
-                      onPressed: () {
-                        if (estado == 'critico') {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const PsychologistDirectoryScreen(),
-                            ),
-                          );
-                        } else if (estado == 'alerta-amarillo') {
-                          Navigator.of(context).pushNamed(
-                            AppRoutes.advice,
-                            arguments: {
-                              'estado': estado,
-                              'userName': UserSession.displayName,
-                            },
-                          );
-                        } else {
-                          Navigator.of(context).pushReplacementNamed(
-                            AppRoutes.check,
-                            arguments: {'promedioHoy': promedioHoy},
-                          );
-                        }
-                      },
-                      child: Text(
-                        config.botonTexto,
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
+                  LatestDimensionsCard(
+                    initialDimensions: dimensiones,
+                    initialSubcategory: subcategoriaPrincipal,
                   ),
+                  SizedBox(height: 24.h),
                 ],
               ),
             ),
@@ -253,5 +248,27 @@ class TrafficLightScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _continue(BuildContext context) {
+    if (estado == 'critico') {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const PsychologistDirectoryScreen()),
+      );
+    } else if (estado == 'alerta-amarillo') {
+      Navigator.of(context).pushNamed(
+        AppRoutes.advice,
+        arguments: {
+          'estado': estado,
+          'userName': UserSession.displayName,
+          'promedioHoy': promedioHoy,
+        },
+      );
+    } else {
+      Navigator.of(context).pushReplacementNamed(
+        AppRoutes.check,
+        arguments: {'promedioHoy': promedioHoy},
+      );
+    }
   }
 }

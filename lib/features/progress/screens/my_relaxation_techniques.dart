@@ -1,15 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 class MisTecnicasScreen extends StatelessWidget {
   const MisTecnicasScreen({super.key});
-
-  // Gradiente principal
-  LinearGradient get _gradient => const LinearGradient(
-    colors: [Color(0xFF5CCFC0), Color(0xFF2981C1)],
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +16,12 @@ class MisTecnicasScreen extends StatelessWidget {
     ];
 
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
+    final gradient = LinearGradient(
+      colors: [appColors.accentTeal, appColors.accentBlue],
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+    );
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
@@ -40,11 +40,11 @@ class MisTecnicasScreen extends StatelessWidget {
                     height: 36.h,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: _gradient,
+                      gradient: gradient,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.close,
-                      color: Colors.white,
+                      color: appColors.overlayOnGradient,
                       size: 24,
                     ),
                   ),
@@ -56,7 +56,7 @@ class MisTecnicasScreen extends StatelessWidget {
               // Título con texto degradado
               Center(
                 child: ShaderMask(
-                  shaderCallback: (bounds) => _gradient.createShader(bounds),
+                  shaderCallback: (bounds) => gradient.createShader(bounds),
                   child: Text(
                     'Mis Técnicas de\nRelajación',
                     textAlign: TextAlign.center,
@@ -64,7 +64,7 @@ class MisTecnicasScreen extends StatelessWidget {
                       fontFamily: 'Fredoka',
                       fontSize: 34.sp,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: appColors.overlayOnGradient,
                     ),
                   ),
                 ),
@@ -92,7 +92,7 @@ class MisTecnicasScreen extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    gradient: _gradient,
+                    gradient: gradient,
                   ),
                   padding: const EdgeInsets.all(2),
                   child: Container(
@@ -109,6 +109,7 @@ class MisTecnicasScreen extends StatelessWidget {
                       children: List.generate(tecnicas.length, (index) {
                         final tecnica = tecnicas[index];
                         return _buildTecnicaCard(
+                          context,
                           tecnica['nombre']!,
                           tecnica['icono']!,
                         );
@@ -125,10 +126,16 @@ class MisTecnicasScreen extends StatelessWidget {
   }
 
   // Tarjeta individual sin borde y con color azul #CCF0FF
-  Widget _buildTecnicaCard(String nombre, String iconPath) {
+  Widget _buildTecnicaCard(
+    BuildContext context,
+    String nombre,
+    String iconPath,
+  ) {
+    final appColors = context.appColors;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFCCF0FF),
+        color: appColors.infoBadgeBg,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
@@ -141,9 +148,9 @@ class MisTecnicasScreen extends StatelessWidget {
               child: Image.asset(
                 iconPath,
                 fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => const Icon(
+                errorBuilder: (context, error, stackTrace) => Icon(
                   Icons.image_not_supported,
-                  color: Colors.grey,
+                  color: colorScheme.onSurfaceVariant,
                   size: 40,
                 ),
               ),
@@ -158,7 +165,7 @@ class MisTecnicasScreen extends StatelessWidget {
                   fontFamily: 'Fredoka',
                   fontSize: 15.sp,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ),

@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 class CapituloDetalleScreen extends StatefulWidget {
   final String? titulo;
@@ -22,12 +23,6 @@ class _CapituloDetalleScreenState extends State<CapituloDetalleScreen> {
   late TextEditingController _tituloController;
   late TextEditingController _descripcionController;
 
-  final RadialGradient _gradient = const RadialGradient(
-    center: Alignment.center,
-    radius: 1.2,
-    colors: [Color(0xFF5CCFC0), Color(0xFF2981C1)],
-  );
-
   @override
   void initState() {
     super.initState();
@@ -46,6 +41,12 @@ class _CapituloDetalleScreenState extends State<CapituloDetalleScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
+    final gradient = RadialGradient(
+      center: Alignment.center,
+      radius: 1.2,
+      colors: [appColors.accentTeal, appColors.accentBlue],
+    );
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
@@ -64,12 +65,12 @@ class _CapituloDetalleScreenState extends State<CapituloDetalleScreen> {
                       width: 40.w,
                       height: 40.h,
                       decoration: BoxDecoration(
-                        gradient: _gradient,
+                        gradient: gradient,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.arrow_back,
-                        color: Colors.white,
+                        color: appColors.overlayOnGradient,
                         size: 24,
                       ),
                     ),
@@ -78,13 +79,13 @@ class _CapituloDetalleScreenState extends State<CapituloDetalleScreen> {
 
                   // Texto "Capítulo" con gradiente
                   ShaderMask(
-                    shaderCallback: (bounds) => _gradient.createShader(bounds),
+                    shaderCallback: (bounds) => gradient.createShader(bounds),
                     child: Text(
                       'Capítulo',
                       style: GoogleFonts.fredoka(
                         fontSize: 26.sp,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: appColors.overlayOnGradient,
                       ),
                     ),
                   ),
@@ -107,7 +108,7 @@ class _CapituloDetalleScreenState extends State<CapituloDetalleScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(2), // borde gradiente
                   decoration: BoxDecoration(
-                    gradient: _gradient,
+                    gradient: gradient,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Container(
@@ -136,8 +137,8 @@ class _CapituloDetalleScreenState extends State<CapituloDetalleScreen> {
                             contentPadding: EdgeInsets.zero,
                           ),
                         ),
-                        const Divider(
-                          color: Color(0xFFE0E0E0),
+                        Divider(
+                          color: colorScheme.outlineVariant,
                           thickness: 1,
                         ),
                         SizedBox(height: 8.h),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/core/utils/app_toast.dart';
 import 'package:rest/core/routes/app_routes.dart';
 import 'package:rest/core/services/emotion_service.dart';
@@ -412,6 +413,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
     final goal = UserSession.goalDays;
     final goalSet = UserSession.streakGoalSet;
     final progress = goalSet ? (streak / goal).clamp(0.0, 1.0) : 0.0;
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
+    final accentColor = appColors.accentBlue;
+    final purpleAccent = appColors.accentPurple;
 
     return GestureDetector(
       onTap: () {
@@ -430,15 +435,18 @@ class _ProgressScreenState extends State<ProgressScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: const LinearGradient(
-            colors: [Color(0xFFF0F4FF), Color(0xFFF5F0FF)],
+          gradient: LinearGradient(
+            colors: [
+              appColors.heroGradientLavenderStart,
+              appColors.heroGradientLavenderEnd,
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          border: Border.all(color: const Color(0xFFCDD8FF), width: 1.5),
+          border: Border.all(color: colorScheme.outlineVariant, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF3A5AFF).withValues(alpha: 0.08),
+              color: accentColor.withValues(alpha: 0.08),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -466,7 +474,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         style: GoogleFonts.fredoka(
                           fontSize: 17.sp,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF3A5AFF),
+                          color: accentColor,
                         ),
                       ),
                       SizedBox(width: 6.w),
@@ -480,7 +488,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       'Meta: $goal días · faltan ${(goal - streak).clamp(0, goal)} días',
                       style: GoogleFonts.fredoka(
                         fontSize: 12.sp,
-                        color: const Color(0xFF6B7280),
+                        color: appColors.neutralMutedText,
                       ),
                     ),
                     SizedBox(height: 6.h),
@@ -489,10 +497,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 7,
-                        backgroundColor: const Color(0xFFE0E7FF),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF3A5AFF),
-                        ),
+                        backgroundColor: colorScheme.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation<Color>(accentColor),
                       ),
                     ),
                   ] else
@@ -500,16 +506,16 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       'Toca para elegir tu meta y activar la racha',
                       style: GoogleFonts.fredoka(
                         fontSize: 12.sp,
-                        color: const Color(0xFF8C4EFF),
+                        color: purpleAccent,
                       ),
                     ),
                 ],
               ),
             ),
             SizedBox(width: 8.w),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: Color(0xFF3A5AFF),
+              color: accentColor,
               size: 20,
             ),
           ],
@@ -528,8 +534,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
             Container(
               width: 100.w,
               height: 60.h,
-              decoration: const BoxDecoration(
-                color: Color(0xFF87CEEB),
+              decoration: BoxDecoration(
+                color: context.appColors.brandSoft,
                 shape: BoxShape.circle,
                 image: DecorationImage(
                   image: AssetImage('assets/images/normalrest.jpg'),
@@ -581,20 +587,22 @@ class _ProgressScreenState extends State<ProgressScreen> {
       child: Container(
         width: 40.w,
         height: 40.h,
-        decoration: const BoxDecoration(
-          color: Color(0xFF87CEEB),
+        decoration: BoxDecoration(
+          color: context.appColors.brandSoft,
           shape: BoxShape.circle,
         ),
         child: Center(
           child: icon != null
-              ? Icon(icon, color: Colors.white, size: 22)
+              ? Icon(icon, color: context.appColors.overlayOnGradient, size: 22)
               : Padding(
                   padding: const EdgeInsets.all(6),
                   child: Image.asset(
                     imagePath,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        Icon(fallback, color: Colors.white),
+                    errorBuilder: (_, __, ___) => Icon(
+                      fallback,
+                      color: context.appColors.overlayOnGradient,
+                    ),
                   ),
                 ),
         ),
@@ -607,26 +615,22 @@ class _ProgressScreenState extends State<ProgressScreen> {
     final today = DateTime(now.year, now.month, now.day);
     final quickDays = List.generate(8, (i) => today.add(Duration(days: i - 2)));
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
-    final cardTextColor = isDark
-        ? colorScheme.onPrimaryContainer
-        : Colors.white;
-    final buttonBgColor = isDark
-        ? colorScheme.primary.withValues(alpha: 0.25)
-        : Colors.white.withValues(alpha: 0.2);
+    final appColors = context.appColors;
+    final cardTextColor = appColors.overlayOnGradient;
+    final buttonBgColor = appColors.overlayOnGradient.withValues(alpha: 0.2);
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: isDark
-            ? null
-            : const LinearGradient(
-                colors: [Color(0xFF7DD3E8), Color(0xFF9FE6FF)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-        color: isDark ? colorScheme.primaryContainer : null,
+        gradient: LinearGradient(
+          colors: [
+            appColors.heroGradientCoolStart,
+            appColors.heroGradientCoolEnd,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(20),
       ),
       padding: const EdgeInsets.all(20),
@@ -698,7 +702,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
           SizedBox(height: 14.h),
           Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: colorScheme.surface.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(14),
             ),
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
@@ -712,7 +716,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     children: [
                       Text(
                         'No se pudo cargar el semanal',
-                        style: TextStyle(color: Colors.red[700]),
+                        style: TextStyle(color: appColors.dangerFg),
                       ),
                       TextButton(
                         onPressed: _loadWeekly,
@@ -757,6 +761,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     required bool isToday,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     final dayNames = ['LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB', 'DOM'];
     final hasData = promedio != null;
     final asset = hasData
@@ -771,7 +776,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             : colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isToday ? const Color(0xFF2F9FE8) : colorScheme.outlineVariant,
+          color: isToday ? appColors.brandBorder : colorScheme.outlineVariant,
           width: isToday ? 1.8 : 1,
         ),
       ),
@@ -801,7 +806,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
           SizedBox(height: 2.h),
           CircleAvatar(
             radius: 16,
-            backgroundColor: Colors.white,
+            backgroundColor: appColors.chipAvatarBg,
             child: ClipOval(
               child: Image.asset(
                 asset,
@@ -829,6 +834,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   Widget _buildActividadesDiarias(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     final hechas = _actividades?.hechas ?? const <DailyActivity>[];
     final pendientes = _actividades?.pendientes ?? const <DailyActivity>[];
     final estrellasHoy = _actividades?.totalHechas ?? 0;
@@ -858,7 +864,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             color: colorScheme.surfaceContainerLow,
-            border: Border.all(color: const Color(0xFF7DD3E8), width: 2),
+            border: Border.all(color: appColors.cardBorderTeal, width: 2),
           ),
           padding: const EdgeInsets.all(16),
           child: _loadingActivities
@@ -868,7 +874,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   children: [
                     Text(
                       'No se pudo cargar actividades',
-                      style: TextStyle(color: Colors.red[700]),
+                      style: TextStyle(color: appColors.dangerFg),
                     ),
                     TextButton(
                       onPressed: _loadDailyActivities,
@@ -881,12 +887,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   children: [
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           'Progreso de hoy',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontFamily: 'Fredoka',
-                            color: Color(0xFF1565C0),
+                            color: appColors.infoBadgeFg,
                           ),
                         ),
                         const Spacer(),
@@ -896,23 +902,23 @@ class _ProgressScreenState extends State<ProgressScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFF3E0),
+                            color: appColors.warmBadgeBg,
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.star_rounded,
-                                color: Color(0xFFFFA726),
+                                color: appColors.progressFillWarm,
                                 size: 18,
                               ),
                               SizedBox(width: 4.w),
                               Text(
                                 '$estrellasHoy',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFFBF6D00),
+                                  color: appColors.warmBadgeFg,
                                   fontFamily: 'Fredoka',
                                 ),
                               ),
@@ -928,8 +934,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                           ),
                           label: const Text('Premios'),
                           style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFFE8F7FF),
-                            foregroundColor: const Color(0xFF1565C0),
+                            backgroundColor: appColors.infoBadgeBg,
+                            foregroundColor: appColors.infoBadgeFg,
                             textStyle: const TextStyle(
                               fontFamily: 'Fredoka',
                               fontWeight: FontWeight.w700,
@@ -944,9 +950,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       child: LinearProgressIndicator(
                         minHeight: 10,
                         value: estrellasHoy / metaDiaria,
-                        backgroundColor: const Color(0xFFCFEDFA),
-                        valueColor: const AlwaysStoppedAnimation(
-                          Color(0xFF26A69A),
+                        backgroundColor: appColors.progressTrackCool,
+                        valueColor: AlwaysStoppedAnimation(
+                          appColors.progressFillCool,
                         ),
                       ),
                     ),
@@ -964,26 +970,26 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFFAEE),
+                        color: appColors.warmSurfaceBg,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFFFE1A8)),
+                        border: Border.all(color: appColors.warmSurfaceBorder),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.auto_awesome_rounded,
-                                color: Color(0xFFEF8D00),
+                                color: appColors.progressFillWarm,
                               ),
                               SizedBox(width: 8.w),
                               Text(
                                 'Estrellas del mes: $estrellasMes / $metaMes',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'Fredoka',
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF8A5200),
+                                  color: appColors.warmSurfaceFg,
                                 ),
                               ),
                             ],
@@ -999,9 +1005,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                 child: LinearProgressIndicator(
                                   minHeight: 12,
                                   value: value,
-                                  backgroundColor: const Color(0xFFFFEFD1),
-                                  valueColor: const AlwaysStoppedAnimation(
-                                    Color(0xFFFFB300),
+                                  backgroundColor: appColors.progressTrackWarm,
+                                  valueColor: AlwaysStoppedAnimation(
+                                    appColors.progressFillWarm,
                                   ),
                                 ),
                               );
@@ -1122,7 +1128,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                           Text(
                             'No se pudo cargar catalogo de premios',
                             style: TextStyle(
-                              color: Colors.red[700],
+                              color: context.appColors.dangerFg,
                               fontFamily: 'Fredoka',
                               fontWeight: FontWeight.w700,
                             ),
@@ -1167,9 +1173,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                     child: LinearProgressIndicator(
                                       minHeight: 14,
                                       value: value,
-                                      backgroundColor: const Color(0xFFE9F3FB),
-                                      valueColor: const AlwaysStoppedAnimation(
-                                        Color(0xFF2F9FE8),
+                                      backgroundColor: Theme.of(context)
+                                          .colorScheme
+                                          .surfaceContainerHighest,
+                                      valueColor: AlwaysStoppedAnimation(
+                                        Theme.of(context).colorScheme.primary,
                                       ),
                                     ),
                                   ),
@@ -1264,6 +1272,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     required VoidCallback onRequest,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 350),
       margin: const EdgeInsets.only(bottom: 12),
@@ -1274,9 +1283,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             : colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: unlocked
-              ? const Color(0xFF4CAF50)
-              : colorScheme.outlineVariant,
+          color: unlocked ? appColors.successFg : colorScheme.outlineVariant,
           width: 1.2,
         ),
       ),
@@ -1284,10 +1291,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
         children: [
           CircleAvatar(
             radius: 22,
-            backgroundColor: const Color(0xFFE8F3FF),
-            child: const Icon(
+            backgroundColor: appColors.infoBadgeBg,
+            child: Icon(
               Icons.workspace_premium_rounded,
-              color: Color(0xFF1D84B5),
+              color: appColors.infoBadgeFg,
             ),
           ),
           SizedBox(width: 12.w),
@@ -1323,10 +1330,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     fontFamily: 'Fredoka',
                     fontWeight: FontWeight.w700,
                     color: isPending
-                        ? const Color(0xFF1565C0)
+                        ? appColors.infoBadgeFg
                         : unlocked
-                        ? const Color(0xFF2E7D32)
-                        : const Color(0xFF8D6E63),
+                        ? appColors.successFg
+                        : colorScheme.onSurfaceVariant,
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -1341,10 +1348,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: unlocked && !isPending
-                          ? const Color(0xFF2E7D32)
-                          : const Color(0xFFB0BEC5),
-                      disabledBackgroundColor: const Color(0xFFCFD8DC),
-                      foregroundColor: Colors.white,
+                          ? appColors.successFg
+                          : colorScheme.surfaceContainerHighest,
+                      disabledBackgroundColor: colorScheme.surfaceContainerHigh,
+                      foregroundColor: appColors.overlayOnGradient,
                       textStyle: const TextStyle(
                         fontFamily: 'Fredoka',
                         fontWeight: FontWeight.w700,
@@ -1356,7 +1363,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                             width: 16.w,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                              valueColor: AlwaysStoppedAnimation(
+                                appColors.overlayOnGradient,
+                              ),
                             ),
                           )
                         : const Text('Solicitar Premio'),
@@ -1368,15 +1377,15 @@ class _ProgressScreenState extends State<ProgressScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF3E0),
+              color: appColors.warmBadgeBg,
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
               '${reward.estrellasRequeridas}★',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Fredoka',
                 fontWeight: FontWeight.w800,
-                color: Color(0xFFBF6D00),
+                color: appColors.warmBadgeFg,
               ),
             ),
           ),
@@ -1391,6 +1400,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     required bool isDone,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     final isSendingThisItem = _sendingActivityId == item.id;
 
     return Container(
@@ -1405,9 +1415,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         children: [
           Icon(
             isDone ? Icons.check_circle : Icons.circle_outlined,
-            color: isDone
-                ? const Color(0xFF2E7D32)
-                : colorScheme.onSurfaceVariant,
+            color: isDone ? appColors.successFg : colorScheme.onSurfaceVariant,
           ),
           SizedBox(width: 10.w),
           Expanded(
@@ -1443,19 +1451,21 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       width: 18.w,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(Colors.white),
+                        valueColor: AlwaysStoppedAnimation(
+                          appColors.overlayOnGradient,
+                        ),
                       ),
                     )
                   : const Icon(Icons.star_rounded, size: 18),
               label: Text(isSendingThisItem ? 'Guardando...' : 'Realizar'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF26A69A),
-                foregroundColor: Colors.white,
+                backgroundColor: appColors.progressFillCool,
+                foregroundColor: appColors.overlayOnGradient,
                 textStyle: const TextStyle(fontFamily: 'Fredoka'),
               ),
             )
           else
-            const Icon(Icons.star_rounded, color: Color(0xFFFFA726)),
+            Icon(Icons.star_rounded, color: appColors.progressFillWarm),
         ],
       ),
     );
@@ -1501,7 +1511,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFF7DD3E8), width: 2),
+              border: Border.all(
+                color: context.appColors.cardBorderTeal,
+                width: 2,
+              ),
               borderRadius: BorderRadius.circular(16),
             ),
             padding: const EdgeInsets.all(16),
@@ -1534,6 +1547,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   Widget _buildTecnicasRelajacion(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     final sourceTechniques = _buildAllowedTechniques(_tecnicas);
 
     final mapped = sourceTechniques.map((t) {
@@ -1564,7 +1578,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             color: colorScheme.surfaceContainerLow,
-            border: Border.all(color: const Color(0xFF7DD3E8), width: 2),
+            border: Border.all(color: appColors.cardBorderTeal, width: 2),
           ),
           child: _loadingTechniques
               ? const Center(child: CircularProgressIndicator())
@@ -1573,7 +1587,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   children: [
                     Text(
                       'No se pudieron cargar técnicas',
-                      style: TextStyle(color: Colors.red[700]),
+                      style: TextStyle(color: appColors.dangerFg),
                     ),
                     TextButton(
                       onPressed: _loadTechniques,
@@ -1608,11 +1622,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
         borderRadius: BorderRadius.circular(14),
         color: colorScheme.surfaceContainerLow,
         border: Border.all(color: colorScheme.outlineVariant),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x1A6EC7EE),
+            color: context.appColors.brandBorder.withValues(alpha: 0.12),
             blurRadius: 8,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -1632,7 +1646,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   'API',
                   style: TextStyle(
                     fontSize: 11.sp,
-                    color: Color(0xFF00796B),
+                    color: context.appColors.successFg,
                     fontWeight: FontWeight.w700,
                     fontFamily: 'Fredoka',
                   ),
@@ -1643,9 +1657,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
               child: Image.asset(
                 data.imagePath,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(
+                errorBuilder: (_, __, ___) => Icon(
                   Icons.self_improvement,
-                  color: Color(0xFF6BA7D9),
+                  color: context.appColors.brandSoft,
                   size: 42,
                 ),
               ),
@@ -1670,8 +1684,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     _registrarTecnicaYEntrar(data.tecnica, data.screen),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  backgroundColor: const Color(0xFF2F9FE8),
-                  foregroundColor: Colors.white,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: context.appColors.overlayOnGradient,
                   textStyle: const TextStyle(
                     fontFamily: 'Fredoka',
                     fontWeight: FontWeight.w700,

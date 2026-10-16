@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/services/user_session.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/core/widgets/app_header_bar.dart';
 import 'package:rest/features/professional_care/models/professional_care_models.dart';
 import 'package:rest/features/professional_care/screens/my_requests_screen.dart';
@@ -157,23 +158,27 @@ class _ProfessionalCareScreenState extends State<ProfessionalCareScreen> {
             Container(
               padding: EdgeInsets.all(15.w),
               decoration: BoxDecoration(
-                color: const Color(0xFFF2A51A).withValues(alpha: 0.1),
+                color: context.appColors.warmBadgeFg.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(18.r),
                 border: Border.all(
-                  color: const Color(0xFFF2A51A).withValues(alpha: 0.4),
+                  color: context.appColors.warmBadgeFg.withValues(alpha: 0.4),
                 ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.schedule_rounded, color: Color(0xFFF2A51A)),
+                  Icon(
+                    Icons.schedule_rounded,
+                    color: context.appColors.warmBadgeFg,
+                  ),
                   SizedBox(width: 11.w),
                   Expanded(
                     child: Text(
                       '${_pending.length} solicitud${_pending.length == 1 ? '' : 'es'} pendiente${_pending.length == 1 ? '' : 's'}. El chat aparecerá cuando una sea aprobada.',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Fredoka',
                         fontWeight: FontWeight.w600,
                         height: 1.3,
+                        color: colors.onSurface,
                       ),
                     ),
                   ),
@@ -194,7 +199,7 @@ class _ProfessionalCareScreenState extends State<ProfessionalCareScreen> {
           SizedBox(height: 12.h),
           _ActionCard(
             icon: Icons.manage_search_rounded,
-            color: careBlue,
+            color: context.appColors.accentBlue,
             title: 'Buscar psicólogo',
             subtitle: 'Filtra por especialidad, ciudad e idioma',
             onTap: () =>
@@ -203,7 +208,7 @@ class _ProfessionalCareScreenState extends State<ProfessionalCareScreen> {
           SizedBox(height: 11.h),
           _ActionCard(
             icon: Icons.assignment_outlined,
-            color: const Color(0xFF6C5CE7),
+            color: context.appColors.accentPurple,
             title: 'Mis solicitudes',
             subtitle: 'Consulta estados, retira o finaliza una relación',
             onTap: () => _open(MyRequestsScreen(onChanged: _load)),
@@ -212,7 +217,7 @@ class _ProfessionalCareScreenState extends State<ProfessionalCareScreen> {
             SizedBox(height: 11.h),
             _ActionCard(
               icon: Icons.forum_outlined,
-              color: careTeal,
+              color: context.appColors.accentTeal,
               title: 'Historial con profesionales',
               subtitle: 'Revisa tus conversaciones anteriores',
               onTap: () => _open(const ProfessionalConversationsScreen()),
@@ -261,11 +266,12 @@ class _WelcomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     return Container(
       padding: EdgeInsets.all(22.w),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF50C7BB), Color(0xFF347FC8)],
+        gradient: LinearGradient(
+          colors: [appColors.accentTeal, appColors.accentBlue],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -280,7 +286,7 @@ class _WelcomeCard extends StatelessWidget {
                 Text(
                   'Estamos para acompañarte, $displayName',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: appColors.overlayOnGradient,
                     fontFamily: 'Fredoka',
                     fontWeight: FontWeight.w800,
                     fontSize: 21.sp,
@@ -291,7 +297,7 @@ class _WelcomeCard extends StatelessWidget {
                 Text(
                   'Elige un profesional y envía tu solicitud. La conversación se habilitará cuando sea aceptada.',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: appColors.overlayOnGradient.withValues(alpha: 0.9),
                     fontFamily: 'Fredoka',
                     height: 1.35,
                   ),
@@ -302,7 +308,7 @@ class _WelcomeCard extends StatelessWidget {
           SizedBox(width: 12.w),
           Icon(
             Icons.volunteer_activism_rounded,
-            color: Colors.white,
+            color: appColors.overlayOnGradient,
             size: 54.sp,
           ),
         ],
@@ -322,11 +328,13 @@ class _AssignedProfessionalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF43C6B9), Color(0xFF2878C8)],
+        gradient: LinearGradient(
+          colors: [appColors.accentTeal, appColors.accentBlue],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -342,10 +350,12 @@ class _AssignedProfessionalCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Tu psicólogo asignado',
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: appColors.overlayOnGradient.withValues(
+                          alpha: 0.7,
+                        ),
                         fontFamily: 'Fredoka',
                         fontWeight: FontWeight.w600,
                       ),
@@ -353,7 +363,7 @@ class _AssignedProfessionalCard extends StatelessWidget {
                     Text(
                       psychologist.fullName,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: appColors.overlayOnGradient,
                         fontFamily: 'Fredoka',
                         fontWeight: FontWeight.w800,
                         fontSize: 20.sp,
@@ -361,15 +371,15 @@ class _AssignedProfessionalCard extends StatelessWidget {
                     ),
                     Text(
                       psychologist.specialty ?? 'Psicología y bienestar',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: appColors.overlayOnGradient,
                         fontFamily: 'Fredoka',
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.verified_rounded, color: Colors.white),
+              Icon(Icons.verified_rounded, color: appColors.overlayOnGradient),
             ],
           ),
           SizedBox(height: 16.h),
@@ -380,8 +390,8 @@ class _AssignedProfessionalCard extends StatelessWidget {
               icon: const Icon(Icons.chat_bubble_rounded),
               label: const Text('Abrir conversación'),
               style: FilledButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: careNavy,
+                backgroundColor: appColors.overlayOnGradient,
+                foregroundColor: colorScheme.primary,
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 textStyle: const TextStyle(
                   fontFamily: 'Fredoka',

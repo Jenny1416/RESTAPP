@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/utils/app_toast.dart';
 import '../../home/screens/gradient_text.dart';
 import 'package:rest/core/services/settings_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
+import 'package:rest/core/widgets/primary_gradient_button.dart';
 
 class FeedbackScreen extends StatefulWidget {
   @override
@@ -47,11 +49,13 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         titleSpacing: 0,
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leadingWidth: 70,
         leading: Center(
@@ -63,11 +67,11 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Color(0xFF08B1DD),
+                  color: appColors.brandBorder,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: colorScheme.onSurface.withValues(alpha: 0.1),
                       blurRadius: 3,
                       offset: Offset(0, 1),
                     ),
@@ -75,7 +79,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 ),
                 child: Icon(
                   Icons.arrow_back,
-                  color: Colors.white,
+                  color: appColors.overlayOnGradient,
                   size: 25,
                 ),
               ),
@@ -92,8 +96,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             ),
             gradient: LinearGradient(
               colors: [
-                Color(0xFF0AF3FF),
-                Color(0xFF0419FF),
+                appColors.accentTeal,
+                appColors.accentBlue,
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -111,11 +115,11 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerLow,
+                  color: colorScheme.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: colorScheme.onSurface.withValues(alpha: 0.05),
                       blurRadius: 15,
                       offset: const Offset(0, 5),
                     ),
@@ -131,7 +135,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         style: TextStyle(
                           fontSize: 22.sp,
                           fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       SizedBox(height: 8.h),
@@ -140,7 +144,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w400,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                       SizedBox(height: 25.h),
@@ -163,12 +167,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                               height: 55.h,
                               decoration: BoxDecoration(
                                 color: selectedRating == index
-                                    ? Color(0xFF4FC3F7).withValues(alpha: 0.1)
+                                    ? appColors.brandSoft.withValues(alpha: 0.1)
                                     : Colors.transparent,
                                 shape: BoxShape.circle,
                                 border: selectedRating == index
                                     ? Border.all(
-                                  color: Color(0xFF4FC3F7),
+                                  color: appColors.brandSoft,
                                   width: 2,
                                 )
                                     : null,
@@ -195,7 +199,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                             style: TextStyle(
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF4FC3F7),
+                              color: appColors.brandSoft,
                             ),
                           ),
                         ),
@@ -208,7 +212,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       SizedBox(height: 4.h),
@@ -216,7 +220,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         'Puedes elegir varias opciones',
                         style: TextStyle(
                           fontSize: 12.sp,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                       SizedBox(height: 15.h),
@@ -239,13 +243,13 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? const Color(0xFF4FC3F7).withValues(alpha: 0.08)
-                                  : Theme.of(context).colorScheme.surfaceContainerLow,
+                                  ? appColors.brandSoft.withValues(alpha: 0.08)
+                                  : colorScheme.surfaceContainerLow,
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF4FC3F7)
-                                    : Theme.of(context).colorScheme.outlineVariant,
+                                    ? appColors.brandSoft
+                                    : colorScheme.outlineVariant,
                                 width: isSelected ? 1.8 : 1.2,
                               ),
                             ),
@@ -258,16 +262,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                                     borderRadius: BorderRadius.circular(5),
                                     border: Border.all(
                                       color: isSelected
-                                          ? const Color(0xFF4FC3F7)
-                                          : Theme.of(context).colorScheme.outlineVariant,
+                                          ? appColors.brandSoft
+                                          : colorScheme.outlineVariant,
                                       width: 2,
                                     ),
                                     color: isSelected
-                                        ? const Color(0xFF4FC3F7)
+                                        ? appColors.brandSoft
                                         : Colors.transparent,
                                   ),
                                   child: isSelected
-                                      ? const Icon(Icons.check, color: Colors.white, size: 14)
+                                      ? Icon(Icons.check, color: appColors.overlayOnGradient, size: 14)
                                       : null,
                                 ),
                                 SizedBox(width: 12.w),
@@ -277,8 +281,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                                     fontSize: 14.sp,
                                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                                     color: isSelected
-                                        ? const Color(0xFF4FC3F7)
-                                        : Theme.of(context).colorScheme.onSurface,
+                                        ? appColors.brandSoft
+                                        : colorScheme.onSurface,
                                   ),
                                 ),
                               ],
@@ -294,7 +298,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       SizedBox(height: 12.h),
@@ -302,10 +306,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                       // Comment text field
                       Container(
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainerLow,
+                          color: colorScheme.surfaceContainerLow,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Theme.of(context).colorScheme.outlineVariant,
+                            color: colorScheme.outlineVariant,
                             width: 1.5,
                           ),
                         ),
@@ -315,14 +319,14 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                           decoration: InputDecoration(
                             hintText: 'Describe tu experiencia',
                             hintStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: colorScheme.onSurfaceVariant,
                               fontSize: 14.sp,
                             ),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.all(15),
                           ),
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
+                            color: colorScheme.onSurface,
                             fontSize: 14.sp,
                           ),
                         ),
@@ -330,47 +334,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
                       SizedBox(height: 30.h),
 
-                      // Send button
-                      Container(
-                        width: double.infinity,
-                        height: 55.h,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Color(0xFF0AF3FF),
-                              Color(0xFF0419FF),
-                            ],
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                          ),
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0xFF0AF3FF).withValues(alpha: 0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(15),
-                            onTap: () {
-                              _sendFeedback();
-                            },
-                            child: Center(
-                              child: Text(
-                                'Enviar',
-                                style: TextStyle(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ),
-                          ),
+                      GestureDetector(
+                        onTap: _sendFeedback,
+                        child: const PrimaryGradientButton(
+                          label: 'Enviar',
+                          height: 55,
+                          fontSize: 16,
                         ),
                       ),
                     ],

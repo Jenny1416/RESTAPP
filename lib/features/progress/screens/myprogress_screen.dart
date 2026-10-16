@@ -2,6 +2,7 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/features/progress/screens/globalprogress_screen.dart';
 import 'package:rest/core/services/personal_progress_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import '../../settings/screens/settings_screen.dart';
 import '../../../core/services/user_session.dart';
 import '../../../core/widgets/app_header_bar.dart';
@@ -71,7 +72,7 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result.mensaje),
-          backgroundColor: const Color(0xFF2E7D32),
+          backgroundColor: context.appColors.successFg,
         ),
       );
 
@@ -81,7 +82,7 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('No se pudo activar la estrella diaria: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: context.appColors.dangerFg,
         ),
       );
     } finally {
@@ -173,6 +174,7 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
   Widget _buildStreakCard(BuildContext context) {
     final data = _data;
     if (data == null) return const SizedBox.shrink();
+    final appColors = context.appColors;
 
     return InkWell(
       onTap: () {
@@ -187,7 +189,7 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
           color: Theme.of(context).colorScheme.surfaceContainerLow,
-          border: Border.all(color: const Color(0xFF2F9FE8), width: 2),
+          border: Border.all(color: appColors.brandBorder, width: 2),
         ),
         child: Column(
           children: [
@@ -211,15 +213,15 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
                 _MiniBadge(
                   icon: Icons.local_fire_department_rounded,
                   label: 'Racha: ${data.rachaActual}',
-                  bgColor: const Color(0xFFFFF4E5),
-                  fgColor: const Color(0xFFE36A10),
+                  bgColor: appColors.warmBadgeBg,
+                  fgColor: appColors.warmBadgeFg,
                 ),
                 SizedBox(width: 8.w),
                 _MiniBadge(
                   icon: Icons.auto_awesome_rounded,
                   label: 'Estrellas: ${data.estrellasRachaTotal}',
-                  bgColor: const Color(0xFFFFF8E1),
-                  fgColor: const Color(0xFFB77900),
+                  bgColor: appColors.warmSurfaceBg,
+                  fgColor: appColors.warmSurfaceFg,
                 ),
               ],
             ),
@@ -231,9 +233,10 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
                     ? _activarRachaDiaria
                     : null,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF26A69A),
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: const Color(0xFFB2DFDB),
+                  backgroundColor: appColors.progressFillCool,
+                  foregroundColor: appColors.overlayOnGradient,
+                  disabledBackgroundColor:
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
                   textStyle: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontFamily: 'Fredoka',
@@ -245,7 +248,7 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
                         height: 16.h,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: appColors.overlayOnGradient,
                         ),
                       )
                     : const Icon(Icons.star_rounded),
@@ -285,7 +288,7 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
       title: 'Estado de ánimo más frecuente',
       content: content,
       icon: Icons.favorite_rounded,
-      iconColor: const Color(0xFFE53935),
+      iconColor: context.appColors.dangerFg,
     );
   }
 
@@ -300,7 +303,7 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
       title: 'Emociones más frecuentes',
       content: content,
       icon: Icons.emoji_emotions_rounded,
-      iconColor: const Color(0xFFFB8C00),
+      iconColor: context.appColors.warmBadgeFg,
     );
   }
 
@@ -319,7 +322,7 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF2F9FE8), width: 1.5.w),
+        border: Border.all(color: context.appColors.brandBorder, width: 1.5.w),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
@@ -327,7 +330,7 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.show_chart_rounded, color: Color(0xFF2F9FE8)),
+              Icon(Icons.show_chart_rounded, color: context.appColors.brandBorder),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
@@ -369,7 +372,7 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
                       child: Container(
                         height: barHeight,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4DB6AC),
+                          color: context.appColors.progressFillCool,
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
@@ -402,7 +405,7 @@ class _MyProgressScreenState extends State<MyProgressScreen> {
       title: 'Reto personal inteligente',
       content: reto,
       icon: Icons.lightbulb_rounded,
-      iconColor: const Color(0xFF8E24AA),
+      iconColor: context.appColors.accentPurple,
     );
   }
 }
@@ -428,17 +431,21 @@ class _DayItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (active)
-              const Icon(Icons.star_rounded, color: Color(0xFFFFB300), size: 24)
+              Icon(
+                Icons.star_rounded,
+                color: context.appColors.progressFillWarm,
+                size: 24,
+              )
             else if (completed)
-              const Icon(
+              Icon(
                 Icons.check_circle_outline_rounded,
-                color: Color(0xFF26A69A),
+                color: context.appColors.progressFillCool,
                 size: 24,
               )
             else
-              const Icon(
+              Icon(
                 Icons.radio_button_unchecked,
-                color: Colors.grey,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 size: 24,
               ),
             SizedBox(height: 4.h),
@@ -529,25 +536,26 @@ class _ErrorPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFEBEE),
+        color: appColors.dangerBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFFCDD2)),
+        border: Border.all(color: appColors.dangerFg.withValues(alpha: 0.35)),
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'No se pudo cargar tu pantalla personal.',
             style: TextStyle(
               fontWeight: FontWeight.w700,
-              color: Color(0xFFB71C1C),
+              color: appColors.dangerFg,
             ),
           ),
           SizedBox(height: 8.h),
-          Text(error, style: const TextStyle(color: Color(0xFFB71C1C))),
+          Text(error, style: TextStyle(color: appColors.dangerFg)),
           SizedBox(height: 8.h),
           TextButton(onPressed: onRetry, child: const Text('Reintentar')),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'games_screen.dart';
 import 'jokes_screen.dart';
 import 'music_screen.dart';
@@ -33,7 +34,7 @@ class RelaxScreen extends StatelessWidget {
                   icon: Icon(
                     Icons.close,
                     size: width * 0.08,
-                    color: Colors.blue,
+                    color: colorScheme.primary,
                   ),
                 ),
               ),
@@ -47,7 +48,7 @@ class RelaxScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: width * 0.07,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                    color: colorScheme.primary,
                   ),
                 ),
               ),
@@ -76,7 +77,10 @@ class RelaxScreen extends StatelessWidget {
                 child: Container(
                   padding: EdgeInsets.all(width * 0.04),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blue, width: 1.5),
+                    border: Border.all(
+                      color: context.appColors.brandBorder,
+                      width: 1.5,
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: GridView.count(
@@ -142,7 +146,7 @@ class _CardTecnica extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-        color: Colors.lightBlue.shade100,
+        color: context.appColors.infoBadgeBg,
         borderRadius: BorderRadius.circular(16),
       ),
         child: Column(

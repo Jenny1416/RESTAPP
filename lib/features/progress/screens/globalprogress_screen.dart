@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 class GlobalProgressScreen extends StatelessWidget {
   const GlobalProgressScreen({super.key});
@@ -26,6 +27,7 @@ class GlobalProgressScreen extends StatelessWidget {
     ];
 
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
@@ -39,7 +41,11 @@ class GlobalProgressScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.blue, size: 30),
+                    icon: Icon(
+                      Icons.close,
+                      color: colorScheme.primary,
+                      size: 30,
+                    ),
                     onPressed: () {
                       Navigator.pop(context);
                     },
@@ -49,7 +55,7 @@ class GlobalProgressScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+                      color: colorScheme.primary,
                     ),
                   ),
                   SizedBox(width: 40.w), // para balancear
@@ -61,16 +67,16 @@ class GlobalProgressScreen extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
-                  gradient: const LinearGradient(
-                    colors: [Colors.lightBlue, Colors.blue],
+                  gradient: LinearGradient(
+                    colors: [appColors.accentTeal, appColors.accentBlue],
                   ),
                 ),
                 padding: const EdgeInsets.all(4),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildSwitchButton("Mes", true),
-                    _buildSwitchButton("Año", false),
+                    _buildSwitchButton(context, "Mes", true),
+                    _buildSwitchButton(context, "Año", false),
                   ],
                 ),
               ),
@@ -78,11 +84,11 @@ class GlobalProgressScreen extends StatelessWidget {
               SizedBox(height: 30.h),
 
               // Agosto
-              _buildMonthSection("Agosto", 31, agostoDays, startOffset: 5),
+              _buildMonthSection(context, "Agosto", 31, agostoDays, startOffset: 5),
               SizedBox(height: 30.h),
 
               // Septiembre
-              _buildMonthSection("Septiembre", 30, septiembreDays, startOffset: 0),
+              _buildMonthSection(context, "Septiembre", 30, septiembreDays, startOffset: 0),
             ],
           ),
         ),
@@ -91,12 +97,12 @@ class GlobalProgressScreen extends StatelessWidget {
   }
 
   // Botón del switch Mes/Año
-  Widget _buildSwitchButton(String text, bool active) {
-    // Note: this widget is called from build() but doesn't receive BuildContext.
-    // The active white background here is decorative within a gradient strip — preserved.
+  Widget _buildSwitchButton(BuildContext context, String text, bool active) {
+    final appColors = context.appColors;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: active ? Colors.white : Colors.transparent,
+        color: active ? appColors.chipAvatarBg : Colors.transparent,
         borderRadius: BorderRadius.circular(30),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -105,15 +111,20 @@ class GlobalProgressScreen extends StatelessWidget {
         style: TextStyle(
           fontSize: 16.sp,
           fontWeight: FontWeight.bold,
-          color: active ? Colors.blue : Colors.white,
+          color: active ? colorScheme.primary : appColors.overlayOnGradient,
         ),
       ),
     );
   }
 
   // Sección de un mes
-  Widget _buildMonthSection(String month, int totalDays, List<Map<String, dynamic>> emojiDays,
-      {int startOffset = 0}) {
+  Widget _buildMonthSection(
+    BuildContext context,
+    String month,
+    int totalDays,
+    List<Map<String, dynamic>> emojiDays, {
+    int startOffset = 0,
+  }) {
     return Column(
       children: [
         Text(
@@ -140,7 +151,10 @@ class GlobalProgressScreen extends StatelessWidget {
         // Calendario
         Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.blue, width: 2),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.primary,
+              width: 2,
+            ),
             borderRadius: BorderRadius.circular(16),
           ),
           padding: const EdgeInsets.all(8),
@@ -171,7 +185,9 @@ class GlobalProgressScreen extends StatelessWidget {
               return Container(
                 margin: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Stack(

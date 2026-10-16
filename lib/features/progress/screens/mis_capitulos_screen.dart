@@ -2,8 +2,8 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:rest/core/routes/app_routes.dart';
 import 'package:rest/core/services/diary_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'mi_diario_screen.dart';
 
 class MisCapitulosScreen extends StatefulWidget {
@@ -50,13 +50,14 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final gradient = const RadialGradient(
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
+    final gradient = RadialGradient(
       center: Alignment.center,
       radius: 1.2,
-      colors: [Color(0xFF5CCFC0), Color(0xFF2981C1)],
+      colors: [appColors.accentTeal, appColors.accentBlue],
     );
 
-    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: colorScheme.surface,
       floatingActionButton: FloatingActionButton.extended(
@@ -67,7 +68,8 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
           );
           if (changed == true) _loadEntries();
         },
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: appColors.successFg,
+        foregroundColor: appColors.overlayOnGradient,
         icon: const Icon(Icons.add),
         label: const Text('Crear diario nuevo'),
       ),
@@ -90,9 +92,9 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
                             gradient: gradient,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.arrow_back,
-                            color: Colors.white,
+                            color: appColors.overlayOnGradient,
                             size: 24,
                           ),
                         ),
@@ -107,7 +109,7 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
                           style: GoogleFonts.fredoka(
                             fontSize: 26.sp,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: appColors.overlayOnGradient,
                           ),
                         ),
                       ),
@@ -138,10 +140,10 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.cloud_off,
                               size: 64,
-                              color: Color(0xFF90A4AE),
+                              color: colorScheme.onSurfaceVariant,
                             ),
                             SizedBox(height: 12.h),
                             Text(
@@ -150,7 +152,7 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
                               style: GoogleFonts.fredoka(
                                 fontSize: 17.sp,
                                 fontWeight: FontWeight.w700,
-                                color: const Color(0xFF546E7A),
+                                color: appColors.neutralMutedText,
                               ),
                             ),
                             SizedBox(height: 8.h),
@@ -159,7 +161,7 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
                               textAlign: TextAlign.center,
                               style: GoogleFonts.fredoka(
                                 fontSize: 13.sp,
-                                color: const Color(0xFF90A4AE),
+                                color: colorScheme.onSurfaceVariant,
                               ),
                             ),
                             SizedBox(height: 16.h),
@@ -244,7 +246,7 @@ class _MisCapitulosScreenState extends State<MisCapitulosScreen> {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.08),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),

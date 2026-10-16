@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 import '../models/evaluation.dart';
 import '../services/evaluation_service.dart';
 
 class LatestDimensionsCard extends StatefulWidget {
-  const LatestDimensionsCard({super.key});
+  final List<Map<String, dynamic>> initialDimensions;
+  final String? initialSubcategory;
+
+  const LatestDimensionsCard({
+    super.key,
+    this.initialDimensions = const [],
+    this.initialSubcategory,
+  });
 
   @override
   State<LatestDimensionsCard> createState() => _LatestDimensionsCardState();
@@ -12,11 +20,18 @@ class LatestDimensionsCard extends StatefulWidget {
 
 class _LatestDimensionsCardState extends State<LatestDimensionsCard> {
   Evaluation? _evaluation;
+  late final List<SemaforoDimension> _initialDimensions;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _initialDimensions = widget.initialDimensions
+        .map(SemaforoDimension.fromJson)
+        .where((item) => item.dimension.isNotEmpty)
+        .toList();
+    // El backend puede seguir procesando el guardado mientras ya mostramos
+    // el resultado local; consultar aquí podría traer la evaluación anterior.
+    if (_initialDimensions.isEmpty) _load();
   }
 
   Future<void> _load() async {
@@ -33,7 +48,10 @@ class _LatestDimensionsCardState extends State<LatestDimensionsCard> {
   @override
   Widget build(BuildContext context) {
     final evaluation = _evaluation;
-    if (evaluation == null || evaluation.dimensiones.isEmpty) {
+    final dimensions = evaluation?.dimensiones ?? _initialDimensions;
+    final subcategory =
+        evaluation?.subcategoriaPrincipal ?? widget.initialSubcategory;
+    if (dimensions.isEmpty) {
       return const SizedBox.shrink();
     }
     final colors = Theme.of(context).colorScheme;
@@ -52,15 +70,15 @@ class _LatestDimensionsCardState extends State<LatestDimensionsCard> {
             'Semáforo por dimensiones',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
-          if (evaluation.subcategoriaPrincipal case final subcategory?) ...[
+          if (subcategory case final value?) ...[
             const SizedBox(height: 4),
             Text(
-              'Dimensión principal: ${_dimensionLabel(subcategory.split('_').skip(1).join('_'))}',
+              'Dimensión principal: ${_dimensionLabel(value.split('_').skip(1).join('_'))}',
               style: TextStyle(color: colors.onSurfaceVariant),
             ),
           ],
           const SizedBox(height: 14),
-          ...evaluation.dimensiones.map(
+          ...dimensions.map(
             (dimension) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: _DimensionRow(dimension: dimension),
@@ -79,10 +97,11 @@ class _DimensionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     final color = switch (dimension.nivel.toLowerCase()) {
-      'rojo' => const Color(0xFFE53935),
-      'amarillo' => const Color(0xFFF9A825),
-      _ => const Color(0xFF20A779),
+      'rojo' => appColors.dangerFg,
+      'amarillo' => appColors.goldEnd,
+      _ => appColors.successFg,
     };
     return Row(
       children: [

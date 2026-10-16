@@ -13,6 +13,7 @@ import 'terms_screen.dart';
 import 'package:rest/core/routes/app_routes.dart';
 import 'package:rest/core/services/user_session.dart';
 import 'package:rest/core/services/theme_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -20,6 +21,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
       backgroundColor: colorScheme.surfaceContainerLow,
       appBar: AppBar(
@@ -39,7 +41,7 @@ class SettingsScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Color(0xFF08B1DD),
+                  color: appColors.brandSoft,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
@@ -49,7 +51,11 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(Icons.arrow_back, color: Colors.white, size: 25),
+                child: Icon(
+                  Icons.arrow_back,
+                  color: appColors.overlayOnGradient,
+                  size: 25,
+                ),
               ),
             ),
           ),
@@ -62,7 +68,7 @@ class SettingsScreen extends StatelessWidget {
             'Configuración',
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 30.sp),
             gradient: LinearGradient(
-              colors: [Color(0xFF0AF3FF), Color(0xFF0419FF)],
+              colors: [appColors.accentTeal, appColors.accentBlue],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -226,11 +232,11 @@ class SettingsScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 55.h,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE91E63),
+                    color: appColors.dangerFg,
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFE91E63).withValues(alpha: 0.3),
+                        color: appColors.dangerFg.withValues(alpha: 0.3),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -249,7 +255,7 @@ class SettingsScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: appColors.overlayOnGradient,
                             letterSpacing: 1.2,
                           ),
                         ),
@@ -309,12 +315,12 @@ class SettingsScreen extends StatelessWidget {
                   width: 32.w,
                   height: 32.h,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4FC3F7).withValues(alpha: 0.1),
+                    color: context.appColors.brandBorder.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     isDark ? Icons.dark_mode : Icons.light_mode_outlined,
-                    color: const Color(0xFF4FC3F7),
+                    color: context.appColors.brandBorder,
                     size: 16,
                   ),
                 ),
@@ -335,7 +341,7 @@ class SettingsScreen extends StatelessWidget {
                     value: isDark,
                     onChanged: (value) =>
                         ThemeService.instance.setDarkMode(value),
-                    activeThumbColor: const Color(0xFF4FC3F7),
+                    activeThumbColor: context.appColors.brandBorder,
                   ),
                 ),
               ],
@@ -356,7 +362,7 @@ class SettingsScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final iconColor = disabled
         ? colorScheme.onSurface.withValues(alpha: 0.35)
-        : const Color(0xFF4FC3F7);
+        : context.appColors.brandBorder;
     final textColor = disabled
         ? colorScheme.onSurface.withValues(alpha: 0.35)
         : colorScheme.onSurface;
@@ -490,7 +496,7 @@ class SettingsScreen extends StatelessWidget {
               child: Text(
                 'Cerrar sesión',
                 style: TextStyle(
-                  color: Color(0xFFE91E63),
+                  color: context.appColors.dangerFg,
                   fontWeight: FontWeight.w600,
                 ),
               ),

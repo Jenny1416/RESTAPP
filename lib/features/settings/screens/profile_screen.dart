@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:rest/core/constants/profile_options.dart';
 import 'package:rest/core/services/profile_service.dart';
 import 'package:rest/core/services/user_session.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/core/utils/app_toast.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -129,9 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: colors.brightness == Brightness.dark
-          ? colors.surface
-          : const Color(0xFFF5F7FF),
+      backgroundColor: colors.surfaceContainerLow,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
@@ -149,6 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildForm(ColorScheme colors) {
+    final appColors = context.appColors;
     final cityOptions = <String>{
       ...ProfileOptions.cities,
       if (_selectedCity?.trim().isNotEmpty == true) _selectedCity!,
@@ -171,15 +171,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   width: double.infinity,
                   padding: EdgeInsets.all(22.w),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF39C4B6), Color(0xFF347BC2)],
+                    gradient: LinearGradient(
+                      colors: [appColors.accentTeal, appColors.accentBlue],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(26.r),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF347BC2).withValues(alpha: 0.2),
+                        color: appColors.accentBlue.withValues(alpha: 0.2),
                         blurRadius: 22,
                         offset: const Offset(0, 10),
                       ),
@@ -191,15 +191,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         width: 88.w,
                         height: 88.w,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: appColors.overlayOnGradient.withValues(
+                            alpha: 0.2,
+                          ),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.45),
+                            color: appColors.overlayOnGradient.withValues(
+                              alpha: 0.45,
+                            ),
                           ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.person_rounded,
-                          color: Colors.white,
+                          color: appColors.overlayOnGradient,
                           size: 48,
                         ),
                       ),
@@ -209,7 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             .trim(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white,
+                          color: appColors.overlayOnGradient,
                           fontFamily: 'Fredoka',
                           fontSize: 22.sp,
                           fontWeight: FontWeight.bold,
@@ -219,7 +223,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         _correoController.text,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.88),
+                          color: appColors.overlayOnGradient.withValues(
+                            alpha: 0.88,
+                          ),
                         ),
                       ),
                     ],
@@ -300,18 +306,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: FilledButton.icon(
                     onPressed: _isUpdating ? null : _save,
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF326FB6),
+                      backgroundColor: colors.primary,
+                      foregroundColor: appColors.overlayOnGradient,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(17.r),
                       ),
                     ),
                     icon: _isUpdating
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: appColors.overlayOnGradient,
                             ),
                           )
                         : const Icon(Icons.save_outlined),
@@ -418,9 +425,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-            const Icon(
+            Icon(
               Icons.keyboard_arrow_down_rounded,
-              color: Color(0xFF326FB6),
+              color: Theme.of(context).colorScheme.primary,
             ),
           ],
         ),
@@ -439,7 +446,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       labelText: label,
       helperText: helperText,
       helperMaxLines: 2,
-      prefixIcon: Icon(icon, color: const Color(0xFF326FB6)),
+      prefixIcon: Icon(icon, color: colors.primary),
       filled: true,
       fillColor: filledColor ?? colors.surfaceContainerLow,
       border: OutlineInputBorder(
@@ -452,7 +459,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF326FB6), width: 2),
+        borderSide: BorderSide(color: colors.primary, width: 2),
       ),
     );
   }

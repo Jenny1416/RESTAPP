@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/features/professional_care/models/professional_care_models.dart';
 import 'package:rest/features/professional_care/screens/psychologist_detail_screen.dart';
 import 'package:rest/features/professional_care/services/professional_care_service.dart';
@@ -260,7 +261,7 @@ class _PsychologistDirectoryScreenState
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontFamily: 'Fredoka',
-                              color: careBlue,
+                              color: careAccent(context),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -312,6 +313,7 @@ class _FilterMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     return PopupMenuButton<String?>(
       enabled: values.isNotEmpty,
       onSelected: onSelected,
@@ -325,12 +327,12 @@ class _FilterMenu extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
         decoration: BoxDecoration(
           color: selected
-              ? careBlue
+              ? careAccent(context)
               : Theme.of(context).colorScheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(22.r),
           border: Border.all(
             color: selected
-                ? careBlue
+                ? careAccent(context)
                 : Theme.of(context).colorScheme.outlineVariant,
           ),
         ),
@@ -340,7 +342,7 @@ class _FilterMenu extends StatelessWidget {
               label,
               style: TextStyle(
                 color: selected
-                    ? Colors.white
+                    ? appColors.overlayOnGradient
                     : Theme.of(context).colorScheme.onSurface,
                 fontFamily: 'Fredoka',
                 fontWeight: FontWeight.w600,
@@ -350,7 +352,7 @@ class _FilterMenu extends StatelessWidget {
             Icon(
               Icons.keyboard_arrow_down_rounded,
               size: 18,
-              color: selected ? Colors.white : null,
+              color: selected ? appColors.overlayOnGradient : null,
             ),
           ],
         ),

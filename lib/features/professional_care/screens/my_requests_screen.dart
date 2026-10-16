@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/core/utils/app_toast.dart';
 import 'package:rest/features/professional_care/models/professional_care_models.dart';
 import 'package:rest/features/professional_care/screens/professional_chat_screen.dart';
@@ -76,7 +77,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFD64545),
+              backgroundColor: context.appColors.dangerFg,
             ),
             child: Text(isApproved ? 'Finalizar' : 'Retirar'),
           ),
@@ -199,7 +200,8 @@ class _AssignmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final statusColor = assignmentStatusColor(assignment.status);
+    final appColors = context.appColors;
+    final statusColor = assignmentStatusColor(context, assignment.status);
     final date = assignment.requestedAt == null
         ? 'Fecha no disponible'
         : DateFormat(
@@ -223,8 +225,8 @@ class _AssignmentCard extends StatelessWidget {
               else
                 CircleAvatar(
                   radius: 24.r,
-                  backgroundColor: careBlue.withValues(alpha: 0.12),
-                  child: const Icon(Icons.person_rounded, color: careBlue),
+                  backgroundColor: careAccent(context).withValues(alpha: 0.12),
+                  child: Icon(Icons.person_rounded, color: careAccent(context)),
                 ),
               SizedBox(width: 12.w),
               Expanded(
@@ -303,8 +305,8 @@ class _AssignmentCard extends StatelessWidget {
                       icon: const Icon(Icons.chat_bubble_rounded, size: 19),
                       label: const Text('Conversar'),
                       style: FilledButton.styleFrom(
-                        backgroundColor: careBlue,
-                        foregroundColor: Colors.white,
+                        backgroundColor: careAccent(context),
+                        foregroundColor: appColors.overlayOnGradient,
                       ),
                     ),
                   ),

@@ -1,6 +1,7 @@
 ﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rest/core/theme/app_colors.dart';
 
 class YogaScreen extends StatefulWidget {
   const YogaScreen({super.key});
@@ -115,7 +116,6 @@ class _YogaScreenState extends State<YogaScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -153,18 +153,17 @@ class _YogaScreenState extends State<YogaScreen> {
         ),
       ),
       body: _isSessionActive
-          ? _buildTimerView(colorScheme, isDark)
-          : _buildSelectionView(colorScheme, isDark),
+          ? _buildTimerView()
+          : _buildSelectionView(colorScheme),
     );
   }
 
-  Widget _buildSelectionView(ColorScheme colorScheme, bool isDark) {
-    final cardColor = isDark ? const Color(0xFF1E3A4A) : const Color(0xFF87CEEB);
-    final shadowColor = isDark 
-        ? Colors.black.withValues(alpha: 0.3) 
-        : const Color(0xFF87CEEB).withValues(alpha: 0.4);
-    final onCardColor = isDark ? const Color(0xFF90CAF9) : Colors.white;
-    final secondaryTextColor = isDark ? const Color(0xFF64B5F6) : Colors.white70;
+  Widget _buildSelectionView(ColorScheme colorScheme) {
+    final appColors = context.appColors;
+    final cardColor = appColors.brandSoft;
+    final shadowColor = appColors.brandSoft.withValues(alpha: 0.4);
+    final onCardColor = appColors.overlayOnGradient;
+    final secondaryTextColor = appColors.overlayOnGradient.withValues(alpha: 0.7);
 
     return SingleChildScrollView(
       child: Padding(
@@ -260,9 +259,10 @@ class _YogaScreenState extends State<YogaScreen> {
     );
   }
 
-  Widget _buildTimerView(ColorScheme colorScheme, bool isDark) {
-    final cardColor = isDark ? const Color(0xFF1E3A4A) : const Color(0xFF87CEEB);
-    final onCardColor = isDark ? const Color(0xFF90CAF9) : Colors.white;
+  Widget _buildTimerView() {
+    final appColors = context.appColors;
+    final cardColor = appColors.brandSoft;
+    final onCardColor = appColors.overlayOnGradient;
 
     return Center(
       child: Padding(
@@ -355,7 +355,7 @@ class _YogaScreenState extends State<YogaScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : colorScheme.onSurface,
+            color: isSelected ? context.appColors.overlayOnGradient : colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontFamily: 'Fredoka',
           ),
@@ -453,14 +453,14 @@ class _TimerControlButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSecondary ? colorScheme.primary : Colors.white,
+              color: isSecondary ? colorScheme.primary : context.appColors.overlayOnGradient,
               size: 24,
             ),
             SizedBox(width: 8.w),
             Text(
               label,
               style: TextStyle(
-                color: isSecondary ? colorScheme.primary : Colors.white,
+                color: isSecondary ? colorScheme.primary : context.appColors.overlayOnGradient,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'Fredoka',
               ),
@@ -506,12 +506,12 @@ class _ActionButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white),
+            Icon(icon, color: context.appColors.overlayOnGradient),
             SizedBox(width: 8.w),
             Text(
               label,
               style: TextStyle(
-                color: Colors.white,
+                color: context.appColors.overlayOnGradient,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'Fredoka',
                 fontSize: 18.sp,

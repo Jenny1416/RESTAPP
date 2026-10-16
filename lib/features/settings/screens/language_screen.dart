@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/utils/app_toast.dart';
 import '../../home/screens/gradient_text.dart';
 import 'package:rest/core/services/settings_service.dart';
+import 'package:rest/core/theme/app_colors.dart';
+import 'package:rest/core/widgets/primary_gradient_button.dart';
 
 class LanguageScreen extends StatefulWidget {
   @override
@@ -22,11 +24,13 @@ class _LanguageScreenState extends State<LanguageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         titleSpacing: 0,
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leadingWidth: 70,
         leading: Center(
@@ -38,11 +42,11 @@ class _LanguageScreenState extends State<LanguageScreen> {
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Color(0xFF08B1DD),
+                  color: appColors.brandBorder,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: colorScheme.onSurface.withValues(alpha: 0.1),
                       blurRadius: 3,
                       offset: Offset(0, 1),
                     ),
@@ -50,7 +54,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                 ),
                 child: Icon(
                   Icons.arrow_back,
-                  color: Colors.white,
+                  color: appColors.overlayOnGradient,
                   size: 25,
                 ),
               ),
@@ -67,8 +71,8 @@ class _LanguageScreenState extends State<LanguageScreen> {
             ),
             gradient: LinearGradient(
               colors: [
-                Color(0xFF0AF3FF),
-                Color(0xFF0419FF),
+                appColors.accentTeal,
+                appColors.accentBlue,
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -104,41 +108,12 @@ class _LanguageScreenState extends State<LanguageScreen> {
 
             SizedBox(height: 20.h),
 
-            // Botón de guardar cambios
-            Container(
-              width: double.infinity,
-              height: 55.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF4FC3F7),
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF4FC3F7).withValues(alpha: 0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(15),
-                  onTap: () {
-                    // Aquí puedes agregar la lógica para guardar el idioma seleccionado
-                    _showSaveDialog(context);
-                  },
-                  child: Center(
-                    child: Text(
-                      'GUARDAR CAMBIOS',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ),
-                ),
+            GestureDetector(
+              onTap: () => _showSaveDialog(context),
+              child: const PrimaryGradientButton(
+                label: 'GUARDAR CAMBIOS',
+                height: 55,
+                fontSize: 16,
               ),
             ),
             SizedBox(height: 20.h),
@@ -149,6 +124,8 @@ class _LanguageScreenState extends State<LanguageScreen> {
   }
 
   Widget _buildLanguageItem(String languageName, bool isSelected, VoidCallback onTap) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -156,13 +133,13 @@ class _LanguageScreenState extends State<LanguageScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isSelected
-              ? const Color(0xFF4FC3F7).withValues(alpha: 0.8)
+              ? appColors.brandSoft.withValues(alpha: 0.8)
               : Theme.of(context).colorScheme.outlineVariant,
           width: isSelected ? 2.0 : 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: colorScheme.onSurface.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -184,7 +161,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
                       color: isSelected
-                          ? const Color(0xFF4FC3F7)
+                          ? appColors.brandSoft
                           : Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
@@ -196,18 +173,18 @@ class _LanguageScreenState extends State<LanguageScreen> {
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF4FC3F7)
+                          ? appColors.brandSoft
                           : Theme.of(context).colorScheme.outlineVariant,
                       width: 2,
                     ),
                     color: isSelected
-                        ? const Color(0xFF4FC3F7)
+                        ? appColors.brandSoft
                         : Colors.transparent,
                   ),
                   child: isSelected
-                      ? const Icon(
+                      ? Icon(
                     Icons.check,
-                    color: Colors.white,
+                    color: appColors.overlayOnGradient,
                     size: 16,
                   )
                       : null,
@@ -268,7 +245,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
               child: Text(
                 'Guardar',
                 style: TextStyle(
-                  color: Color(0xFF4FC3F7),
+                  color: context.appColors.brandSoft,
                   fontWeight: FontWeight.w600,
                 ),
               ),

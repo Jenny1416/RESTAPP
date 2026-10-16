@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/services/chat_service.dart';
 import 'package:rest/core/services/user_session.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/features/help/screens/help_screen.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -165,7 +166,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(aviso),
-              backgroundColor: Colors.redAccent,
+              backgroundColor: context.appColors.dangerFg,
               duration: const Duration(seconds: 4),
             ),
           );
@@ -232,9 +233,9 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo finalizar la sesion en este momento.'),
-          backgroundColor: Colors.redAccent,
+        SnackBar(
+          content: const Text('No se pudo finalizar la sesion en este momento.'),
+          backgroundColor: context.appColors.dangerFg,
         ),
       );
     }
@@ -310,8 +311,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       Navigator.pop(this.context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1565C0),
-                      foregroundColor: Colors.white,
+                      backgroundColor: context.appColors.infoBadgeFg,
+                      foregroundColor: context.appColors.overlayOnGradient,
                       textStyle: const TextStyle(
                         fontFamily: 'Fredoka',
                         fontWeight: FontWeight.bold,
@@ -365,6 +366,7 @@ class _ChatScreenState extends State<ChatScreen> {
   // garantiza que el avatar y el titulo siempre respetan su espacio.
   Widget _buildHeader(ColorScheme colorScheme) {
     final avatarSize = 80.w;
+    final appColors = context.appColors;
     return Padding(
       padding: EdgeInsets.all(20.w),
       child: Row(
@@ -375,10 +377,10 @@ class _ChatScreenState extends State<ChatScreen> {
             height: avatarSize,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF4ECDC4), width: 4),
+              border: Border.all(color: appColors.accentTeal, width: 4),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+                  color: appColors.accentTeal.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -394,8 +396,11 @@ class _ChatScreenState extends State<ChatScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ShaderMask(
-                  shaderCallback: (Rect bounds) => const LinearGradient(
-                    colors: [Color(0xFF7DFDFE), Color(0xFF2196F3)],
+                  shaderCallback: (Rect bounds) => LinearGradient(
+                    colors: [
+                      appColors.heroGradientCoolStart,
+                      appColors.brandBorder,
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ).createShader(bounds),
@@ -409,13 +414,16 @@ class _ChatScreenState extends State<ChatScreen> {
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Fredoka',
                       height: 0.9,
-                      color: Colors.white,
+                      color: appColors.overlayOnGradient,
                     ),
                   ),
                 ),
                 ShaderMask(
-                  shaderCallback: (Rect bounds) => const LinearGradient(
-                    colors: [Color(0xFF7DFDFE), Color(0xFF2196F3)],
+                  shaderCallback: (Rect bounds) => LinearGradient(
+                    colors: [
+                      appColors.heroGradientCoolStart,
+                      appColors.brandBorder,
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ).createShader(bounds),
@@ -429,7 +437,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Fredoka',
                       height: 0.9,
-                      color: Colors.white,
+                      color: appColors.overlayOnGradient,
                     ),
                   ),
                 ),
@@ -452,13 +460,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildChatArea(ColorScheme colorScheme) {
+    final appColors = context.appColors;
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: const Color(0xFF153E75), width: 4),
+          border: Border.all(color: appColors.brandBorder, width: 4),
         ),
         child: Stack(
           children: [
@@ -490,18 +499,18 @@ class _ChatScreenState extends State<ChatScreen> {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50),
+                      color: appColors.successBg,
                       borderRadius: BorderRadius.circular(25),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.pause, color: Colors.black, size: 18),
+                        Icon(Icons.pause, color: appColors.successFg, size: 18),
                         SizedBox(width: 6.w),
                         Text(
                           'Detener',
                           style: TextStyle(
-                            color: Colors.black,
+                            color: appColors.successFg,
                             fontSize: 15.sp,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Fredoka',
@@ -542,6 +551,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildInputArea(ColorScheme colorScheme) {
+    final appColors = context.appColors;
     return Container(
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -549,8 +559,8 @@ class _ChatScreenState extends State<ChatScreen> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6A4C93), Color(0xFF153E75)],
+                gradient: LinearGradient(
+                  colors: [appColors.accentPurple, appColors.accentBlue],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
@@ -593,8 +603,8 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Container(
               width: 55.w,
               height: 55.h,
-              decoration: const BoxDecoration(
-                color: Color(0xFF3B2C5E),
+              decoration: BoxDecoration(
+                color: appColors.accentPurple,
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -604,12 +614,15 @@ class _ChatScreenState extends State<ChatScreen> {
                   decoration: BoxDecoration(
                     color: Colors.transparent,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
+                    border: Border.all(
+                      color: appColors.overlayOnGradient,
+                      width: 3,
+                    ),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.arrow_forward,
-                      color: Colors.white,
+                      color: appColors.overlayOnGradient,
                       size: 22,
                     ),
                   ),
@@ -788,9 +801,9 @@ class _TypingBubbleState extends State<TypingBubble>
                         child: SizedBox(
                           width: 8.w,
                           height: 8.h,
-                          child: const DecoratedBox(
+                          child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: Color(0xFF2F9FE8),
+                              color: context.appColors.brandBorder,
                               shape: BoxShape.circle,
                             ),
                           ),

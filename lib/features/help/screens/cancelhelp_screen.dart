@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rest/core/services/user_session.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import '../../home/screens/home_screen.dart';
 import 'help_screen.dart';
 
@@ -13,8 +14,10 @@ class CancelHelpScreen extends StatelessWidget {
     final width = size.width;
     final height = size.height;
 
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -23,12 +26,12 @@ class CancelHelpScreen extends StatelessWidget {
               margin: EdgeInsets.symmetric(horizontal: width * 0.075),
               padding: EdgeInsets.all(width * 0.06),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerLow,
-                border: Border.all(color: const Color(0xFF4FC3F7), width: 2.5),
+                color: colorScheme.surfaceContainerLow,
+                border: Border.all(color: appColors.brandSoft, width: 2.5),
                 borderRadius: BorderRadius.circular(28),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: colorScheme.onSurface.withValues(alpha: 0.08),
                     blurRadius: 25,
                     offset: const Offset(0, 8),
                   ),
@@ -50,14 +53,14 @@ class CancelHelpScreen extends StatelessWidget {
                           width: width * 0.5,
                           height: height * 0.35,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4FC3F7).withValues(alpha: 0.1),
+                            color: appColors.brandSoft.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Icon(
                               Icons.psychology_outlined,
                               size: 60,
-                              color: Color(0xFF4FC3F7),
+                              color: appColors.brandSoft,
                             ),
                           ),
                         );
@@ -71,7 +74,7 @@ class CancelHelpScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: width * 0.075,
                       fontWeight: FontWeight.w800,
-                      color: const Color(0xFFFF9800),
+                      color: appColors.warmBadgeFg,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -82,7 +85,7 @@ class CancelHelpScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: width * 0.07,
                       fontWeight: FontWeight.w800,
-                      color: const Color(0xFF2196F3),
+                      color: appColors.brandBorder,
                       letterSpacing: 0.3,
                     ),
                     textAlign: TextAlign.center,
@@ -95,7 +98,7 @@ class CancelHelpScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: width * 0.065,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFFE91E63),
+                      color: appColors.dangerFg,
                       letterSpacing: 0.2,
                       height: 1.3,
                     ),
@@ -108,10 +111,10 @@ class CancelHelpScreen extends StatelessWidget {
                       vertical: height * 0.015,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4FC3F7).withValues(alpha: 0.08),
+                      color: appColors.brandSoft.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: const Color(0xFF4FC3F7).withValues(alpha: 0.2),
+                        color: appColors.brandSoft.withValues(alpha: 0.2),
                         width: 1.5,
                       ),
                     ),
@@ -121,7 +124,7 @@ class CancelHelpScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: width * 0.035,
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        color: colorScheme.onSurfaceVariant,
                         height: 1.4,
                       ),
                     ),
@@ -136,14 +139,12 @@ class CancelHelpScreen extends StatelessWidget {
                         height: height * 0.065,
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1BD77C),
+                            backgroundColor: appColors.successFg,
                             elevation: 4,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            shadowColor: const Color(
-                              0xFF1BD77C,
-                            ).withValues(alpha: 0.4),
+                            shadowColor: appColors.successFg.withValues(alpha: 0.4),
                           ),
                           onPressed: () {
                             Navigator.pushReplacement(
@@ -153,15 +154,15 @@ class CancelHelpScreen extends StatelessWidget {
                               ),
                             );
                           },
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.arrow_forward,
-                            color: Colors.white,
+                            color: appColors.overlayOnGradient,
                             size: 18,
                           ),
                           label: Text(
                             "Sí, Enviar Solicitud",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: appColors.overlayOnGradient,
                               fontSize: width * 0.04,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.3,
@@ -176,14 +177,12 @@ class CancelHelpScreen extends StatelessWidget {
                         height: height * 0.065,
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE91E63),
+                            backgroundColor: appColors.dangerFg,
                             elevation: 4,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            shadowColor: const Color(
-                              0xFFE91E63,
-                            ).withValues(alpha: 0.4),
+                            shadowColor: appColors.dangerFg.withValues(alpha: 0.4),
                           ),
                           onPressed: () {
                             Navigator.pushReplacement(
@@ -193,15 +192,15 @@ class CancelHelpScreen extends StatelessWidget {
                               ),
                             );
                           },
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.close,
-                            color: Colors.white,
+                            color: appColors.overlayOnGradient,
                             size: 18,
                           ),
                           label: Text(
                             "No, Volver al Inicio",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: appColors.overlayOnGradient,
                               fontSize: width * 0.04,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.3,

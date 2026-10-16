@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/routes/app_routes.dart';
+import 'package:rest/core/theme/app_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Pantalla de confirmación cuando el registro emocional se guarda correctamente.
@@ -121,8 +122,9 @@ class _EmotionSavedScreenState extends State<EmotionSavedScreen>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final appColors = context.appColors;
     return Scaffold(
-      backgroundColor: const Color(0xFF2D2D2D),
+      backgroundColor: colorScheme.surfaceContainerHighest,
       body: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -154,24 +156,24 @@ class _EmotionSavedScreenState extends State<EmotionSavedScreen>
                       height: 120.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF08D557), Color(0xFF41AC20)],
+                        gradient: LinearGradient(
+                          colors: [appColors.successFg, appColors.progressFillCool],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF08D557).withValues(alpha: 0.4),
+                            color: appColors.successFg.withValues(alpha: 0.4),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.check_rounded,
                           size: 70,
-                          color: Colors.white,
+                          color: appColors.overlayOnGradient,
                         ),
                       ),
                     ),
@@ -187,8 +189,11 @@ class _EmotionSavedScreenState extends State<EmotionSavedScreen>
                       child: Column(
                         children: [
                           ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Color(0xFF08D557), Color(0xFF41AC20)],
+                            shaderCallback: (bounds) => LinearGradient(
+                              colors: [
+                                appColors.successFg,
+                                appColors.progressFillCool,
+                              ],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ).createShader(bounds),
@@ -198,7 +203,7 @@ class _EmotionSavedScreenState extends State<EmotionSavedScreen>
                               style: TextStyle(
                                 fontSize: 36.sp,
                                 fontWeight: FontWeight.w900,
-                                color: Colors.white,
+                                color: appColors.overlayOnGradient,
                                 letterSpacing: 1.2,
                                 height: 1.2,
                               ),

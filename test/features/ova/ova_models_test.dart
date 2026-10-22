@@ -40,7 +40,8 @@ Map<String, dynamic> _asignacion({
             'video_id': 'dQw4w9WgXcQ',
             'watch_url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
             'embed_url': 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
-            'resolved_url': 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
+            'resolved_url':
+                'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
           },
     },
     'created_at': '2026-10-19T08:00:00.000Z',
@@ -104,34 +105,37 @@ void main() {
       expect(conPost.necesitaPostTest, isFalse);
     });
 
-    test('tolera la forma de ovas_asignados (recurso_resuelto y matched_*)', () {
-      final item = OvaAsignacion.fromJson({
-        'id': 5,
-        'ova_id': 9,
-        'estado': 'PENDING',
-        'matched_dimension': 'sueno',
-        'matched_nivel': 'amarillo',
-        'post_evaluacion_id': null,
-        'ova': {
-          'id': 9,
-          'titulo': 'Higiene del sueño',
-          'tipo_actividad': 'video',
-          'duracion_minutos': 8,
-          'storage_source': 'CLOUDFLARE_R2',
-          'resource_url': 'ovas/abc.mp4',
-          'recurso_resuelto': {
+    test(
+      'tolera la forma de ovas_asignados (recurso_resuelto y matched_*)',
+      () {
+        final item = OvaAsignacion.fromJson({
+          'id': 5,
+          'ova_id': 9,
+          'estado': 'PENDING',
+          'matched_dimension': 'sueno',
+          'matched_nivel': 'amarillo',
+          'post_evaluacion_id': null,
+          'ova': {
+            'id': 9,
+            'titulo': 'Higiene del sueño',
+            'tipo_actividad': 'video',
+            'duracion_minutos': 8,
             'storage_source': 'CLOUDFLARE_R2',
-            'original_url': 'ovas/abc.mp4',
-            'resolved_url': 'https://cdn.test/ovas/abc.mp4',
+            'resource_url': 'ovas/abc.mp4',
+            'recurso_resuelto': {
+              'storage_source': 'CLOUDFLARE_R2',
+              'original_url': 'ovas/abc.mp4',
+              'resolved_url': 'https://cdn.test/ovas/abc.mp4',
+            },
           },
-        },
-      });
+        });
 
-      expect(item.dimension, 'sueno');
-      expect(item.nivel, 'amarillo');
-      expect(item.ova.recurso.resolvedUrl, 'https://cdn.test/ovas/abc.mp4');
-      expect(item.ova.recurso.media, OvaMedia.video);
-    });
+        expect(item.dimension, 'sueno');
+        expect(item.nivel, 'amarillo');
+        expect(item.ova.recurso.resolvedUrl, 'https://cdn.test/ovas/abc.mp4');
+        expect(item.ova.recurso.media, OvaMedia.video);
+      },
+    );
 
     test('un estado desconocido no rompe el parseo', () {
       final item = OvaAsignacion.fromJson(_asignacion(estado: 'ARCHIVED'));

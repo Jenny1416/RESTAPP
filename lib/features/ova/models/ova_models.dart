@@ -115,7 +115,9 @@ class OvaRecurso {
 
   OvaMedia get media {
     if (fuente == OvaFuente.youtube) {
-      return (videoId?.isNotEmpty ?? false) ? OvaMedia.youtube : OvaMedia.enlace;
+      return (videoId?.isNotEmpty ?? false)
+          ? OvaMedia.youtube
+          : OvaMedia.enlace;
     }
     final path = (Uri.tryParse(resolvedUrl)?.path ?? resolvedUrl).toLowerCase();
     if (path.endsWith('.mp4') ||
@@ -260,7 +262,9 @@ class OvaAsignacion {
       liked: _bool(feedback?['liked'] ?? json['liked']),
       rating: _intOrNull(feedback?['rating'] ?? json['rating']),
       // El backend envía los numéricos de Postgres como string ("-12.50").
-      deltaPuntaje: _double(efectividad?['delta_puntaje'] ?? json['delta_puntaje']),
+      deltaPuntaje: _double(
+        efectividad?['delta_puntaje'] ?? json['delta_puntaje'],
+      ),
       createdAt: _date(json['created_at']),
     );
   }

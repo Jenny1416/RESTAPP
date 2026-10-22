@@ -159,8 +159,10 @@ void main() {
 
   test('401 muestra un mensaje de sesión vencida', () async {
     final service = _service(
-      (request) async =>
-          http.Response(jsonEncode({'message': 'Invalid or expired token'}), 401),
+      (request) async => http.Response(
+        jsonEncode({'message': 'Invalid or expired token'}),
+        401,
+      ),
     );
 
     await expectLater(
@@ -182,10 +184,7 @@ void main() {
       return http.Response('{}', 200);
     }, token: null);
 
-    await expectLater(
-      service.getAsignaciones(),
-      throwsA(isA<OvaException>()),
-    );
+    await expectLater(service.getAsignaciones(), throwsA(isA<OvaException>()));
     expect(llamado, isFalse);
   });
 
@@ -194,9 +193,6 @@ void main() {
       (request) async => http.Response('<html>502</html>', 502),
     );
 
-    await expectLater(
-      service.getAsignaciones(),
-      throwsA(isA<OvaException>()),
-    );
+    await expectLater(service.getAsignaciones(), throwsA(isA<OvaException>()));
   });
 }

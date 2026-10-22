@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest/core/services/user_session.dart';
 import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/core/widgets/app_header_bar.dart';
+import 'package:rest/features/ova/screens/ova_list_screen.dart';
+import 'package:rest/features/ova/services/ova_pendientes.dart';
 import 'package:rest/features/professional_care/models/professional_care_models.dart';
 import 'package:rest/features/professional_care/screens/my_requests_screen.dart';
 import 'package:rest/features/professional_care/screens/professional_chat_screen.dart';
@@ -59,6 +61,7 @@ class _ProfessionalCareScreenState extends State<ProfessionalCareScreen> {
       if (!silent) _loading = true;
       _error = null;
     });
+    OvaPendientes.refresh();
     try {
       final results = await Future.wait([
         _service.getMyAssignments(),
@@ -212,6 +215,20 @@ class _ProfessionalCareScreenState extends State<ProfessionalCareScreen> {
             title: 'Mis solicitudes',
             subtitle: 'Consulta estados, retira o finaliza una relación',
             onTap: () => _open(MyRequestsScreen(onChanged: _load)),
+          ),
+          SizedBox(height: 11.h),
+          ValueListenableBuilder<int>(
+            valueListenable: OvaPendientes.count,
+            builder: (context, pendientes, _) => _ActionCard(
+              icon: Icons.spa_outlined,
+              color: context.appColors.successFg,
+              title: 'Mis actividades',
+              subtitle: pendientes > 0
+                  ? 'Tienes $pendientes por hacer'
+                  : 'Ejercicios recomendados para ti',
+              badgeCount: pendientes,
+              onTap: () => _open(const OvaListScreen()),
+            ),
           ),
           if (_chats.isNotEmpty) ...[
             SizedBox(height: 11.h),
@@ -413,6 +430,7 @@ class _ActionCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   final IconData icon;
@@ -420,6 +438,9 @@ class _ActionCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+
+  /// Si es mayor que cero se muestra como insignia junto a la flecha.
+  final int badgeCount;
 
   @override
   Widget build(BuildContext context) {
@@ -471,6 +492,27 @@ class _ActionCard extends StatelessWidget {
                   ],
                 ),
               ),
+              if (badgeCount > 0) ...[
+                Container(
+                  constraints: BoxConstraints(minWidth: 24.w),
+                  padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Text(
+                    '$badgeCount',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Fredoka',
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12.sp,
+                      color: context.appColors.overlayOnGradient,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 4.w),
+              ],
               Icon(Icons.chevron_right_rounded, color: colors.onSurfaceVariant),
             ],
           ),

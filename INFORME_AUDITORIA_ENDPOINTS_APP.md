@@ -45,6 +45,7 @@ La aplicación ya consume una parte importante de la API para usuarios autentica
 | Atención profesional y chat profesional | Contrato ausente | `/api/psicologos`, `/api/asignaciones/*`, `/api/chats`, `/api/chats/{id}/mensajes` | Los endpoints de psicólogos/asignaciones no aparecen en el inventario. Deben añadirse con métodos, roles, body y respuestas. |
 | Onboarding | Contrato ausente | `GET /api/onboarding/estado`, `GET /api/onboarding/preguntas`, `POST /api/onboarding/respuestas` | No existen en el documento. Sin contrato no es posible certificar respuestas, idempotencia o errores. |
 | Evaluaciones / semáforo | Parcial | `GET /api/evaluaciones`, `GET /api/evaluaciones/{id}` | Faltan UI y servicio para `GET /preguntas`, `POST /evaluaciones` y `POST /asignacion-semaforo`. La pantalla de semáforo actual no sustituye ese flujo. |
+| Actividades OVA | Conectado (requiere prueba contra el ambiente objetivo) | `GET /api/ovas/asignaciones`, `GET /api/ovas/asignaciones/{id}`, `PATCH /api/ovas/asignaciones/{id}/iniciar`, `POST /api/ovas/asignaciones/{id}/completar`, `POST /api/ovas/asignaciones/{id}/omitir`, y `POST /api/evaluaciones` con `ova_asignacion_id` (post-test) | Los archivos de Cloudflare R2 solo se ven si el servidor define `R2_PUBLIC_BASE_URL`; sin ella el recurso llega como una key relativa y la app muestra "no disponible". En web, las imágenes servidas desde R2 pueden exigir CORS en el bucket. |
 | Reportar falla técnica | No conectado | Ninguno | Debe usar `POST /api/settings/report`; hoy solo muestra un diálogo de éxito. |
 | Enviar feedback | No conectado | Ninguno | Debe usar `POST /api/settings/feedback`; hoy solo muestra un aviso local. |
 | Idioma | No conectado y oculto | Ninguno | Debe usar `PUT /api/settings/preferences`; además la opción está marcada como "Próximamente" en Configuración. |
@@ -165,6 +166,25 @@ Configuración → Perfil / Contraseña / Preferencias
 ```
 
 No se debe mostrar "enviado" o "actualizado" hasta recibir una respuesta `2xx` del servidor.
+
+### 7. Actividades OVA
+
+```text
+Evaluación diaria → POST /api/evaluaciones + POST /api/evaluaciones/asignacion-semaforo
+                    (el backend asigna OVAs según las reglas del psicólogo; máx. 3 por evaluación)
+Resultado del semáforo / Home / Atención → "Mis actividades" (GET /api/ovas/asignaciones)
+  → detalle → Comenzar (PATCH iniciar) → ver el recurso
+  → Terminé (POST completar: liked obligatorio, rating 1-5 opcional)
+      → "Medir cómo me siento": mismo cuestionario con POST /api/evaluaciones + ova_asignacion_id
+  → Ahora no / No me interesa (POST omitir: SKIPPED o DISMISSED)
+```
+
+Notas del contrato:
+
+- Solo `POST /api/evaluaciones` y `POST /api/evaluaciones/asignacion-semaforo` asignan OVAs. El registro emocional y el onboarding no.
+- El post-test no debe llamar al registro emocional (responde `409` si ya hay registro del día) ni a `asignacion-semaforo`. Si el backend no puede enlazarlo responde `post_test_enlazado: false`, pero la evaluación se guarda.
+- `ovas_asignados` (respuesta de la evaluación) tiene otra forma que el `GET`: usa `recurso_resuelto` y campos `matched_*` planos. La app consulta siempre el `GET`.
+- Los puntajes de efectividad llegan como string (`"45.00"`). Un `delta_puntaje` negativo significa mejoría; la app solo muestra mensajes cualitativos, nunca puntajes.
 
 ## Plan de implementación recomendado
 

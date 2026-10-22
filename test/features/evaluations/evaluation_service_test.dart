@@ -35,6 +35,46 @@ void main() {
     expect(evaluations.single.dimensiones.single.nivel, 'rojo');
   });
 
+  group('submitEvaluation', () {
+    EvaluationService serviceFor(void Function(Map<String, dynamic>) onBody) {
+      return EvaluationService(
+        baseUrl: 'https://api.test',
+        tokenProvider: () => 'token',
+        client: MockClient((request) async {
+          expect(request.method, 'POST');
+          expect(request.url.path, '/api/evaluaciones');
+          onBody(jsonDecode(request.body) as Map<String, dynamic>);
+          return http.Response(
+            jsonEncode({'evaluacion': {'id': 1}, 'post_test_enlazado': true}),
+            201,
+          );
+        }),
+      );
+    }
+
+    final respuestas = [
+      {'pregunta_id': 3, 'respuesta': 2},
+    ];
+
+    test('no envía ova_asignacion_id en la evaluación diaria', () async {
+      late Map<String, dynamic> body;
+      await serviceFor((b) => body = b).submitEvaluation(respuestas);
+
+      expect(body.containsKey('ova_asignacion_id'), isFalse);
+      expect(body['respuestas'], respuestas);
+    });
+
+    test('envía ova_asignacion_id cuando es el post-test de una OVA', () async {
+      late Map<String, dynamic> body;
+      final result = await serviceFor(
+        (b) => body = b,
+      ).submitEvaluation(respuestas, ovaAsignacionId: 12);
+
+      expect(body['ova_asignacion_id'], 12);
+      expect(result['post_test_enlazado'], isTrue);
+    });
+  });
+
   test('getEvaluacion consulta el id solicitado', () async {
     final service = EvaluationService(
       baseUrl: 'https://api.test',

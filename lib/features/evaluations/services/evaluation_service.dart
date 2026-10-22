@@ -61,12 +61,16 @@ class EvaluationService {
     return list.whereType<Map>().map((item) => Map<String, dynamic>.from(item)).toList();
   }
 
+  /// [ovaAsignacionId] enlaza la evaluación como post-test de una actividad OVA.
   Future<Map<String, dynamic>> submitEvaluation(
-      List<Map<String, int>> respuestas) async {
+      List<Map<String, int>> respuestas, {int? ovaAsignacionId}) async {
     final response = await _client.post(
       Uri.parse('$_baseUrl/api/evaluaciones'),
       headers: {..._headers, 'Content-Type': 'application/json'},
-      body: jsonEncode({'respuestas': respuestas}),
+      body: jsonEncode({
+        'respuestas': respuestas,
+        'ova_asignacion_id': ?ovaAsignacionId,
+      }),
     );
     final decoded = _decode(response);
     if (decoded is Map) return Map<String, dynamic>.from(decoded['data'] is Map ? decoded['data'] as Map : decoded);

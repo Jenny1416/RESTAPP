@@ -8,6 +8,7 @@ import 'package:rest/core/services/user_session.dart';
 import 'package:rest/core/theme/app_colors.dart';
 import 'package:rest/core/widgets/app_header_bar.dart';
 import 'package:rest/features/onboarding/widgets/onboarding_reminder_card.dart';
+import 'package:rest/features/ova/widgets/ova_reminder_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -28,97 +29,74 @@ class MainScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            AppHeaderBar(
-              title: '¡Hola! ${UserSession.displayName}',
-              onActionTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SettingsScreen()),
-                );
-              },
-            ),
-            Divider(
-              color: colorScheme.outlineVariant,
-              thickness: 3,
-              height: 0.h,
-              indent: 23,
-              endIndent: 23,
-            ),
-            SizedBox(height: 20.h),
-
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              child: const OnboardingReminderCard(),
-            ),
-
-            _ChatCard(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ChatScreen()),
-                );
-              },
-            ),
-
-            SizedBox(height: 20.h),
-
-            // Botón "ESCOGER UN TEMA"
-            SizedBox(height: 40.h),
-
-            // Sección "Mis últimas sesiones"
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 25),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Text(
-                      'Mis últimas sesiones',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                        fontFamily: 'Fredoka',
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ConversacionesScreen(),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      'Ver todas',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        color: colorScheme.primary,
-                        fontFamily: 'Fredoka',
-                      ),
-                    ),
-                  ),
-                ],
+        // Con los avisos (onboarding, actividades) la columna puede superar el
+        // alto de pantallas pequeñas, así que hace scroll.
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Header
+              AppHeaderBar(
+                title: '¡Hola! ${UserSession.displayName}',
+                onActionTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SettingsScreen()),
+                  );
+                },
               ),
-            ),
+              Divider(
+                color: colorScheme.outlineVariant,
+                thickness: 3,
+                height: 0.h,
+                indent: 23,
+                endIndent: 23,
+              ),
+              SizedBox(height: 20.h),
 
-            SizedBox(height: 20.h),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                child: const OnboardingReminderCard(),
+              ),
 
-            // Cards de sesiones
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  // Card Conversaciones
-                  Expanded(
-                    child: InkWell(
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                child: const OvaReminderCard(),
+              ),
+
+              _ChatCard(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ChatScreen()),
+                  );
+                },
+              ),
+
+              SizedBox(height: 20.h),
+
+              // Botón "ESCOGER UN TEMA"
+              SizedBox(height: 40.h),
+
+              // Sección "Mis últimas sesiones"
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 25),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Mis últimas sesiones',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                          fontFamily: 'Fredoka',
+                        ),
+                      ),
+                    ),
+                    InkWell(
                       onTap: () {
                         Navigator.push(
                           context,
@@ -127,111 +105,145 @@ class MainScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      child: Container(
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerLow,
-                          border: Border.all(
-                            color: colorScheme.outlineVariant,
-                            width: 0.5,
-                          ),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Conversaciones',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w500,
-                                color: colorScheme.onSurface,
-                                height: 1.2,
-                                fontFamily: 'Fredoka',
-                              ),
-                            ),
-                            SizedBox(height: 23.h),
-                            Container(
-                              width: 90.w,
-                              height: 95.h,
-                              decoration: BoxDecoration(
-                                color: appColors.brandSoft,
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  image: AssetImage(
-                                    'assets/images/conversaciones.png',
-                                  ),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                          ],
+                      child: Text(
+                        'Ver todas',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          color: colorScheme.primary,
+                          fontFamily: 'Fredoka',
                         ),
                       ),
                     ),
-                  ),
-
-                  SizedBox(width: 16.w),
-
-                  // Card Progreso de las Actividad - CON NAVEGACIÓN
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ActivitiesScreen(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerLow,
-                          border: Border.all(
-                            color: colorScheme.outlineVariant,
-                            width: 0.5,
-                          ),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Progreso de las\nActividades',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w500,
-                                color: colorScheme.onSurface,
-                                height: 1.2,
-                                fontFamily: 'Fredoka',
-                              ),
-                            ),
-                            SizedBox(height: 12.h),
-                            Container(
-                              width: 100.w,
-                              height: 90.h,
-                              decoration: BoxDecoration(
-                                color: appColors.brandSoft,
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  image: AssetImage(
-                                    'assets/images/medalla.png',
-                                  ),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            Spacer(),
-          ],
+              SizedBox(height: 20.h),
+
+              // Cards de sesiones
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    // Card Conversaciones
+                    Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const ConversacionesScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainerLow,
+                            border: Border.all(
+                              color: colorScheme.outlineVariant,
+                              width: 0.5,
+                            ),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Conversaciones',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: colorScheme.onSurface,
+                                  height: 1.2,
+                                  fontFamily: 'Fredoka',
+                                ),
+                              ),
+                              SizedBox(height: 23.h),
+                              Container(
+                                width: 90.w,
+                                height: 95.h,
+                                decoration: BoxDecoration(
+                                  color: appColors.brandSoft,
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                    image: AssetImage(
+                                      'assets/images/conversaciones.png',
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(width: 16.w),
+
+                    // Card Progreso de las Actividad - CON NAVEGACIÓN
+                    Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ActivitiesScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainerLow,
+                            border: Border.all(
+                              color: colorScheme.outlineVariant,
+                              width: 0.5,
+                            ),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Progreso de las\nActividades',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: colorScheme.onSurface,
+                                  height: 1.2,
+                                  fontFamily: 'Fredoka',
+                                ),
+                              ),
+                              SizedBox(height: 12.h),
+                              Container(
+                                width: 100.w,
+                                height: 90.h,
+                                decoration: BoxDecoration(
+                                  color: appColors.brandSoft,
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                    image: AssetImage(
+                                      'assets/images/medalla.png',
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Deja espacio para la barra de navegación inferior.
+              SizedBox(height: 110.h),
+            ],
+          ),
         ),
       ),
     );

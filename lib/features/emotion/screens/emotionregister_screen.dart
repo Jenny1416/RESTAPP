@@ -12,7 +12,12 @@ import 'package:rest/features/evaluations/services/evaluation_service.dart';
 import 'package:rest/features/emotion/utils/emotion_calculator.dart';
 
 class EmotionRegisterScreen extends StatefulWidget {
-  const EmotionRegisterScreen({super.key});
+  const EmotionRegisterScreen({super.key, this.ovaAsignacionId});
+
+  /// Si se indica, el cuestionario es el post-test de una actividad OVA: solo
+  /// se envía la evaluación enlazada y se devuelve el resultado con `pop`, sin
+  /// tocar el registro emocional, el semáforo ni la racha del día.
+  final int? ovaAsignacionId;
 
   @override
   State<EmotionRegisterScreen> createState() => _CheckScreenState();
@@ -168,6 +173,11 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
       if (respuestas.length != _preguntas.length) {
         throw Exception('Responde todas las preguntas para continuar.');
       }
+      if (widget.ovaAsignacionId != null) {
+        final resultado = await _guardarPostTest(respuestas);
+        if (mounted) Navigator.pop(context, resultado);
+        return;
+      }
       if (registroRespuestas.length != _preguntas.length) {
         throw Exception(
           'No se pudieron preparar las respuestas del registro diario.',
@@ -227,6 +237,23 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
         });
       }
     }
+  }
+
+  /// Post-test de una OVA: solo `POST /api/evaluaciones` con `ova_asignacion_id`.
+  /// El backend responde `post_test_enlazado: false` si no pudo asociarlo, pero
+  /// la evaluación se guarda de todos modos.
+  Future<Map<String, dynamic>> _guardarPostTest(
+    List<Map<String, int>> respuestas,
+  ) async {
+    final evaluation = await _evaluationService.submitEvaluation(
+      respuestas,
+      ovaAsignacionId: widget.ovaAsignacionId,
+    );
+    final evaluacion = evaluation['evaluacion'];
+    final enlazado =
+        evaluation['post_test_enlazado'] == true ||
+        (evaluacion is Map && evaluacion['post_test_enlazado'] == true);
+    return <String, dynamic>{'post_test_enlazado': enlazado};
   }
 
   Future<Map<String, dynamic>> _guardarEnBackend({
@@ -417,7 +444,9 @@ class _CheckScreenState extends State<EmotionRegisterScreen> {
                   // Título
                   Expanded(
                     child: Text(
-                      '¡Cuéntame\nsobre tu día!',
+                      widget.ovaAsignacionId != null
+                          ? '¿Cómo te\nsientes ahora?'
+                          : '¡Cuéntame\nsobre tu día!',
                       style: TextStyle(
                         fontFamily: 'Fredoka',
                         fontSize: 30.sp,

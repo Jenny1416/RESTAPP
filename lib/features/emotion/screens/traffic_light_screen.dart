@@ -6,6 +6,7 @@ import '../../../core/services/user_session.dart';
 import '../../evaluations/widgets/latest_dimensions_card.dart';
 import '../utils/emotion_state_config.dart';
 import 'package:rest/features/professional_care/screens/psychologist_directory_screen.dart';
+import 'package:rest/features/ova/widgets/ova_new_assignments_card.dart';
 
 class TrafficLightScreen extends StatelessWidget {
   final String estado;
@@ -235,6 +236,8 @@ class TrafficLightScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 24.h),
                   ],
+
+                  const OvaNewAssignmentsCard(),
 
                   LatestDimensionsCard(
                     initialDimensions: dimensiones,
